@@ -39,6 +39,7 @@ src/
 - UI components must not contain business logic — delegate to services and hooks.
 - Use TypeScript interfaces (not `type` aliases) for data shapes.
 - Pages must be `"use client"` when they use `motion` components from framer-motion.
+- Font stack: **DM Sans** (body) + **DM Mono** (code/labels) — configured in `layout.tsx` and `globals.css`. Never override with inline styles or Tailwind `font-*` utilities that bypass the CSS variables.
 
 ### Animations — framer-motion
 
