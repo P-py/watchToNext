@@ -1,0 +1,199 @@
+import { Movie, MovieDetails, Genre } from "@/types/movie";
+import { UserProfile } from "@/types/user";
+
+export const GENRES: Genre[] = [
+  { id: 28, name: "Action" },
+  { id: 12, name: "Adventure" },
+  { id: 16, name: "Animation" },
+  { id: 35, name: "Comedy" },
+  { id: 80, name: "Crime" },
+  { id: 18, name: "Drama" },
+  { id: 14, name: "Fantasy" },
+  { id: 27, name: "Horror" },
+  { id: 9648, name: "Mystery" },
+  { id: 878, name: "Science Fiction" },
+  { id: 53, name: "Thriller" },
+];
+
+export const MOCK_MOVIES: Movie[] = [
+  {
+    id: 278,
+    title: "The Shawshank Redemption",
+    overview:
+      "Framed in the 1940s for the double murder of his wife and her lover, upstanding banker Andy Dufresne begins a new life at the Shawshank prison.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1994-09-23",
+    voteAverage: 8.7,
+    voteCount: 24000,
+    genres: [{ id: 18, name: "Drama" }, { id: 80, name: "Crime" }],
+    runtime: 142,
+  },
+  {
+    id: 238,
+    title: "The Godfather",
+    overview:
+      "Spanning the years 1945 to 1955, a chronicle of the fictional Italian-American Corleone crime family.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1972-03-14",
+    voteAverage: 8.7,
+    voteCount: 18000,
+    genres: [{ id: 18, name: "Drama" }, { id: 80, name: "Crime" }],
+    runtime: 175,
+  },
+  {
+    id: 155,
+    title: "The Dark Knight",
+    overview:
+      "Batman raises the stakes in his war on crime. With the help of Lt. Jim Gordon and District Attorney Harvey Dent, Batman sets out to dismantle the remaining criminal organizations that plague the streets.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2008-07-14",
+    voteAverage: 8.5,
+    voteCount: 31000,
+    genres: [{ id: 28, name: "Action" }, { id: 80, name: "Crime" }, { id: 18, name: "Drama" }],
+    runtime: 152,
+  },
+  {
+    id: 680,
+    title: "Pulp Fiction",
+    overview:
+      "A burger-loving hit man, his philosophical partner, a drug-addled gangster's moll and a washed-up boxer converge in this sprawling, comedic crime caper.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1994-09-10",
+    voteAverage: 8.5,
+    voteCount: 26000,
+    genres: [{ id: 53, name: "Thriller" }, { id: 80, name: "Crime" }],
+    runtime: 154,
+  },
+  {
+    id: 27205,
+    title: "Inception",
+    overview:
+      "Cobb, a skilled thief who commits corporate espionage by infiltrating the subconscious of his targets is offered a chance to regain his old life.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2010-07-15",
+    voteAverage: 8.4,
+    voteCount: 34000,
+    genres: [{ id: 28, name: "Action" }, { id: 878, name: "Science Fiction" }, { id: 12, name: "Adventure" }],
+    runtime: 148,
+  },
+  {
+    id: 157336,
+    title: "Interstellar",
+    overview:
+      "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2014-11-05",
+    voteAverage: 8.4,
+    voteCount: 34000,
+    genres: [{ id: 12, name: "Adventure" }, { id: 18, name: "Drama" }, { id: 878, name: "Science Fiction" }],
+    runtime: 169,
+  },
+  {
+    id: 603,
+    title: "The Matrix",
+    overview:
+      "Set in the 22nd century, The Matrix tells the story of a computer hacker who joins a group of underground insurgents fighting the vast and powerful computers who now rule the earth.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1999-03-30",
+    voteAverage: 8.2,
+    voteCount: 25000,
+    genres: [{ id: 28, name: "Action" }, { id: 878, name: "Science Fiction" }],
+    runtime: 136,
+  },
+  {
+    id: 13,
+    title: "Forrest Gump",
+    overview:
+      "A man with a low IQ has accomplished great things in his life and been present during significant historic events.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1994-06-23",
+    voteAverage: 8.5,
+    voteCount: 26000,
+    genres: [{ id: 35, name: "Comedy" }, { id: 18, name: "Drama" }, { id: 10749, name: "Romance" }],
+    runtime: 142,
+  },
+  {
+    id: 496243,
+    title: "Parasite",
+    overview:
+      "All unemployed, Ki-taek's family takes a peculiar interest in the wealthy and glamorous Parks for their livelihood until they get entangled in an unexpected incident.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2019-05-30",
+    voteAverage: 8.5,
+    voteCount: 17000,
+    genres: [{ id: 35, name: "Comedy" }, { id: 53, name: "Thriller" }, { id: 18, name: "Drama" }],
+    runtime: 132,
+  },
+  {
+    id: 129,
+    title: "Spirited Away",
+    overview:
+      "A young girl, Chihiro, becomes trapped in a strange new world of spirits. When her parents undergo a mysterious transformation, she must call upon the courage she never knew she had.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2001-07-20",
+    voteAverage: 8.5,
+    voteCount: 14000,
+    genres: [{ id: 16, name: "Animation" }, { id: 14, name: "Fantasy" }, { id: 12, name: "Adventure" }],
+    runtime: 125,
+  },
+  {
+    id: 424,
+    title: "Schindler's List",
+    overview:
+      "The true story of how businessman Oskar Schindler saved over a thousand Jewish lives from the Nazis while they worked as slaves in his factory during World War II.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "1993-11-29",
+    voteAverage: 8.6,
+    voteCount: 14000,
+    genres: [{ id: 18, name: "Drama" }, { id: 36, name: "History" }, { id: 10752, name: "War" }],
+    runtime: 195,
+  },
+  {
+    id: 122,
+    title: "The Lord of the Rings: The Return of the King",
+    overview:
+      "Aragorn is revealed as the heir to the ancient kings as he and his friends unite with the Rohan and Gondor kingdoms against Sauron's forces.",
+    posterPath: null,
+    backdropPath: null,
+    releaseDate: "2003-12-01",
+    voteAverage: 8.5,
+    voteCount: 22000,
+    genres: [{ id: 12, name: "Adventure" }, { id: 14, name: "Fantasy" }, { id: 28, name: "Action" }],
+    runtime: 201,
+  },
+];
+
+export const MOCK_MOVIE_DETAILS: Record<number, MovieDetails> = Object.fromEntries(
+  MOCK_MOVIES.map((movie) => [
+    movie.id,
+    {
+      ...movie,
+      cast: [
+        { id: 1, name: "Actor One", character: "Lead Role", profilePath: null },
+        { id: 2, name: "Actor Two", character: "Supporting Role", profilePath: null },
+        { id: 3, name: "Actor Three", character: "Antagonist", profilePath: null },
+      ],
+      similarMovies: MOCK_MOVIES.filter((m) => m.id !== movie.id).slice(0, 4),
+    },
+  ])
+);
+
+export const MOCK_USER_PROFILE: UserProfile = {
+  id: "user-1",
+  username: "moviefan",
+  email: "moviefan@example.com",
+  avatarUrl: null,
+  watchedMovies: MOCK_MOVIES.slice(0, 6),
+  favoriteGenres: ["Drama", "Science Fiction", "Thriller"],
+};
