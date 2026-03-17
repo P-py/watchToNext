@@ -33,11 +33,24 @@ src/
   services/      → API communication layer (all fetch/axios calls live here)
   hooks/         → reusable React logic
   types/         → TypeScript interfaces and types
-  utils/         → helper functions
+  utils/         → helper functions (cn, format, animations)
 ```
 
 - UI components must not contain business logic — delegate to services and hooks.
 - Use TypeScript interfaces (not `type` aliases) for data shapes.
+- Pages must be `"use client"` when they use `motion` components from framer-motion.
+
+### Animations — framer-motion
+
+All motion variants are defined in `src/utils/animations.ts`. Never define one-off inline variants.
+
+| Pattern | When to use |
+|---|---|
+| `AnimatedGrid` + `cardItem` | Any data-driven list (movies, search results) — use `AnimatedGrid` instead of `Grid` |
+| `heroStagger` + `fadeUp` | Page hero sections — stagger heading, subtitle, CTAs |
+| `AnimatePresence mode="wait"` | Content that conditionally appears or disappears (search results, empty states) |
+
+Only animate `opacity`, `y`, and `scale`. Avoid animating layout-affecting properties (`width`, `height`) as they cause reflows.
 
 ### Backend — Kotlin + Spring Boot
 ```
