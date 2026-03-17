@@ -1,5 +1,5 @@
 import { Movie } from "@/types/movie";
-import { Grid } from "@/components/Grid";
+import { AnimatedGrid } from "@/components/AnimatedGrid";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { Sparkles } from "lucide-react";
 
@@ -20,11 +20,11 @@ export function RecommendationGrid({
         <Sparkles className="h-5 w-5 text-amber-400" />
         {title}
       </h2>
-      <Grid cols={4}>
+      <AnimatedGrid cols={4}>
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
-      </Grid>
+      </AnimatedGrid>
     </section>
   );
 }

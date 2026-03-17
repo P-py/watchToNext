@@ -2,11 +2,13 @@
 
 import { use } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
 import { buildPosterUrl, formatRating, formatRuntime, formatYear } from "@/utils/format";
 import { Star, Clock, Calendar } from "lucide-react";
+import { fadeUp, fadeIn, slideInLeft, slideInRight, staggerContainer, heroStagger } from "@/utils/animations";
 
 interface MoviePageProps {
   params: Promise<{ id: string }>;
@@ -21,9 +23,22 @@ export default function MoviePage({ params }: MoviePageProps) {
       <>
         <Navbar />
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 w-64 rounded bg-zinc-800" />
-            <div className="h-4 w-full max-w-xl rounded bg-zinc-800" />
+          <div className="flex flex-col gap-8 sm:flex-row animate-pulse">
+            <div className="aspect-[2/3] w-48 shrink-0 rounded-xl bg-zinc-800" />
+            <div className="flex-1 space-y-4 pt-2">
+              <div className="h-8 w-64 rounded bg-zinc-800" />
+              <div className="h-4 w-48 rounded bg-zinc-800" />
+              <div className="flex gap-2">
+                {[80, 64, 96].map((w) => (
+                  <div key={w} className="h-6 rounded-full bg-zinc-800" style={{ width: w }} />
+                ))}
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-full rounded bg-zinc-800" />
+                <div className="h-4 w-5/6 rounded bg-zinc-800" />
+                <div className="h-4 w-4/6 rounded bg-zinc-800" />
+              </div>
+            </div>
           </div>
         </main>
       </>
@@ -44,24 +59,38 @@ export default function MoviePage({ params }: MoviePageProps) {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 space-y-10">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 space-y-12">
         <div className="flex flex-col gap-8 sm:flex-row">
-          <div className="relative aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-zinc-800">
+          {/* poster */}
+          <motion.div
+            variants={slideInLeft}
+            initial="hidden"
+            animate="visible"
+            className="relative aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl shadow-black/50"
+          >
             <Image
               src={buildPosterUrl(movie.posterPath, "w342")}
               alt={movie.title}
               fill
               className="object-cover"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-zinc-100">{movie.title}</h1>
+          {/* info */}
+          <motion.div
+            variants={heroStagger}
+            initial="hidden"
+            animate="visible"
+            className="space-y-4"
+          >
+            <motion.h1 variants={slideInRight} className="text-3xl font-bold text-zinc-100">
+              {movie.title}
+            </motion.h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
               <span className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                <span className="text-amber-400 font-medium">{formatRating(movie.voteAverage)}</span>
+                <span className="font-medium text-amber-400">{formatRating(movie.voteAverage)}</span>
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -71,20 +100,27 @@ export default function MoviePage({ params }: MoviePageProps) {
                 <Clock className="h-4 w-4" />
                 {formatRuntime(movie.runtime)}
               </span>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-wrap gap-2">
-              {movie.genres.map((g) => (
-                <span key={g.id} className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex flex-wrap gap-2">
+              {movie.genres.map((g, i) => (
+                <motion.span
+                  key={g.id}
+                  variants={fadeIn}
+                  custom={i}
+                  className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300"
+                >
                   {g.name}
-                </span>
+                </motion.span>
               ))}
-            </div>
+            </motion.div>
 
-            <p className="max-w-2xl leading-7 text-zinc-400">{movie.overview}</p>
+            <motion.p variants={fadeUp} className="max-w-2xl leading-7 text-zinc-400">
+              {movie.overview}
+            </motion.p>
 
             {movie.cast.length > 0 && (
-              <div>
+              <motion.div variants={fadeUp}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">Cast</p>
                 <div className="flex flex-wrap gap-2">
                   {movie.cast.map((member) => (
@@ -94,13 +130,15 @@ export default function MoviePage({ params }: MoviePageProps) {
                     </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {movie.similarMovies.length > 0 && (
-          <RecommendationGrid movies={movie.similarMovies} title="Similar Movies" />
+          <motion.div variants={fadeUp} initial="hidden" animate="visible">
+            <RecommendationGrid movies={movie.similarMovies} title="Similar Movies" />
+          </motion.div>
         )}
       </main>
     </>
