@@ -6,7 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **watchToNext** is a movie recommendation platform that uses KNN (K-Nearest Neighbors) to suggest similar movies based on user selections. It integrates with the TMDB API for movie metadata.
 
-> **Status:** Early stage — currently documentation/planning phase. No source code has been committed yet.
+> **Status:** Frontend scaffold complete. Backend not yet implemented.
+
+## Frontend Commands
+
+```bash
+cd frontend
+npm run dev        # dev server on http://localhost:3000
+npm run build      # production build
+npm run lint       # ESLint
+npx tsc --noEmit   # type check only
+```
+
+Copy `frontend/.env.local.example` to `frontend/.env.local` and set `NEXT_PUBLIC_API_URL`.
 
 ## Architecture
 
@@ -47,6 +59,33 @@ integration/   → TMDB API client
 - **Redis** — caching layer
 - **Keycloak** — authentication via OAuth2/OpenID Connect
 - **TMDB API** — external movie metadata source
+
+## Commit Convention
+
+Use **Conventional Commits** with **gitmoji** prefixes:
+
+```
+<emoji> <type>[optional scope]: <description>
+```
+
+| Emoji | Type | When to use |
+|---|---|---|
+| ✨ | `feat` | New feature |
+| 🐛 | `fix` | Bug fix |
+| ♻️ | `refactor` | Code change that neither fixes a bug nor adds a feature |
+| 💄 | `style` | UI / styling changes |
+| 📝 | `docs` | Documentation only |
+| 🧪 | `test` | Adding or updating tests |
+| 🔧 | `chore` | Build process, tooling, dependencies |
+| 🚀 | `perf` | Performance improvement |
+| 🎉 | `init` | Initial commit / project bootstrap |
+
+Examples:
+```
+✨ feat(search): add debounced search input
+🐛 fix(hooks): move setLoading inside async function to avoid cascade renders
+🔧 chore(deps): add clsx and tailwind-merge
+```
 
 ## Naming Conventions
 
