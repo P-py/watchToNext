@@ -1,5 +1,7 @@
 # Backend Architecture
 
+> Note: The backend described here is the **planned/target architecture**. As noted in the root README, the backend implementation is not yet complete, and endpoints/configuration may change during development.
+
 ## Technology Stack
 
 - Kotlin
@@ -66,7 +68,7 @@ integration/   External API integration (TMDB)
 
 ## API Style
 
-The backend exposes a REST API.
+The backend is planned to expose a REST API with the following endpoints (subject to change during implementation):
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
