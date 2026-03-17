@@ -70,7 +70,10 @@ The backend exposes a REST API.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/movies` | Search or list movies |
-| `GET` | `/api/movies/{id}` | Movie details |
-| `GET` | `/api/recommendations` | KNN-based recommendations |
-| `GET` | `/api/users` | User operations |
+| `GET`  | `/api/movies`                       | Search or list movies (supports filters/query params) |
+| `GET`  | `/api/movies/{id}`                  | Movie details |
+| `GET`  | `/api/movies/popular`               | List popular movies (used on home screen) |
+| `GET`  | `/api/recommendations`              | Recommendations for a movie (requires `movieId` query parameter) |
+| `GET`  | `/api/recommendations/personalized` | Personalized recommendations for the current user |
+| `GET`  | `/api/users/me`                     | Fetch the current authenticated user's profile |
+| `POST` | `/api/users/me/watched`             | Mark a movie as watched for the current user |
