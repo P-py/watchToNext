@@ -20,27 +20,31 @@ The main objective of the platform is to provide more relevant movie suggestions
 - Personalized recommendations
 - Movie discovery interface
 
+## Recommendation Flow
+
+```mermaid
+flowchart LR
+  A(["User selects\na movie"]) --> B["Extract\nfeature vector\n(genres · rating · year)"]
+  B --> C["KNN search\nagainst movie dataset"]
+  C --> D["Return K\nnearest neighbors"]
+  D --> E(["Display\nrecommendations"])
+```
+
 ## System Architecture
 
 The system follows a distributed architecture composed of:
 
-Frontend:
-- Next.js
-- TypeScript
-- TailwindCSS
+```mermaid
+graph TD
+  Frontend["Frontend\nNext.js · TypeScript · TailwindCSS"]
+  Backend["Backend\nKotlin · Spring Boot · REST API"]
+  Data["Data Layer\nPostgreSQL · Redis"]
+  Auth["Authentication\nKeycloak · OAuth2 / OIDC"]
+  External["External Services\nTMDB API"]
 
-Backend:
-- Kotlin
-- Spring Boot
-- REST API
-
-Data Layer:
-- PostgreSQL
-- Redis (cache)
-
-Authentication:
-- Keycloak
-- OAuth2 / OpenID Connect
-
-External Services:
-- TMDB API
+  Frontend <-->|REST| Backend
+  Backend <--> Data
+  Frontend <-->|OAuth2| Auth
+  Backend <-->|Token validation| Auth
+  Backend <-->|Movie metadata| External
+```

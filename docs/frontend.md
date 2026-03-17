@@ -25,17 +25,57 @@ The frontend must follow these principles:
 - scalable architecture
 - responsive design
 
+## Component Hierarchy
+
+```mermaid
+graph TD
+  Pages["app/\nPages & Routing"]
+  Modules["modules/\nFeature Modules\n(movies · search · recommendations · user)"]
+  Components["components/\nUI Primitives\n(Button · Card · Grid · Modal · Navbar ...)"]
+  Hooks["hooks/\nData Fetching\n(useMovies · useSearch · useMovieDetails)"]
+  Services["services/\nAPI Layer\n(movies · recommendations · user)"]
+  Types["types/\nDomain Interfaces"]
+  Utils["utils/\ncn · format · animations"]
+
+  Pages --> Modules
+  Pages --> Components
+  Pages --> Hooks
+  Modules --> Components
+  Hooks --> Services
+  Services --> Types
+  Components --> Utils
+  Modules --> Types
+```
+
+## Data Flow
+
+```mermaid
+sequenceDiagram
+  participant Page
+  participant Hook
+  participant Service
+  participant API as REST API
+
+  Page->>Hook: call (e.g. useMovies)
+  Hook->>Service: moviesService.getPopular()
+  Service->>API: GET /api/movies/popular
+  API-->>Service: JSON response
+  Service-->>Hook: typed data
+  Hook-->>Page: { movies, loading, error }
+```
+
 ## Folder Structure
 
+```
 src/
-
-app/ → Next.js pages and routing  
-components/ → reusable UI components  
-modules/ → feature-specific components  
-services/ → API communication  
-hooks/ → reusable hooks  
-types/ → TypeScript interfaces  
-utils/ → helper functions  
+app/        → Next.js pages and routing
+components/ → reusable UI components
+modules/    → feature-specific components
+services/   → API communication
+hooks/      → reusable hooks
+types/      → TypeScript interfaces
+utils/      → helper functions (cn, format, animations)
+```
 
 ## UI Components
 
@@ -46,21 +86,22 @@ Examples of reusable components:
 - Modal
 - Navbar
 - Input
-- Grid
+- Grid / AnimatedGrid
 - Pagination
 
 ## Feature Modules
 
-Examples:
-
-movies/
-search/
-recommendations/
-user/
+```
+modules/
+  movies/             MovieCard
+  search/             SearchBar
+  recommendations/    RecommendationGrid
+  user/               UserProfile
+```
 
 Each module should contain:
 
-components  
-services  
-types  
+components
+services
+types
 hooks
