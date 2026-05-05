@@ -28,7 +28,7 @@ export default function ProfilePage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {loading && (
           <div className="space-y-4 animate-pulse">
             <div className="flex items-center gap-4">

@@ -22,9 +22,9 @@ export default function MoviePage({ params }: MoviePageProps) {
     return (
       <>
         <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-          <div className="flex flex-col gap-8 sm:flex-row animate-pulse">
-            <div className="aspect-[2/3] w-48 shrink-0 rounded-xl bg-zinc-800" />
+        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-8 md:flex-row animate-pulse">
+            <div className="mx-auto aspect-[2/3] w-48 shrink-0 rounded-xl bg-zinc-800 md:mx-0" />
             <div className="flex-1 space-y-4 pt-2">
               <div className="h-8 w-64 rounded bg-zinc-800" />
               <div className="h-4 w-48 rounded bg-zinc-800" />
@@ -49,7 +49,7 @@ export default function MoviePage({ params }: MoviePageProps) {
     return (
       <>
         <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <p className="text-red-400">{error ?? "Movie not found."}</p>
         </main>
       </>
@@ -59,14 +59,14 @@ export default function MoviePage({ params }: MoviePageProps) {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 space-y-12">
-        <div className="flex flex-col gap-8 sm:flex-row">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-12">
+        <div className="flex flex-col gap-8 md:flex-row">
           {/* poster */}
           <motion.div
             variants={slideInLeft}
             initial="hidden"
             animate="visible"
-            className="relative aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl shadow-black/50"
+            className="relative mx-auto aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl shadow-black/50 sm:w-56 md:mx-0"
           >
             <Image
               src={buildPosterUrl(movie.posterPath, "w342")}
@@ -83,7 +83,7 @@ export default function MoviePage({ params }: MoviePageProps) {
             animate="visible"
             className="space-y-4"
           >
-            <motion.h1 variants={slideInRight} className="text-3xl font-bold text-zinc-100">
+            <motion.h1 variants={slideInRight} className="text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl">
               {movie.title}
             </motion.h1>
 

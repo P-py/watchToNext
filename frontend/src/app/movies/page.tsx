@@ -16,12 +16,12 @@ export default function MoviesPage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <motion.h1
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mb-8 text-2xl font-bold text-zinc-100"
+          className="mb-8 text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl"
         >
           Movies
         </motion.h1>
