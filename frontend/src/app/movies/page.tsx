@@ -4,6 +4,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
+import { Grid } from "@/components/Grid";
+import { MovieCardSkeleton } from "@/components/MovieCardSkeleton";
+import { ErrorState } from "@/components/ErrorState";
 import { Pagination } from "@/components/Pagination";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { usePopularMovies } from "@/hooks/useMovies";
@@ -26,21 +29,17 @@ export default function MoviesPage() {
           Movies
         </motion.h1>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <ErrorState message={error} />}
 
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {!error && loading && (
+          <Grid cols={4}>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[2/3] rounded-xl bg-zinc-800"
-                style={{
-                  animation: `pulse 1.5s ease-in-out ${i * 0.1}s infinite`,
-                }}
-              />
+              <MovieCardSkeleton key={i} />
             ))}
-          </div>
-        ) : (
+          </Grid>
+        )}
+
+        {!error && !loading && (
           <AnimatedGrid key={page} cols={4}>
             {movies.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />

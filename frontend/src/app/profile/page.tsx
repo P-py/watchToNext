@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
+import { ErrorState } from "@/components/ErrorState";
 import { UserProfile } from "@/modules/user/components/UserProfile";
 import { userService } from "@/services/user.service";
 import { UserProfile as UserProfileType } from "@/types/user";
@@ -40,7 +41,7 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <ErrorState message={error} />}
         {profile && <UserProfile profile={profile} />}
       </main>
     </>

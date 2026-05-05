@@ -4,6 +4,7 @@ import { use } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
+import { ErrorState } from "@/components/ErrorState";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
 import { buildPosterUrl, formatRating, formatRuntime, formatYear } from "@/utils/format";
@@ -50,7 +51,10 @@ export default function MoviePage({ params }: MoviePageProps) {
       <>
         <Navbar />
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <p className="text-red-400">{error ?? "Movie not found."}</p>
+          <ErrorState
+            title={error ? "Failed to load movie" : "Movie not found"}
+            message={error ?? undefined}
+          />
         </main>
       </>
     );
