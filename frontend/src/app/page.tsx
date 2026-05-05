@@ -16,7 +16,7 @@ export default function HomePage() {
         <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500/10 blur-3xl" />
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
         <motion.div
           className="flex flex-col items-center gap-7 text-center"
           variants={heroStagger}
@@ -30,7 +30,7 @@ export default function HomePage() {
             >
               <Film className="h-10 w-10 text-amber-400" />
             </motion.div>
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-100 sm:text-5xl">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-5xl lg:text-6xl">
               watchToNext
             </h1>
           </motion.div>

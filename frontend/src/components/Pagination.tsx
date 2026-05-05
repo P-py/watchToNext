@@ -12,9 +12,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
     <div className="flex items-center gap-2">
       <Button
         variant="ghost"
-        size="sm"
+        size="md"
+        aria-label="Previous page"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
+        className="!w-10 !px-0"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -25,9 +27,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
 
       <Button
         variant="ghost"
-        size="sm"
+        size="md"
+        aria-label="Next page"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
+        className="!w-10 !px-0"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
