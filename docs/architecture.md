@@ -60,7 +60,7 @@ graph TD
 
 ## Backend Architecture
 
-The backend is built using Kotlin and Spring Boot following a layered architecture.
+The backend is a Kotlin + Spring Boot application structured as a **Gradle multi-module monorepo** under `backend/`. Two modules: `:api` (Spring Boot REST layer) and `:engine` (KNN algorithm, pure Kotlin). Convention plugins in `buildSrc/` enforce consistent compiler flags and dependency management. All dependency versions are centralised in `backend/gradle/libs.versions.toml`.
 
 ```mermaid
 graph LR

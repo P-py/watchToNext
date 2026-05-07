@@ -53,19 +53,27 @@ All motion variants are defined in `src/utils/animations.ts`. Never define one-o
 
 Only animate `opacity`, `y`, and `scale`. Avoid animating layout-affecting properties (`width`, `height`) as they cause reflows.
 
-### Backend — Kotlin + Spring Boot
+### Backend — Kotlin + Spring Boot (Gradle multi-module, root: `backend/`)
+
+| Module | Convention plugin | Purpose |
+|--------|------------------|---------|
+| `:api` | `spring-conventions` | Spring Boot REST layer: controllers, DTOs, config, TMDB integration |
+| `:engine` | `kotlin-conventions` | KNN recommendation algorithm and domain models — no Spring dependency |
+
+Package layout inside each module follows:
 ```
-controller/    → thin HTTP endpoints only
-service/       → all business logic
-repository/    → database operations (PostgreSQL)
-model/         → domain models
-dto/           → request/response data transfer objects
-config/        → Spring configuration classes
-integration/   → TMDB API client
+controller/    → thin HTTP endpoints only          (api)
+service/       → orchestration + integration       (api)
+repository/    → database queries (PostgreSQL)     (api)
+dto/           → request/response shapes           (api)
+config/        → Spring configuration classes      (api)
+integration/   → TMDB API client                   (api)
+model/         → domain models                     (engine)
+recommender/   → KNN algorithm                     (engine)
 ```
 
 - Controllers must be thin — no business logic, only delegation to services.
-- Services own all business logic including KNN recommendation logic.
+- KNN logic lives exclusively in `:engine`; `:api` calls it through injected services.
 - Use DTOs for all API request/response shapes; never expose domain models directly.
 
 ### Infrastructure

@@ -1,14 +1,59 @@
 # Backend Architecture
 
-> Note: The backend described here is the **planned/target architecture**. As noted in the root README, the backend implementation is not yet complete, and endpoints/configuration may change during development.
+> Note: The backend is scaffolded (Spring Boot application boots) but feature implementation is not yet complete. Endpoints and configuration may change during development.
 
 ## Technology Stack
 
-- Kotlin
-- Spring Boot
-- PostgreSQL
-- Redis
-- Keycloak (authentication)
+- Kotlin · Spring Boot
+- PostgreSQL · Flyway (migrations)
+- Redis (cache)
+- Keycloak (OAuth2 / OpenID Connect)
+
+## Build System
+
+The backend is a **Gradle multi-module monorepo** rooted at `backend/` (Gradle root project: `backend`).
+
+```
+backend/
+  gradle/
+    libs.versions.toml   ← single version catalog (all deps + plugin classpath)
+    wrapper/
+  buildSrc/
+    src/main/kotlin/
+      watchtonext.kotlin-conventions.gradle.kts   ← JVM toolchain, group/version, compiler flags, JUnit
+      watchtonext.spring-conventions.gradle.kts   ← Spring Boot + Kotlin plugins, base deps
+    build.gradle.kts     ← kotlin-dsl; depends on catalog build.* entries
+    settings.gradle.kts  ← loads libs catalog from ../gradle/libs.versions.toml
+  api/                   ← :api — Spring Boot REST layer; depends on :engine
+    build.gradle.kts     ← applies spring-conventions, adds module deps, implementation(projects.engine)
+  engine/                ← :engine — KNN recommendation logic, pure Kotlin (no Spring)
+    build.gradle.kts     ← applies kotlin-conventions only
+  settings.gradle.kts    ← foojay resolver, TYPESAFE_PROJECT_ACCESSORS, include(":api", ":engine")
+  gradle.properties      ← JVM args, parallel, caching, configuration-cache
+```
+
+### Module responsibilities
+
+| Module | Convention | Depends on | Purpose |
+|--------|-----------|------------|---------|
+| `:api` | `spring-conventions` | `:engine` | Spring Boot REST layer: controllers, DTOs, config, integrations |
+| `:engine` | `kotlin-conventions` | — | KNN algorithm, domain models, pure business logic |
+
+### Version catalog
+
+All versions live in `backend/gradle/libs.versions.toml`. Never hardcode versions in `build.gradle.kts` files — add an entry to the catalog and reference it via `libs.*` accessor.
+
+| Prefix | Purpose |
+|--------|---------|
+| `build.*` | Plugin classpath only — used exclusively in `buildSrc/build.gradle.kts` |
+| `spring.*`, `kotlin.*`, `jackson.*`, `postgresql`, `flyway.*` | Runtime / compile dependencies |
+| `kotlin-test-junit5`, `junit-platform-launcher` | Test dependencies |
+
+### Adding a new module
+
+1. Create `backend/<module>/` with a `build.gradle.kts` applying the relevant convention plugin.
+2. Add `include(":<module>")` to `backend/settings.gradle.kts`.
+3. Reference it as `projects.<module>` (type-safe accessor) from other modules.
 
 ## Layered Architecture
 
