@@ -1,2 +1,6 @@
 task.md
 pr.md
+
+# Datasets — download manually, never commit
+*.csv
+*Zone.Identifier
