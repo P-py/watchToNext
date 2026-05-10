@@ -3,11 +3,9 @@ package com.watchtonext.api.seed
 import com.opencsv.CSVReader
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.Types
 
 private val log = LoggerFactory.getLogger("SeedMoviesRunner")
 
@@ -24,7 +22,7 @@ fun main() {
         .load()
         .migrate()
 
-    log.info("Seeding from CSVs at '$csvPath'")
+    log.info("Seeding from '$csvPath'")
     DriverManager.getConnection(url, user, password).use { conn ->
         MovieSeeder(conn, File(csvPath)).seed()
     }
@@ -32,14 +30,38 @@ fun main() {
 
 internal class MovieSeeder(private val conn: Connection, private val csvDir: File) {
 
-    private val mapper = jacksonObjectMapper()
+    private data class GenreRow(val id: Int, val name: String)
+
+    // Standard TMDB genre IDs — https://developer.themoviedb.org/reference/genre-movie-list
+    private val GENRE_IDS = mapOf(
+        "Action"           to 28,
+        "Adventure"        to 12,
+        "Animation"        to 16,
+        "Comedy"           to 35,
+        "Crime"            to 80,
+        "Documentary"      to 99,
+        "Drama"            to 18,
+        "Family"           to 10751,
+        "Fantasy"          to 14,
+        "History"          to 36,
+        "Horror"           to 27,
+        "Music"            to 10402,
+        "Mystery"          to 9648,
+        "Romance"          to 10749,
+        "Science Fiction"  to 878,
+        "TV Movie"         to 10770,
+        "Thriller"         to 53,
+        "War"              to 10752,
+        "Western"          to 37,
+    )
 
     fun seed() {
-        val moviesFile  = csvDir.resolve("tmdb_5000_movies.csv")
-        val creditsFile = csvDir.resolve("tmdb_5000_credits.csv")
+        val moviesFile = csvDir.resolve("TMDB_movie_dataset_v11.csv")
 
-        require(moviesFile.exists())  { "Missing ${moviesFile.absolutePath} — download from Kaggle first." }
-        require(creditsFile.exists()) { "Missing ${creditsFile.absolutePath} — download from Kaggle first." }
+        require(moviesFile.exists()) {
+            "Missing ${moviesFile.absolutePath} — download from " +
+            "https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies"
+        }
 
         val existing = conn.createStatement()
             .executeQuery("SELECT COUNT(*) FROM movies")
@@ -50,13 +72,9 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
             return
         }
 
-        log.info("Parsing cast data...")
-        val castByTmdbId = parseCast(creditsFile)
-
-        log.info("Inserting movies...")
         conn.autoCommit = false
         try {
-            insertMovies(moviesFile, castByTmdbId)
+            insertMovies(moviesFile)
             conn.commit()
             log.info("Seed complete.")
         } catch (e: Exception) {
@@ -67,53 +85,7 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
         }
     }
 
-    // ── CSV parsers ────────────────────────────────────────────────────────────
-
-    private data class CastRow(
-        val tmdbPersonId: Long?,
-        val name: String,
-        val character: String?,
-        val order: Int?,
-        val profilePath: String?,
-    )
-
-    private data class GenreRow(val id: Int, val name: String)
-
-    private fun parseCast(file: File): Map<Long, List<CastRow>> {
-        val result = HashMap<Long, List<CastRow>>()
-        csvReader(file).use { reader ->
-            val headers = reader.readNext() ?: return result
-            val idx = headers.indexed()
-
-            var row: Array<String>?
-            while (reader.readNext().also { row = it } != null) {
-                val r = row!!
-                val tmdbId = r.at(idx, "movie_id")?.toLongOrNull() ?: continue
-                val castJson = r.at(idx, "cast") ?: continue
-
-                val entries = runCatching {
-                    mapper.readValue(castJson, List::class.java)
-                        .take(10)
-                        .map { raw ->
-                            @Suppress("UNCHECKED_CAST")
-                            val c = raw as Map<String, Any?>
-                            CastRow(
-                                tmdbPersonId = (c["id"] as? Number)?.toLong(),
-                                name         = c["name"] as? String ?: "",
-                                character    = c["character"] as? String,
-                                order        = (c["order"] as? Number)?.toInt(),
-                                profilePath  = c["profile_path"] as? String,
-                            )
-                        }
-                }.getOrDefault(emptyList())
-
-                result[tmdbId] = entries
-            }
-        }
-        return result
-    }
-
-    private fun insertMovies(file: File, castByTmdbId: Map<Long, List<CastRow>>) {
+    private fun insertMovies(file: File) {
         val genrePs = conn.prepareStatement(
             "INSERT INTO genres(id, name) VALUES (?, ?) ON CONFLICT(id) DO NOTHING"
         )
@@ -126,15 +98,10 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
         val movieGenrePs = conn.prepareStatement(
             "INSERT INTO movie_genres(movie_id, genre_id) VALUES (?, ?) ON CONFLICT DO NOTHING"
         )
-        val castPs = conn.prepareStatement(
-            """INSERT INTO cast_members(movie_id, tmdb_person_id, name, character_name, cast_order, profile_path)
-               VALUES (?, ?, ?, ?, ?, ?)"""
-        )
 
         genrePs.use { gps ->
         moviePs.use { mps ->
         movieGenrePs.use { mgps ->
-        castPs.use { cps ->
 
         csvReader(file).use { reader ->
             val headers = reader.readNext() ?: return
@@ -148,7 +115,7 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
                 val tmdbId = r.at(idx, "id")?.toLongOrNull() ?: continue
                 val title  = r.at(idx, "title")?.takeIf { it.isNotBlank() } ?: continue
 
-                val genres = parseGenres(r.at(idx, "genres") ?: "[]")
+                val genres = parseGenres(r.at(idx, "genres") ?: "")
 
                 genres.forEach { g ->
                     gps.setInt(1, g.id)
@@ -160,7 +127,7 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
                 mps.setLong(1, tmdbId)
                 mps.setString(2, title)
                 mps.setString(3, r.at(idx, "overview")?.takeIf { it.isNotBlank() })
-                mps.setNull(4, Types.VARCHAR)   // poster_path not in TMDB 5000 dataset
+                mps.setString(4, r.at(idx, "poster_path")?.takeIf { it.isNotBlank() })
                 mps.setObject(5, r.at(idx, "vote_average")?.toDoubleOrNull())
                 mps.setObject(6, r.at(idx, "vote_count")?.toIntOrNull())
                 mps.setObject(7, r.at(idx, "popularity")?.toDoubleOrNull())
@@ -180,33 +147,22 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
                 }
                 mgps.executeBatch()
 
-                castByTmdbId[tmdbId]?.forEach { c ->
-                    cps.setLong(1, movieId)
-                    cps.setObject(2, c.tmdbPersonId)
-                    cps.setString(3, c.name)
-                    cps.setString(4, c.character)
-                    cps.setObject(5, c.order)
-                    cps.setString(6, c.profilePath)
-                    cps.addBatch()
-                }
-                cps.executeBatch()
-
                 if (++count % 500 == 0) log.info("  $count movies inserted...")
             }
 
             log.info("Inserted $count movies total.")
         }
-        }}}}
+        }}}
     }
 
-    private fun parseGenres(json: String): List<GenreRow> = runCatching {
-        @Suppress("UNCHECKED_CAST")
-        (mapper.readValue(json, List::class.java) as List<Map<String, Any?>>).map { g ->
-            GenreRow(id = (g["id"] as Number).toInt(), name = g["name"] as String)
-        }
-    }.getOrDefault(emptyList())
-
-    // ── helpers ────────────────────────────────────────────────────────────────
+    // Genres in this dataset are comma-separated names, e.g. "Action, Drama, Thriller"
+    private fun parseGenres(raw: String): List<GenreRow> {
+        if (raw.isBlank()) return emptyList()
+        return raw.split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .mapNotNull { name -> GENRE_IDS[name]?.let { id -> GenreRow(id, name) } }
+    }
 
     private fun csvReader(file: File) = CSVReader(file.bufferedReader(Charsets.UTF_8))
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
+import TmdbAttribution from "@/components/TmdbAttribution";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${dmSans.variable} ${dmMono.variable} min-h-screen bg-zinc-950 text-zinc-100 antialiased`}
       >
         {children}
+        <TmdbAttribution />
       </body>
     </html>
   );

@@ -3,4 +3,8 @@ pr.md
 
 # Datasets — download manually, never commit
 *.csv
+*.zip
 *Zone.Identifier
+
+# Local env overrides — copy from .env.example
+.env

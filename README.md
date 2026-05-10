@@ -10,7 +10,7 @@ Movie recommendation platform powered by KNN similarity analysis. Discover what 
 | Backend | Kotlin · Spring Boot · REST API |
 | Database | PostgreSQL · Redis · Flyway |
 | Auth | Keycloak · OAuth2 / OpenID Connect |
-| External | TMDB API |
+| Data | TMDB (via static dataset seed) |
 
 ## Getting started
 
@@ -29,32 +29,28 @@ npm run dev          # http://localhost:3000
 
 #### 1 — Download the dataset
 
-Download the **TMDB 5000 Movie Dataset** from Kaggle:
-<https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata>
+Download the **Full TMDB Movies Dataset** from Kaggle:
+<https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies>
 
-Place both files in the **repo root** (next to `backend/`):
+Place the file in the **repo root** (next to `backend/`):
 
 ```
 watchToNext/
-  tmdb_5000_movies.csv
-  tmdb_5000_credits.csv
+  TMDB_movie_dataset_v11.csv
   backend/
   frontend/
 ```
 
-The CSVs are gitignored and must never be committed.
+The CSV is gitignored and must never be committed.
 
-#### 2 — Configure PostgreSQL
-
-Ensure a local PostgreSQL instance is running and export connection details:
+#### 2 — Start the databases
 
 ```bash
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/watchtonext
-export SPRING_DATASOURCE_USERNAME=watchtonext
-export SPRING_DATASOURCE_PASSWORD=watchtonext
+cp .env.example .env          # first time only
+docker compose up -d
 ```
 
-Or edit `backend/api/src/main/resources/application.properties` for local dev.
+This starts **PostgreSQL** (port 5432) and **Redis** (port 6379). Both have health checks — wait until `docker compose ps` shows them as `healthy`.
 
 #### 3 — Create schema + seed data
 
@@ -63,12 +59,12 @@ cd backend
 ./gradlew :api:dbSetup
 ```
 
-This runs **Flyway schema migrations** (creates tables) then **seeds all ~4 800 movies** from the CSVs. The command is idempotent — safe to run multiple times.
+This runs **Flyway schema migrations** (creates tables) then **seeds all ~1 M movies** from the CSV. The command is idempotent — safe to run multiple times. With a 629 MB dataset expect **10–20 minutes**; progress is logged every 500 rows.
 
 To specify a custom CSV location:
 
 ```bash
-./gradlew :api:dbSetup -Pseed.csvPath=/absolute/path/to/csvs/
+./gradlew :api:dbSetup -Pseed.csvPath=/absolute/path/to/csv/
 ```
 
 #### 4 — Run the API server
@@ -78,7 +74,7 @@ To specify a custom CSV location:
 ./gradlew build             # compile + test all modules
 ```
 
-> After the seed, the CSVs can be deleted — the database is the source of truth.
+> After the seed the CSV can be deleted — the database is the source of truth.
 > See [`docs/backend.md`](docs/backend.md) for full architecture details.
 
 ## Project structure
@@ -98,6 +94,14 @@ CLAUDE.md         AI assistant context and conventions
 | [`docs/frontend.md`](docs/frontend.md) | Frontend stack and typography |
 | [`docs/backend.md`](docs/backend.md) | Backend stack and API shape |
 | [`docs/coding-standards.md`](docs/coding-standards.md) | Code style, naming, animations, commit convention |
+
+## Attribution
+
+Movie data is provided by [The Movie Database (TMDB)](https://www.themoviedb.org).
+
+> This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+The dataset is sourced from the [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies) on Kaggle, licensed under [ODC Attribution (ODC-By)](https://opendatacommons.org/licenses/by/1-0/). Use is non-commercial and academic only, in accordance with [TMDB's Terms of Use](https://www.themoviedb.org/api-terms-of-use).
 
 ## Commit convention
 

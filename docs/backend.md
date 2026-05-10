@@ -62,17 +62,13 @@ graph LR
   Controller["Controller\nHTTP endpoints\n& request mapping"]
   Service["Service\nBusiness logic\n& KNN algorithm"]
   Repository["Repository\nDatabase queries\n& persistence"]
-  Integration["Integration\nTMDB API client"]
-  DB[("PostgreSQL")]
+  DB[("PostgreSQL\n(seeded from TMDB dataset)")]
   Cache[("Redis")]
-  TMDB["TMDB API"]
 
   Controller --> Service
   Service --> Repository
-  Service --> Integration
   Repository --> DB
   Repository --> Cache
-  Integration --> TMDB
 ```
 
 ## Request Lifecycle
@@ -83,18 +79,12 @@ sequenceDiagram
   participant Controller
   participant Service
   participant Repository
-  participant Integration
   participant DB as PostgreSQL
-  participant TMDB as TMDB API
 
   Client->>Controller: HTTP Request
   Controller->>Service: delegate (passes DTO)
-  Service->>Repository: query domain data
+  Service->>Repository: query movie data
   Repository-->>Service: domain model
-  Service->>Integration: fetch movie metadata
-  Integration->>TMDB: HTTP GET
-  TMDB-->>Integration: movie JSON
-  Integration-->>Service: mapped metadata
   Service-->>Controller: response DTO
   Controller-->>Client: HTTP Response (JSON)
 ```
@@ -108,8 +98,20 @@ repository/    Persistence
 model/         Domain models
 dto/           Data transfer objects
 config/        Configuration classes
-integration/   External API integration (TMDB)
+adapter/       Port implementations (MovieMetadataClient → JPA)
+seed/          One-time database seeder (run via ./gradlew :api:dbSetup)
 ```
+
+## Data
+
+Movie data comes from the [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies) (Kaggle, ODC-By license). The system is **fully offline after the initial seed** — no runtime calls to TMDB.
+
+| Step | Command |
+|------|---------|
+| Download CSV | From Kaggle (see README) — place `TMDB_movie_dataset_v11.csv` at repo root |
+| Run Flyway + seed | `./gradlew :api:dbSetup` |
+
+> This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ## API Style
 
