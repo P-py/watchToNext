@@ -1,5 +1,6 @@
 package com.watchtonext.api.adapter
 
+import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.engine.model.Genre
 import com.watchtonext.engine.model.Movie
@@ -19,7 +20,7 @@ class MovieMetadataAdapter(private val movieRepository: MovieRepository) : Movie
     override fun findPopular(limit: Int): List<Movie> =
         movieRepository.findTopByPopularity(PageRequest.of(0, limit)).map { it.toDomain() }
 
-    private fun com.watchtonext.api.persistence.entity.MovieEntity.toDomain() = Movie(
+    private fun MovieEntity.toDomain() = Movie(
         tmdbId = tmdbId,
         title = title,
         overview = overview,

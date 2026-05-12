@@ -1,6 +1,7 @@
 package com.watchtonext.api.adapter
 
 import com.watchtonext.api.config.RecommenderProperties
+import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.engine.model.MovieFeatures
 import com.watchtonext.engine.port.MovieFeaturesProvider
@@ -18,7 +19,7 @@ class MovieFeaturesAdapter(
     override fun findByIds(ids: Collection<Long>): List<MovieFeatures> =
         movieRepository.findAllById(ids).map { it.toFeatures() }
 
-    private fun com.watchtonext.api.persistence.entity.MovieEntity.toFeatures() = MovieFeatures(
+    private fun MovieEntity.toFeatures() = MovieFeatures(
         movieId = id,
         genreIds = genres.map { it.id }.toSet(),
         voteAverage = voteAverage ?: 0.0,

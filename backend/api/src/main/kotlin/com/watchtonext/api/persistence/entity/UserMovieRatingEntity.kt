@@ -5,14 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
-import java.io.Serializable
 import java.time.OffsetDateTime
 import java.util.UUID
-
-data class UserMovieRatingId(
-    val userId: UUID = UUID(0, 0),
-    val movieId: Long = 0,
-) : Serializable
 
 @Entity
 @Table(name = "user_movie_ratings")

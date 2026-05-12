@@ -1,7 +1,6 @@
 package com.watchtonext.api.service
 
 import com.watchtonext.api.config.RecommenderProperties
-import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
@@ -56,11 +55,11 @@ class RecommendationService(
             val catalog = featuresProvider.loadCatalog()
             val built = ContentKnnRecommender(catalog)
             recommenderRef.set(built)
-            log.info("Recommender ready — {} candidate movies in {} ms",
-                catalog.size, System.currentTimeMillis() - started)
+            log.info(
+                "Recommender ready — {} candidate movies in {} ms",
+                catalog.size, System.currentTimeMillis() - started,
+            )
             return built
         }
     }
 }
-
-data class RecommendationResult(val movie: MovieEntity, val score: Double)
