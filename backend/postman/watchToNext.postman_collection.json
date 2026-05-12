@@ -63,6 +63,20 @@
       }
     },
     {
+      "name": "List popular movies",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/movies/popular?limit={{limit}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["movies", "popular"],
+          "query": [
+            { "key": "limit", "value": "{{limit}}" }
+          ]
+        }
+      }
+    },
+    {
       "name": "Get recommendations",
       "request": {
         "method": "GET",
