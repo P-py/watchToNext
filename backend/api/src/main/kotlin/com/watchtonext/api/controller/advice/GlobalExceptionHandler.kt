@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
-import org.springframework.web.context.request.async.AsyncRequestTimeoutException
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.util.concurrent.TimeoutException
@@ -56,7 +55,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         return build(ErrorEnum.RESOURCE_CONFLICT, "resource conflict")
     }
 
-    @ExceptionHandler(QueryTimeoutException::class, AsyncRequestTimeoutException::class, TimeoutException::class)
+    @ExceptionHandler(QueryTimeoutException::class, TimeoutException::class)
     fun handleTimeout(ex: Exception, request: HttpServletRequest): ResponseEntity<ApiError> {
         log.warn("Timeout on {}: {}", request.requestURI, ex.message)
         return build(ErrorEnum.UPSTREAM_TIMEOUT, "upstream timeout")
