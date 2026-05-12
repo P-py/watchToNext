@@ -13,4 +13,11 @@ class MovieService(private val movieRepository: MovieRepository) {
     fun listPopular(limit: Int): List<MovieSummaryDto> =
         movieRepository.findTopByPopularity(PageRequest.of(0, limit))
             .map(MovieSummaryDto::from)
+
+    @Transactional(readOnly = true)
+    fun searchByTitle(query: String, limit: Int): List<MovieSummaryDto> =
+        movieRepository.findByTitleContainingIgnoreCaseOrderByPopularityDesc(
+            query,
+            PageRequest.of(0, limit),
+        ).map(MovieSummaryDto::from)
 }
