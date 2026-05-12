@@ -19,6 +19,7 @@ class UserPreferenceService(
     private val ratingRepository: UserMovieRatingRepository,
     private val favoriteRepository: UserFavoriteRepository,
     private val movieRepository: MovieRepository,
+    private val recommendationCacheEvictor: RecommendationCacheEvictor,
 ) {
 
     @Transactional
@@ -28,18 +29,21 @@ class UserPreferenceService(
         }
         val id = UserMovieRatingId(userId, movieId)
         val existing = ratingRepository.findById(id).orElse(null)
-        return if (existing == null) {
+        val saved = if (existing == null) {
             ratingRepository.save(UserMovieRatingEntity(userId, movieId, rating))
         } else {
             existing.rating = rating
             existing.updatedAt = OffsetDateTime.now()
             ratingRepository.save(existing)
         }
+        recommendationCacheEvictor.evictFor(userId)
+        return saved
     }
 
     @Transactional
     fun deleteRating(userId: UUID, movieId: Long) {
         ratingRepository.deleteById(UserMovieRatingId(userId, movieId))
+        recommendationCacheEvictor.evictFor(userId)
     }
 
     @Transactional
@@ -48,13 +52,16 @@ class UserPreferenceService(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "movie $movieId not found")
         }
         val id = UserFavoriteId(userId, movieId)
-        return favoriteRepository.findById(id).orElseGet {
+        val saved = favoriteRepository.findById(id).orElseGet {
             favoriteRepository.save(UserFavoriteEntity(userId, movieId))
         }
+        recommendationCacheEvictor.evictFor(userId)
+        return saved
     }
 
     @Transactional
     fun removeFavorite(userId: UUID, movieId: Long) {
         favoriteRepository.deleteById(UserFavoriteId(userId, movieId))
+        recommendationCacheEvictor.evictFor(userId)
     }
 }
