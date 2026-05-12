@@ -8,3 +8,6 @@ pr.md
 
 # Local env overrides — copy from .env.example
 .env
+
+# IDE
+.idea/
