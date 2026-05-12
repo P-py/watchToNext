@@ -1,4 +1,15 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+function resolveBaseUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL;
+  if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, "");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "NEXT_PUBLIC_API_URL is required in production. Set it in your environment or .env file."
+    );
+  }
+  return "http://localhost:8080/api";
+}
+
+const BASE_URL = resolveBaseUrl();
 
 async function request<T>(
   path: string,

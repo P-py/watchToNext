@@ -34,7 +34,7 @@ export const moviesService = {
         currentPage: page,
       });
     }
-    return api.get(`/api/movies?query=${encodeURIComponent(query)}&page=${page}`);
+    return api.get(`/movies?query=${encodeURIComponent(query)}&page=${page}`);
   },
 
   getById: (id: number): Promise<MovieDetails> => {
@@ -42,7 +42,7 @@ export const moviesService = {
       const movie = MOCK_MOVIE_DETAILS[id] ?? MOCK_MOVIE_DETAILS[MOCK_MOVIES[0].id];
       return Promise.resolve(movie);
     }
-    return api.get(`/api/movies/${id}`);
+    return api.get(`/movies/${id}`);
   },
 
   getByGenre: (genreId: number, page = 1): Promise<PaginatedResponse<Movie>> => {
@@ -50,11 +50,11 @@ export const moviesService = {
       const filtered = MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId));
       return Promise.resolve(paginate(filtered, page));
     }
-    return api.get(`/api/movies?genreId=${genreId}&page=${page}`);
+    return api.get(`/movies?genreId=${genreId}&page=${page}`);
   },
 
   getPopular: (page = 1): Promise<PaginatedResponse<Movie>> => {
     if (USE_MOCKS) return Promise.resolve(paginate(MOCK_MOVIES, page));
-    return api.get(`/api/movies/popular?page=${page}`);
+    return api.get(`/movies/popular?page=${page}`);
   },
 };
