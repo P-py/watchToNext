@@ -24,6 +24,8 @@ npm run dev          # http://localhost:3000
 ```
 
 > Set `NEXT_PUBLIC_USE_MOCKS=true` in `.env.local` to run with mock data while the backend is not yet running.
+>
+> The API base URL (incl. the `/api` prefix) is configured via `NEXT_PUBLIC_API_URL`. See [`docs/frontend.md`](docs/frontend.md#api-base-url) for the precedence rules and production requirement.
 
 ### Backend
 

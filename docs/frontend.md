@@ -105,3 +105,22 @@ components
 services
 types
 hooks
+
+## API base URL
+
+All HTTP calls flow through `services/api.ts`, which prepends a single base URL to every request. **The `/api` prefix lives in the base URL, not in the service paths.** Services therefore call `api.get("/movies/popular")`, never `api.get("/api/movies/popular")` — same convention as the Postman collection in `backend/postman/`.
+
+The base URL is read from `NEXT_PUBLIC_API_URL`:
+
+- **Development** — defaults to `http://localhost:8080/api` if the variable is missing.
+- **Production** — the variable is required; `services/api.ts` throws at module load if it is not set.
+
+Next.js env precedence (highest wins): `.env.local` > `.env.production` / `.env.development` > `.env`. Variables exposed to the browser **must** start with `NEXT_PUBLIC_` — without that prefix, Next.js strips them at build time.
+
+Setup:
+
+```bash
+cp .env.local.example .env.local   # then edit if your backend is somewhere else
+```
+
+Toggle `NEXT_PUBLIC_USE_MOCKS=true` to bypass the network and return mock data from the services — useful while the backend is unavailable.
