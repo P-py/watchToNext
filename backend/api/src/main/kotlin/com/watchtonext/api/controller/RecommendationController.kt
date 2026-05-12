@@ -17,5 +17,5 @@ class RecommendationController(private val service: RecommendationService) {
         @RequestParam userId: UUID,
         @RequestParam(defaultValue = "20") limit: Int,
     ): List<RecommendationDto> =
-        service.recommendFor(userId, limit.coerceIn(1, 100)).map(RecommendationDto::from)
+        service.recommendFor(userId, limit.coerceIn(1, 100))
 }
