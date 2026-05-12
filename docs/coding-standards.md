@@ -27,6 +27,13 @@
 - **No fully-qualified names in code bodies.** Always add an `import` and reference the simple name. This applies to extension receivers too: write `private fun MovieEntity.toDomain()`, never `private fun com.watchtonext.api.persistence.entity.MovieEntity.toDomain()`.
 - Top-level extension functions (file-level utilities, no class wrapper) may share a file when they form a cohesive group, but prefer a dedicated file once the group grows past ~3 functions.
 
+### Error handling
+
+- Every error response uses the project's `ApiError` shape with an `ErrorEnum` code; the global `@RestControllerAdvice` (`controller/advice/GlobalExceptionHandler`) takes care of the mapping. Do not catch exceptions in controllers to translate them, and do not invent ad-hoc error response bodies.
+- In services, signal request failures by throwing `ResponseStatusException(<HttpStatus>, "<user-facing reason>")`. Do not use `require(...)` / `check(...)` for request validation — those reserve themselves for genuine programmer-error invariants.
+- Never echo the original exception message, stack trace, SQL, or any other internal state in the response body. Log the cause; return a deterministic, public-safe message.
+- See [error-handling.md](./error-handling.md) for the full catalog and the contract.
+
 ### REST controller layout
 
 - The API base path `/api` is applied **globally** via `WebMvcConfig` (`PathMatchConfigurer.addPathPrefix`) — controllers must never hard-code `/api/...` in their `@RequestMapping`.

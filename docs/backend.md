@@ -126,3 +126,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `GET`  | `/api/recommendations/personalized` | Personalized recommendations for the current user |
 | `GET`  | `/api/users/me`                     | Fetch the current authenticated user's profile |
 | `POST` | `/api/users/me/watched`             | Mark a movie as watched for the current user |
+
+## Errors
+
+Every error response — validation, missing resource, conflict, timeout, unknown route, unsupported method/media type, or an uncaught exception — shares the same `ApiError` JSON shape and a controlled `ErrorEnum` code. See [error-handling.md](./error-handling.md) for the full contract, the catalog of codes, and the rules controllers and services must follow.
