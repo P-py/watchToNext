@@ -14,6 +14,10 @@ fun main() {
     val user     = System.getenv("SPRING_DATASOURCE_USERNAME") ?: "watchtonext"
     val password = System.getenv("SPRING_DATASOURCE_PASSWORD") ?: "watchtonext"
     val csvPath  = System.getProperty("seed.csvPath") ?: System.getenv("SEED_CSV_PATH") ?: "../"
+    val batchSize = (System.getProperty("seed.batchSize") ?: System.getenv("SEED_BATCH_SIZE"))
+        ?.toIntOrNull()?.takeIf { it > 0 } ?: 5_000
+    val maxRows   = (System.getProperty("seed.maxRows") ?: System.getenv("SEED_MAX_ROWS"))
+        ?.toIntOrNull()?.takeIf { it > 0 } ?: Int.MAX_VALUE
 
     log.info("Running Flyway schema migrations...")
     Flyway.configure()
@@ -22,13 +26,18 @@ fun main() {
         .load()
         .migrate()
 
-    log.info("Seeding from '$csvPath'")
+    log.info("Seeding from '$csvPath' (batchSize=$batchSize, maxRows=${if (maxRows == Int.MAX_VALUE) "∞" else maxRows})")
     DriverManager.getConnection(url, user, password).use { conn ->
-        MovieSeeder(conn, File(csvPath)).seed()
+        MovieSeeder(conn, File(csvPath), batchSize, maxRows).seed()
     }
 }
 
-internal class MovieSeeder(private val conn: Connection, private val csvDir: File) {
+internal class MovieSeeder(
+    private val conn: Connection,
+    private val csvDir: File,
+    private val batchSize: Int = 5_000,
+    private val maxRows: Int = Int.MAX_VALUE,
+) {
 
     private data class GenreRow(val id: Int, val name: String)
 
@@ -68,8 +77,7 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
             .use { rs -> rs.next(); rs.getLong(1) }
 
         if (existing > 0L) {
-            log.info("Database already contains $existing movies — skipping seed.")
-            return
+            log.info("Database already contains $existing movies — resuming (duplicates skipped via ON CONFLICT).")
         }
 
         conn.autoCommit = false
@@ -106,11 +114,13 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
         csvReader(file).use { reader ->
             val headers = reader.readNext() ?: return
             val idx = headers.indexed()
-            var count = 0
+            var inserted = 0
+            var processed = 0
 
             var row: Array<String>?
-            while (reader.readNext().also { row = it } != null) {
+            loop@ while (reader.readNext().also { row = it } != null) {
                 val r = row!!
+                processed++
 
                 val tmdbId = r.at(idx, "id")?.toLongOrNull() ?: continue
                 val title  = r.at(idx, "title")?.takeIf { it.isNotBlank() } ?: continue
@@ -147,10 +157,20 @@ internal class MovieSeeder(private val conn: Connection, private val csvDir: Fil
                 }
                 mgps.executeBatch()
 
-                if (++count % 500 == 0) log.info("  $count movies inserted...")
+                inserted++
+
+                if (inserted % batchSize == 0) {
+                    conn.commit()
+                    log.info("  $inserted inserted / $processed processed — batch committed")
+                }
+
+                if (inserted >= maxRows) {
+                    log.info("  reached maxRows=$maxRows — stopping")
+                    break@loop
+                }
             }
 
-            log.info("Inserted $count movies total.")
+            log.info("Inserted $inserted movies total (processed $processed rows).")
         }
         }}}
     }
