@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Coding standards apply to every change.** See @docs/coding-standards.md — file organization, controller layout, naming, animations, commit conventions. Follow it on all new work without prompting.
+
 ## Project Overview
 
 **watchToNext** is a movie recommendation platform that uses KNN (K-Nearest Neighbors) to suggest similar movies based on user selections. It integrates with the TMDB API for movie metadata.
