@@ -10,6 +10,7 @@ enum class ErrorEnum(val status: HttpStatus) {
     RESOURCE_CONFLICT(HttpStatus.CONFLICT),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     UPSTREAM_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT),
+    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
@@ -22,6 +23,7 @@ enum class ErrorEnum(val status: HttpStatus) {
             HttpStatus.CONFLICT -> RESOURCE_CONFLICT
             HttpStatus.UNSUPPORTED_MEDIA_TYPE -> UNSUPPORTED_MEDIA_TYPE
             HttpStatus.GATEWAY_TIMEOUT -> UPSTREAM_TIMEOUT
+            HttpStatus.SERVICE_UNAVAILABLE -> SERVICE_UNAVAILABLE
             else -> INTERNAL_ERROR
         }
     }
