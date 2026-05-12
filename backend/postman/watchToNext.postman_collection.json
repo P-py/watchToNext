@@ -64,6 +64,17 @@
       }
     },
     {
+      "name": "Get movie by id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/movies/{{movieId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["movies", "{{movieId}}"]
+        }
+      }
+    },
+    {
       "name": "Search movies by title",
       "request": {
         "method": "GET",
