@@ -59,12 +59,14 @@ cd backend
 ./gradlew :api:dbSetup
 ```
 
-This runs **Flyway schema migrations** (creates tables) then **seeds all ~1 M movies** from the CSV. The command is idempotent — safe to run multiple times. With a 629 MB dataset expect **10–20 minutes**; progress is logged every 500 rows.
+This runs **Flyway schema migrations** (creates tables) then **seeds all ~1 M movies** from the CSV. The command is idempotent and resumable — interrupting it (Ctrl-C) keeps every committed batch, and re-running picks up where it stopped (duplicates are skipped via `ON CONFLICT`). With a 629 MB dataset expect **10–20 minutes**; progress is logged after every batch commit (default 5 000 rows).
 
-To specify a custom CSV location:
+Overrides:
 
 ```bash
-./gradlew :api:dbSetup -Pseed.csvPath=/absolute/path/to/csv/
+./gradlew :api:dbSetup -Pseed.csvPath=/absolute/path/to/csv/   # custom CSV location
+./gradlew :api:dbSetup -Pseed.batchSize=10000                  # commit every N inserts
+./gradlew :api:dbSetup -Pseed.maxRows=50000                    # stop after N inserts
 ```
 
 #### 4 — Run the API server
