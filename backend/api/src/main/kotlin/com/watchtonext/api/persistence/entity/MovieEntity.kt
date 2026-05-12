@@ -1,6 +1,5 @@
 package com.watchtonext.api.persistence.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -10,7 +9,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.LocalDate
 
@@ -29,7 +27,6 @@ class MovieEntity(
     @Column(columnDefinition = "TEXT")
     val overview: String? = null,
 
-    /** Relative path — not present in TMDB 5000 dataset, populated when available. */
     @Column(name = "poster_path", length = 500)
     val posterPath: String? = null,
 
@@ -52,7 +49,4 @@ class MovieEntity(
         inverseJoinColumns = [JoinColumn(name = "genre_id")],
     )
     val genres: MutableSet<GenreEntity> = mutableSetOf(),
-
-    @OneToMany(mappedBy = "movie", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-    val cast: MutableList<CastMemberEntity> = mutableListOf(),
 )

@@ -1,7 +1,6 @@
 package com.watchtonext.api.adapter
 
 import com.watchtonext.api.persistence.repository.MovieRepository
-import com.watchtonext.engine.model.CastMember
 import com.watchtonext.engine.model.Genre
 import com.watchtonext.engine.model.Movie
 import com.watchtonext.engine.port.MovieMetadataClient
@@ -28,14 +27,5 @@ class MovieMetadataAdapter(private val movieRepository: MovieRepository) : Movie
         voteAverage = voteAverage,
         voteCount = voteCount,
         genres = genres.map { Genre(it.id, it.name) },
-        cast = cast.sortedBy { it.castOrder }.map {
-            CastMember(
-                tmdbPersonId = it.tmdbPersonId,
-                name = it.name,
-                characterName = it.characterName,
-                order = it.castOrder,
-                profilePath = it.profilePath,
-            )
-        },
     )
 }
