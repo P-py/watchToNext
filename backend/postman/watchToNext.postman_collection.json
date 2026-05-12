@@ -1,0 +1,295 @@
+{
+  "info": {
+    "name": "watchToNext — Recommender API",
+    "description": "Smoke tests for user ratings, favorites, and content-KNN recommendations.\n\nSet the collection variables `userId`, `movieIdA`, `movieIdB` before running. `movieId*` values are the local DB `id` of seeded movies (use DBeaver to pick two from `movies WHERE vote_count > 1000 ORDER BY popularity DESC LIMIT 5`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",  "value": "http://localhost:8080", "type": "string" },
+    { "key": "userId",   "value": "11111111-1111-1111-1111-111111111111", "type": "string" },
+    { "key": "movieIdA", "value": "1", "type": "string", "description": "Replace with a real movies.id" },
+    { "key": "movieIdB", "value": "2", "type": "string", "description": "Replace with a real movies.id" }
+  ],
+  "item": [
+    {
+      "name": "Ratings",
+      "item": [
+        {
+          "name": "PUT rating A (4.5)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"rating\": 4.5 }" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdA}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('rating echoed', () => pm.expect(body.rating).to.eql(4.5));",
+                  "pm.test('movieId matches', () => pm.expect(String(body.movieId)).to.eql(pm.collectionVariables.get('movieIdA')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT rating A again (5.0) — upsert",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"rating\": 5.0 }" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdA}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('rating updated to 5.0', () => pm.expect(pm.response.json().rating).to.eql(5.0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT rating B (4.0)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"rating\": 4.0 }" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdB}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT rating — invalid (7.5) → 400",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"rating\": 7.5 }" },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdA}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('400 Bad Request', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE rating A",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdA}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdA}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE rating B",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/ratings/{{movieIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "ratings", "{{movieIdB}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "PUT favorite B",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/favorites/{{movieIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "favorites", "{{movieIdB}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('movieId matches', () => pm.expect(String(pm.response.json().movieId)).to.eql(pm.collectionVariables.get('movieIdB')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT favorite B again — idempotent",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/favorites/{{movieIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "favorites", "{{movieIdB}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK on re-favorite', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE favorite B",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/favorites/{{movieIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "favorites", "{{movieIdB}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('204 No Content', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recommendations",
+      "item": [
+        {
+          "name": "Seed: rate A (5.0) + rate B (4.0) + favorite B",
+          "description": "Sets up the user state used by the GET below. Runs three requests via collection runner — or do them manually before hitting Recommendations.",
+          "item": [],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] }
+          },
+          "event": []
+        },
+        {
+          "name": "GET recommendations (limit=10)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/recommendations?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "recommendations"],
+              "query": [{ "key": "limit", "value": "10" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('array returned', () => pm.expect(body).to.be.an('array'));",
+                  "pm.test('respects limit', () => pm.expect(body.length).to.be.at.most(10));",
+                  "const ratedIds = [pm.collectionVariables.get('movieIdA'), pm.collectionVariables.get('movieIdB')];",
+                  "pm.test('excludes already-rated movies', () => {",
+                  "  body.forEach(r => pm.expect(ratedIds).to.not.include(String(r.movieId)));",
+                  "});",
+                  "pm.test('scores are sorted descending', () => {",
+                  "  for (let i = 1; i < body.length; i++) pm.expect(body[i - 1].score).to.be.at.least(body[i].score);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET recommendations — empty user → []",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/99999999-9999-9999-9999-999999999999/recommendations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "99999999-9999-9999-9999-999999999999", "recommendations"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('empty array', () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
