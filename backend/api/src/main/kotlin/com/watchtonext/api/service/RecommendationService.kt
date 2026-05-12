@@ -1,6 +1,7 @@
 package com.watchtonext.api.service
 
 import com.watchtonext.api.config.RecommenderProperties
+import com.watchtonext.api.dto.RecommendationDto
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
@@ -8,6 +9,7 @@ import com.watchtonext.engine.model.WeightedMovie
 import com.watchtonext.engine.port.MovieFeaturesProvider
 import com.watchtonext.engine.recommender.ContentKnnRecommender
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -24,8 +26,13 @@ class RecommendationService(
     private val log = LoggerFactory.getLogger(javaClass)
     private val recommenderRef = AtomicReference<ContentKnnRecommender?>(null)
 
+    @Cacheable(
+        cacheNames = ["recommendations"],
+        key = "#userId.toString() + ':' + #limit",
+        unless = "#result.isEmpty()",
+    )
     @Transactional(readOnly = true)
-    fun recommendFor(userId: UUID, limit: Int): List<RecommendationResult> {
+    fun recommendFor(userId: UUID, limit: Int): List<RecommendationDto> {
         val ratings = ratingRepository.findByUserId(userId)
         if (ratings.isEmpty()) return emptyList()
 
@@ -42,7 +49,7 @@ class RecommendationService(
 
         val moviesById = movieRepository.findAllById(ranked.map { it.movieId }).associateBy { it.id }
         return ranked.mapNotNull { scored ->
-            moviesById[scored.movieId]?.let { RecommendationResult(it, scored.score) }
+            moviesById[scored.movieId]?.let { RecommendationDto.from(RecommendationResult(it, scored.score)) }
         }
     }
 
