@@ -5,6 +5,7 @@ import com.watchtonext.api.service.MovieService
 import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -26,4 +27,8 @@ class MovieController(private val service: MovieService) {
         @RequestParam(defaultValue = "20") limit: Int,
     ): List<MovieSummaryDto> =
         service.searchByTitle(q.trim(), limit.coerceIn(1, 100))
+
+    @GetMapping("/{id}")
+    fun getById(@PathVariable id: Long): MovieSummaryDto =
+        service.getById(id)
 }
