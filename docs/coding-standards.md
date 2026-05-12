@@ -21,6 +21,19 @@
 - Business logic must live in services
 - Use DTOs for API communication
 
+### Kotlin file organization
+
+- **One top-level class per file.** Each `class`, `data class`, `object`, or `interface` lives in its own file named after the declaration. This includes companion types like JPA `@IdClass` keys, DTO pairs (request/response), and small result records — split them all into individual files.
+- **No fully-qualified names in code bodies.** Always add an `import` and reference the simple name. This applies to extension receivers too: write `private fun MovieEntity.toDomain()`, never `private fun com.watchtonext.api.persistence.entity.MovieEntity.toDomain()`.
+- Top-level extension functions (file-level utilities, no class wrapper) may share a file when they form a cohesive group, but prefer a dedicated file once the group grows past ~3 functions.
+
+### REST controller layout
+
+- The API base path `/api` is applied **globally** via `WebMvcConfig` (`PathMatchConfigurer.addPathPrefix`) — controllers must never hard-code `/api/...` in their `@RequestMapping`.
+- Each `@RestController` maps to a **single top-level resource** (e.g. `/ratings`, `/favorites`, `/recommendations`). Do not group unrelated resources under one controller, and do not nest paths like `/users/{userId}/ratings` inside `@RequestMapping`.
+- Identifiers that are *contextual* (the acting user, tenant, etc.) belong as `@RequestParam` or, later, an `@AuthenticationPrincipal`-derived value — not as a parent path segment. Only the resource's own id should appear in the path.
+- Controllers stay thin: parse, delegate to a service, map the result to a DTO, return. No business logic.
+
 ## Naming Conventions
 
 Components:
