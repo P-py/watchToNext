@@ -96,11 +96,13 @@ Without these, unknown routes silently fall through to the static-resource handl
 
 ## Example responses
 
+User-facing `message` strings are written in **pt-BR** — they are shown directly in the UI. Machine-readable parts (`code`, `field`, log lines, identifiers) stay in English.
+
 `GET /api/movies` (missing `q`):
 ```json
 {
   "code": "VALIDATION_FAILED",
-  "message": "Validation failed",
+  "message": "Alguns campos estão inválidos. Revise e tente novamente.",
   "status": 400,
   "details": [{ "field": "q", "message": "must not be blank" }]
 }
@@ -110,10 +112,11 @@ Without these, unknown routes silently fall through to the static-resource handl
 ```json
 {
   "code": "RESOURCE_NOT_FOUND",
-  "message": "movie 999999999 not found",
+  "message": "Não encontramos o filme solicitado.",
   "status": 404
 }
 ```
+Note that the internal id is **not** echoed in the response body — it's recorded in the server log only.
 
 `POST /api/movies/popular`:
 ```json
@@ -123,21 +126,13 @@ Without these, unknown routes silently fall through to the static-resource handl
   "status": 405
 }
 ```
-
-`GET /api/this-route-does-not-exist`:
-```json
-{
-  "code": "RESOURCE_NOT_FOUND",
-  "message": "No endpoint GET /api/this-route-does-not-exist.",
-  "status": 404
-}
-```
+(Spring MVC built-in message; the FE message resolver maps the `code` to friendlier pt-BR copy before rendering.)
 
 Any uncaught exception:
 ```json
 {
   "code": "INTERNAL_ERROR",
-  "message": "Internal server error",
+  "message": "Algo deu errado do nosso lado. Tente novamente em instantes.",
   "status": 500
 }
 ```
