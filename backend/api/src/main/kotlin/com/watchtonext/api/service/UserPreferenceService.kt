@@ -25,7 +25,7 @@ class UserPreferenceService(
     @Transactional
     fun upsertRating(userId: UUID, movieId: Long, rating: Double): UserMovieRatingEntity {
         if (!movieRepository.existsById(movieId)) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "movie $movieId not found")
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Não encontramos o filme solicitado.")
         }
         val id = UserMovieRatingId(userId, movieId)
         val existing = ratingRepository.findById(id).orElse(null)
@@ -49,7 +49,7 @@ class UserPreferenceService(
     @Transactional
     fun addFavorite(userId: UUID, movieId: Long): UserFavoriteEntity {
         if (!movieRepository.existsById(movieId)) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "movie $movieId not found")
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Não encontramos o filme solicitado.")
         }
         val id = UserFavoriteId(userId, movieId)
         val saved = favoriteRepository.findById(id).orElseGet {
