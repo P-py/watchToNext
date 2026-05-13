@@ -1,14 +1,15 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { ErrorState } from "@/components/ErrorState";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
+import { MovieCardData } from "@/modules/movies/components/MovieCard";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
-import { buildPosterUrl, formatRating, formatRuntime, formatYear } from "@/utils/format";
-import { Star, Clock, Calendar } from "lucide-react";
+import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
+import { Star, Calendar } from "lucide-react";
 import { fadeUp, fadeIn, slideInLeft, slideInRight, staggerContainer, heroStagger } from "@/utils/animations";
 
 interface MoviePageProps {
@@ -17,7 +18,19 @@ interface MoviePageProps {
 
 export default function MoviePage({ params }: MoviePageProps) {
   const { id } = use(params);
-  const { movie, loading, error } = useMovieDetails(Number(id));
+  const { movie, similar, loading, error } = useMovieDetails(Number(id));
+
+  const similarCards = useMemo<MovieCardData[]>(
+    () =>
+      similar.map((s) => ({
+        id: s.movieId,
+        title: s.title,
+        posterPath: s.posterPath,
+        releaseDate: null,
+        voteAverage: s.voteAverage,
+      })),
+    [similar],
+  );
 
   if (loading) {
     return (
@@ -100,10 +113,6 @@ export default function MoviePage({ params }: MoviePageProps) {
                 <Calendar className="h-4 w-4" />
                 {formatYear(movie.releaseDate)}
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {formatRuntime(movie.runtime)}
-              </span>
             </motion.div>
 
             <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex flex-wrap gap-2">
@@ -119,29 +128,17 @@ export default function MoviePage({ params }: MoviePageProps) {
               ))}
             </motion.div>
 
-            <motion.p variants={fadeUp} className="max-w-2xl leading-7 text-zinc-400">
-              {movie.overview}
-            </motion.p>
-
-            {movie.cast.length > 0 && (
-              <motion.div variants={fadeUp}>
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">Cast</p>
-                <div className="flex flex-wrap gap-2">
-                  {movie.cast.map((member) => (
-                    <span key={member.id} className="text-sm text-zinc-300">
-                      {member.name}
-                      <span className="text-zinc-600"> as {member.character}</span>
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
+            {movie.overview && (
+              <motion.p variants={fadeUp} className="max-w-2xl leading-7 text-zinc-400">
+                {movie.overview}
+              </motion.p>
             )}
           </motion.div>
         </div>
 
-        {movie.similarMovies.length > 0 && (
+        {similarCards.length > 0 && (
           <motion.div variants={fadeUp} initial="hidden" animate="visible">
-            <RecommendationGrid movies={movie.similarMovies} title="Similar Movies" />
+            <RecommendationGrid movies={similarCards} title="Similar Movies" />
           </motion.div>
         )}
       </main>

@@ -1,10 +1,9 @@
-import { Movie } from "@/types/movie";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
-import { MovieCard } from "@/modules/movies/components/MovieCard";
+import { MovieCard, MovieCardData } from "@/modules/movies/components/MovieCard";
 import { Sparkles } from "lucide-react";
 
 interface RecommendationGridProps {
-  movies: Movie[];
+  movies: MovieCardData[];
   title?: string;
 }
 
