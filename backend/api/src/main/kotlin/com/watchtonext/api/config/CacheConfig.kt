@@ -14,6 +14,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import java.time.Duration
 
 @Configuration
@@ -32,7 +33,15 @@ class CacheConfig : CachingConfigurer {
             )
             .serializeValuesWith(
                 RedisSerializationContext.SerializationPair.fromSerializer(
-                    GenericJacksonJsonRedisSerializer.builder().build(),
+                    GenericJacksonJsonRedisSerializer.builder()
+                        .enableDefaultTyping(
+                            BasicPolymorphicTypeValidator.builder()
+                                .allowIfSubType("com.watchtonext.")
+                                .allowIfSubType("java.util.")
+                                .allowIfSubType("java.time.")
+                                .build(),
+                        )
+                        .build(),
                 ),
             )
 
