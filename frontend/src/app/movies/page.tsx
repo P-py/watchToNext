@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { Pagination } from "@/components/Pagination";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { usePopularMovies } from "@/hooks/useMovies";
+import { resolveApiError } from "@/utils/error-messages";
 import { fadeUp } from "@/utils/animations";
 
 const PAGE_SIZE = 20;
@@ -38,9 +39,11 @@ function MoviesGrid() {
     [router, searchParams],
   );
 
+  const resolved = error ? resolveApiError(error) : null;
+
   return (
     <>
-      {error && <ErrorState message={error.message} />}
+      {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
 
       {!error && loading && (
         <Grid cols={4}>

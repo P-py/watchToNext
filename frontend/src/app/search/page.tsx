@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Pagination } from "@/components/Pagination";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { useSearch } from "@/hooks/useSearch";
+import { resolveApiError } from "@/utils/error-messages";
 import { fadeUp } from "@/utils/animations";
 
 const PAGE_SIZE = 20;
@@ -68,12 +69,16 @@ function SearchPanel() {
         />
       </motion.div>
 
-      {error && (
-        <ErrorState
-          message={error.message}
-          onRetry={urlQuery ? () => onSearch(urlQuery) : undefined}
-        />
-      )}
+      {error && (() => {
+        const resolved = resolveApiError(error);
+        return (
+          <ErrorState
+            title={resolved.title}
+            message={resolved.message}
+            onRetry={urlQuery ? () => onSearch(urlQuery) : undefined}
+          />
+        );
+      })()}
 
       {!error && loading && (
         <Grid cols={4}>

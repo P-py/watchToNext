@@ -6,25 +6,42 @@ import { ErrorState } from "@/components/ErrorState";
 import { UserProfile } from "@/modules/user/components/UserProfile";
 import { userService } from "@/services/user.service";
 import { UserProfile as UserProfileType } from "@/types/user";
+import { ApiHttpError } from "@/services/api-error";
+import { resolveApiError } from "@/utils/error-messages";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfileType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiHttpError | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchProfile() {
       try {
         const data = await userService.getProfile();
-        setProfile(data);
+        if (!cancelled) setProfile(data);
       } catch (err) {
-        setError((err as Error).message);
+        if (cancelled) return;
+        setError(
+          err instanceof ApiHttpError
+            ? err
+            : new ApiHttpError({
+                code: "UNKNOWN",
+                message: err instanceof Error ? err.message : "Unexpected error",
+                status: 0,
+              }),
+        );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     fetchProfile();
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const resolved = error ? resolveApiError(error) : null;
 
   return (
     <>
@@ -41,7 +58,7 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-        {error && <ErrorState message={error} />}
+        {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
         {profile && <UserProfile profile={profile} />}
       </main>
     </>
