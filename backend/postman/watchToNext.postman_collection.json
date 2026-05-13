@@ -121,6 +121,21 @@
           ]
         }
       }
+    },
+    {
+      "name": "Get similar movies",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/recommendations/similar?movieId={{movieId}}&limit={{limit}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["recommendations", "similar"],
+          "query": [
+            { "key": "movieId", "value": "{{movieId}}" },
+            { "key": "limit",   "value": "{{limit}}" }
+          ]
+        }
+      }
     }
   ]
 }
