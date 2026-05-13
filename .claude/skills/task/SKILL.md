@@ -56,7 +56,18 @@ Also create a TaskCreate task list mirroring the Escopo bullets so progress is t
    - Backend: the module's Gradle build/test task.
 4. For UI changes, state explicitly whether you tested in a browser. If you didn't, say so — don't claim success.
 
-**Checkpoint:** when the change compiles, lints, and types cleanly, summarize what changed (files + one-line each) and stop. Wait for approval before Phase 5.
+**Checkpoint:** when the change compiles, lints, and types cleanly, summarize what changed (files + one-line each) and stop. Wait for approval before Phase 4.5.
+
+## Phase 4.5 — Sync Postman + docs
+
+**Do:** update the surfaces that document the API and the project. Skip a bullet only when the change demonstrably doesn't touch that surface.
+
+- **Postman** (`backend/postman/watchToNext.postman_collection.json`): for every new/changed endpoint, add or update the request — method, path (under `{{baseUrl}}`), query params, example body. Reuse existing collection variables (`{{baseUrl}}`, `{{userId}}`, etc.) instead of hard-coding values. Remove requests for endpoints that were deleted or renamed.
+- **`docs/backend.md`**: update the endpoint table / sections when a route, query param, request body, or response shape changes. New endpoint → new row. New cache → mention it.
+- **`docs/frontend.md`**: update when a user-facing route, page behavior, hook contract, or service contract changes. New URL state pattern, new shared hook shape, new env var → document it.
+- **`docs/architecture.md` / `docs/recommender-model.md` / other docs**: touch only if the change shifts something they describe (new module, new integration, algorithm tweak).
+
+**Checkpoint:** list the files touched (one line each) and stop. Wait for approval before Phase 5.
 
 ## Phase 5 — Wrap (PR description)
 
