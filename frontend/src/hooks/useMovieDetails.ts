@@ -11,64 +11,72 @@ import { resolveApiError } from "@/utils/error-messages";
 interface UseMovieDetailsResult {
   movie: MovieSummary | null;
   similar: SimilarMovie[];
-  loading: boolean;
+  loadingMovie: boolean;
+  loadingSimilar: boolean;
   error: ApiHttpError | null;
+}
+
+function wrap(err: unknown): ApiHttpError {
+  return err instanceof ApiHttpError
+    ? err
+    : new ApiHttpError({
+        code: "UNKNOWN",
+        message: err instanceof Error ? err.message : "Unexpected error",
+        status: 0,
+      });
 }
 
 export function useMovieDetails(id: number): UseMovieDetailsResult {
   const [movie, setMovie] = useState<MovieSummary | null>(null);
   const [similar, setSimilar] = useState<SimilarMovie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingMovie, setLoadingMovie] = useState(true);
+  const [loadingSimilar, setLoadingSimilar] = useState(true);
   const [error, setError] = useState<ApiHttpError | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    async function fetchAll() {
-      setLoading(true);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoadingMovie(true);
+      setLoadingSimilar(true);
       setError(null);
-      try {
-        const movieData = await moviesService.getById(id);
+    });
+
+    moviesService
+      .getById(id)
+      .then((movieData) => {
         if (cancelled) return;
         setMovie(movieData);
-        try {
-          const similarData = await recommendationsService.getSimilarTo(id);
-          if (cancelled) return;
-          setSimilar(similarData);
-        } catch (similarErr) {
-          if (cancelled) return;
-          const wrapped =
-            similarErr instanceof ApiHttpError
-              ? similarErr
-              : new ApiHttpError({
-                  code: "UNKNOWN",
-                  message: similarErr instanceof Error ? similarErr.message : "Unexpected error",
-                  status: 0,
-                });
-          const resolved = resolveApiError(wrapped);
-          toast.error("Não foi possível carregar filmes similares.", {
-            description: resolved.message,
-          });
-        }
-      } catch (err) {
+      })
+      .catch((err) => {
         if (cancelled) return;
-        setError(
-          err instanceof ApiHttpError
-            ? err
-            : new ApiHttpError({
-                code: "UNKNOWN",
-                message: err instanceof Error ? err.message : "Unexpected error",
-                status: 0,
-              }),
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    fetchAll();
+        setError(wrap(err));
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMovie(false);
+      });
+
+    recommendationsService
+      .getSimilarTo(id)
+      .then((similarData) => {
+        if (cancelled) return;
+        setSimilar(similarData);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        const resolved = resolveApiError(wrap(err));
+        toast.error("Não foi possível carregar filmes similares.", {
+          description: resolved.message,
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSimilar(false);
+      });
+
     return () => {
       cancelled = true;
     };
   }, [id]);
 
-  return { movie, similar, loading, error };
+  return { movie, similar, loadingMovie, loadingSimilar, error };
 }
