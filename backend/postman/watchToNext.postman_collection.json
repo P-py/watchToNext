@@ -81,12 +81,13 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{baseUrl}}/movies?q={{q}}&limit={{limit}}",
+          "raw": "{{baseUrl}}/movies?q={{q}}&page={{page}}&size={{size}}",
           "host": ["{{baseUrl}}"],
           "path": ["movies"],
           "query": [
             { "key": "q", "value": "{{q}}" },
-            { "key": "limit", "value": "{{limit}}" }
+            { "key": "page", "value": "{{page}}" },
+            { "key": "size", "value": "{{size}}" }
           ]
         }
       }

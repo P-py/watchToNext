@@ -28,9 +28,10 @@ class MovieController(private val service: MovieService) {
     @GetMapping
     fun search(
         @RequestParam @NotBlank q: String,
-        @RequestParam(defaultValue = "20") limit: Int,
-    ): List<MovieSummaryDto> =
-        service.searchByTitle(q.trim(), limit.coerceIn(1, 100))
+        @RequestParam(defaultValue = "1") @Min(1) page: Int,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) size: Int,
+    ): PageDto<MovieSummaryDto> =
+        service.searchByTitle(q.trim(), page, size)
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): MovieSummaryDto =

@@ -17,7 +17,7 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     fun findByTitleContainingIgnoreCaseOrderByPopularityDesc(
         title: String,
         pageable: Pageable,
-    ): List<MovieEntity>
+    ): Page<MovieEntity>
 
     @Query(
         value = "SELECT m FROM MovieEntity m ORDER BY m.popularity DESC NULLS LAST",
