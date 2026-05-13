@@ -1,5 +1,7 @@
 # ER & Class Diagrams
 
+> **Academic project — temporary, non-commercial.** Not a production service and not affiliated with any movie studio, streaming provider, or TMDB. See the [README](../README.md) for the full disclaimer.
+
 > These diagrams reflect the **planned backend design** derived from the frontend type definitions, API contracts, and architecture docs.
 
 ---
