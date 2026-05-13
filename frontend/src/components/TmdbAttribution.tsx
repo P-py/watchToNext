@@ -8,6 +8,7 @@ const TMDB_LOGO_RENDER_WIDTH = Math.round(
 );
 
 export default function TmdbAttribution() {
+  const showAcademic = process.env.NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER !== "false";
   return (
     <footer className="border-t border-zinc-800 bg-zinc-950 py-5">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6">
@@ -42,9 +43,11 @@ export default function TmdbAttribution() {
               The Movie Database (TMDB)
             </a>
           </p>
-          <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
-            Academic project · temporary · non-commercial
-          </p>
+          {showAcademic && (
+            <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
+              Academic project · temporary · non-commercial
+            </p>
+          )}
         </div>
       </div>
     </footer>

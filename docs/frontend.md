@@ -127,6 +127,8 @@ cp .env.local.example .env.local   # then edit if your backend is somewhere else
 
 Toggle `NEXT_PUBLIC_USE_MOCKS=true` to bypass the network and return mock data from the services — useful while the backend is unavailable. Services import `USE_MOCKS` from `services/api.ts`; do not re-read `process.env.NEXT_PUBLIC_USE_MOCKS` inside individual files.
 
+Set `NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER=false` to hide both the top-of-page banner (`AcademicDisclaimer`) and the matching line in the footer (`TmdbAttribution`). Defaults to shown; only the literal string `"false"` hides the disclaimer. TMDB attribution itself is unaffected — that one is required by TMDB's terms regardless.
+
 ## HTTP client
 
 `services/api.ts` exposes `api.get / .post / .put / .patch / .del`. The transport is the native `fetch` — `axios` is intentionally **not** a dependency.
