@@ -1,5 +1,8 @@
 # watchToNext
 
+> **⚠️ Academic project — temporary and non-commercial.**
+> Built as coursework / portfolio. Not a production service, not affiliated with any movie studio, streaming provider, or TMDB. Hosted instances may go offline or be wiped without notice. Do not depend on any URL, data, or endpoint provided by this project.
+
 Movie recommendation platform powered by KNN similarity analysis. Discover what to watch next based on movies you already love — not generic popularity rankings.
 
 ## Stack

@@ -1,5 +1,7 @@
 # Coding Standards
 
+> **Academic project — temporary, non-commercial.** Not a production service and not affiliated with any movie studio, streaming provider, or TMDB. See the [README](../README.md) for the full disclaimer.
+
 ## General Principles
 
 - Write clean and readable code
