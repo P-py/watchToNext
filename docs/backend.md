@@ -122,10 +122,10 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET`  | `/api/movies?q=&page=&size=`        | Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
-| `GET`  | `/api/movies/{id}`                  | Movie details |
+| `GET`  | `/api/movies/{id}`                  | Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
 | `GET`  | `/api/movies/popular?page=&size=`   | Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]) |
-| `GET`  | `/api/recommendations`              | Recommendations for a movie (requires `movieId` query parameter) |
-| `GET`  | `/api/recommendations/personalized` | Personalized recommendations for the current user |
+| `GET`  | `/api/recommendations?userId=&limit=` | Personalized recommendations for a user (KNN over the user's ratings, `limit` ∈ [1,100]) |
+| `GET`  | `/api/recommendations/similar?movieId=&limit=` | Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
 | `GET`  | `/api/users/me`                     | Fetch the current authenticated user's profile |
 | `POST` | `/api/users/me/watched`             | Mark a movie as watched for the current user |
 
