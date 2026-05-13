@@ -1,5 +1,5 @@
 import { api, USE_MOCKS } from "./api";
-import { Movie, MovieDetails, MovieSearchResult, MovieSummary } from "@/types/movie";
+import { Movie, MovieDetails, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES, MOCK_MOVIE_DETAILS } from "@/mocks/data";
 
@@ -17,22 +17,27 @@ function paginate<T>(items: T[], page: number, size: number): PaginatedResponse<
 }
 
 export const moviesService = {
-  search: (query: string, page = 1): Promise<MovieSearchResult> => {
-    if (USE_MOCKS) {
-      const q = query.toLowerCase();
-      const movies = MOCK_MOVIES.filter(
-        (m) =>
-          m.title.toLowerCase().includes(q) ||
-          m.overview.toLowerCase().includes(q)
-      );
-      return Promise.resolve({
-        movies,
-        totalResults: movies.length,
-        totalPages: Math.ceil(movies.length / DEFAULT_PAGE_SIZE),
-        currentPage: page,
-      });
+  search: (
+    q: string,
+    page = 1,
+    size = DEFAULT_PAGE_SIZE,
+  ): Promise<PaginatedResponse<MovieSummary>> => {
+    const trimmed = q.trim();
+    if (!trimmed) {
+      return Promise.reject(new Error("search query must not be empty"));
     }
-    return api.get(`/movies?query=${encodeURIComponent(query)}&page=${page}`);
+    if (USE_MOCKS) {
+      const needle = trimmed.toLowerCase();
+      const matches = MOCK_MOVIES.filter((m) =>
+        m.title.toLowerCase().includes(needle),
+      );
+      return Promise.resolve(
+        paginate(matches as unknown as MovieSummary[], page, size),
+      );
+    }
+    return api.get(
+      `/movies?q=${encodeURIComponent(trimmed)}&page=${page}&size=${size}`,
+    );
   },
 
   getById: (id: number): Promise<MovieDetails> => {
