@@ -32,7 +32,7 @@ export default function MoviePage({ params }: MoviePageProps) {
         id: s.movieId,
         title: s.title,
         posterPath: s.posterPath,
-        releaseDate: null,
+        releaseDate: s.releaseDate,
         voteAverage: s.voteAverage,
       })),
     [similar],

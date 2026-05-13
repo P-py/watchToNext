@@ -43,5 +43,6 @@ export interface SimilarMovie {
   title: string;
   posterPath: string | null;
   voteAverage: number | null;
+  releaseDate: string | null;
   score: number;
 }

@@ -9,6 +9,7 @@ function toSimilar(m: Movie, score = 1): SimilarMovie {
     title: m.title,
     posterPath: m.posterPath,
     voteAverage: m.voteAverage,
+    releaseDate: m.releaseDate,
     score,
   };
 }
