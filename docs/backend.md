@@ -1,5 +1,7 @@
 # Backend Architecture
 
+> **Academic project — temporary, non-commercial.** Not a production service and not affiliated with any movie studio, streaming provider, or TMDB. See the [README](../README.md) for the full disclaimer.
+
 > Note: The backend is scaffolded (Spring Boot application boots) but feature implementation is not yet complete. Endpoints and configuration may change during development.
 
 ## Technology Stack
@@ -121,7 +123,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 |--------|----------|-------------|
 | `GET`  | `/api/movies`                       | Search or list movies (supports filters/query params) |
 | `GET`  | `/api/movies/{id}`                  | Movie details |
-| `GET`  | `/api/movies/popular`               | List popular movies (used on home screen) |
+| `GET`  | `/api/movies/popular?page=&size=`   | Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]) |
 | `GET`  | `/api/recommendations`              | Recommendations for a movie (requires `movieId` query parameter) |
 | `GET`  | `/api/recommendations/personalized` | Personalized recommendations for the current user |
 | `GET`  | `/api/users/me`                     | Fetch the current authenticated user's profile |

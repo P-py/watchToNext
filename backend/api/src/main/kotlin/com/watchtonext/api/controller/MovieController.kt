@@ -1,7 +1,10 @@
 package com.watchtonext.api.controller
 
 import com.watchtonext.api.dto.MovieSummaryDto
+import com.watchtonext.api.dto.PageDto
 import com.watchtonext.api.service.MovieService
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,9 +20,10 @@ class MovieController(private val service: MovieService) {
 
     @GetMapping("/popular")
     fun listPopular(
-        @RequestParam(defaultValue = "20") limit: Int,
-    ): List<MovieSummaryDto> =
-        service.listPopular(limit.coerceIn(1, 100))
+        @RequestParam(defaultValue = "1") @Min(1) page: Int,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) size: Int,
+    ): PageDto<MovieSummaryDto> =
+        service.listPopular(page, size)
 
     @GetMapping
     fun search(
