@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ErrorState } from "@/components/ErrorState";
+import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { UserProfile } from "@/modules/user/components/UserProfile";
 import { userService } from "@/services/user.service";
 import { UserProfile as UserProfileType } from "@/types/user";
 import { ApiHttpError } from "@/services/api-error";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { resolveApiError } from "@/utils/error-messages";
 
 export default function ProfilePage() {
@@ -42,22 +44,13 @@ export default function ProfilePage() {
   }, []);
 
   const resolved = error ? resolveApiError(error) : null;
+  const showSkeleton = useDelayedFlag(loading);
 
   return (
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {loading && (
-          <div className="space-y-4 animate-pulse">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-zinc-800" />
-              <div className="space-y-2">
-                <div className="h-5 w-32 rounded bg-zinc-800" />
-                <div className="h-4 w-48 rounded bg-zinc-800" />
-              </div>
-            </div>
-          </div>
-        )}
+        {loading && showSkeleton && <ProfileSkeleton />}
         {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
         {profile && <UserProfile profile={profile} />}
       </main>

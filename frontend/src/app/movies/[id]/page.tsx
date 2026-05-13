@@ -5,9 +5,12 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { ErrorState } from "@/components/ErrorState";
+import { MovieDetailSkeleton } from "@/components/MovieDetailSkeleton";
+import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
 import { MovieCardData } from "@/modules/movies/components/MovieCard";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { resolveApiError } from "@/utils/error-messages";
 import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
 import { Star, Calendar } from "lucide-react";
@@ -19,7 +22,9 @@ interface MoviePageProps {
 
 export default function MoviePage({ params }: MoviePageProps) {
   const { id } = use(params);
-  const { movie, similar, loading, error } = useMovieDetails(Number(id));
+  const { movie, similar, loadingMovie, loadingSimilar, error } = useMovieDetails(Number(id));
+  const showMovieSkeleton = useDelayedFlag(loadingMovie);
+  const showSimilarSkeleton = useDelayedFlag(loadingSimilar);
 
   const similarCards = useMemo<MovieCardData[]>(
     () =>
@@ -33,42 +38,24 @@ export default function MoviePage({ params }: MoviePageProps) {
     [similar],
   );
 
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-8 md:flex-row animate-pulse">
-            <div className="mx-auto aspect-[2/3] w-48 shrink-0 rounded-xl bg-zinc-800 md:mx-0" />
-            <div className="flex-1 space-y-4 pt-2">
-              <div className="h-8 w-64 rounded bg-zinc-800" />
-              <div className="h-4 w-48 rounded bg-zinc-800" />
-              <div className="flex gap-2">
-                {[80, 64, 96].map((w) => (
-                  <div key={w} className="h-6 rounded-full bg-zinc-800" style={{ width: w }} />
-                ))}
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 w-full rounded bg-zinc-800" />
-                <div className="h-4 w-5/6 rounded bg-zinc-800" />
-                <div className="h-4 w-4/6 rounded bg-zinc-800" />
-              </div>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
-
-  if (error || !movie) {
-    const resolved = error
-      ? resolveApiError(error)
-      : { title: "Filme não encontrado", message: "Não encontramos o filme solicitado." };
+  if (error && !movie) {
+    const resolved = resolveApiError(error);
     return (
       <>
         <Navbar />
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <ErrorState title={resolved.title} message={resolved.message} />
+        </main>
+      </>
+    );
+  }
+
+  if (loadingMovie || !movie) {
+    return (
+      <>
+        <Navbar />
+        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          {showMovieSkeleton && <MovieDetailSkeleton />}
         </main>
       </>
     );
@@ -137,7 +124,10 @@ export default function MoviePage({ params }: MoviePageProps) {
           </motion.div>
         </div>
 
-        {similarCards.length > 0 && (
+        {loadingSimilar && showSimilarSkeleton && (
+          <MovieGridSkeleton count={4} cols={4} />
+        )}
+        {!loadingSimilar && similarCards.length > 0 && (
           <motion.div variants={fadeUp} initial="hidden" animate="visible">
             <RecommendationGrid movies={similarCards} title="Similar Movies" />
           </motion.div>

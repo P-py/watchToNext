@@ -7,13 +7,13 @@ import { SearchX } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { SearchBar } from "@/modules/search/components/SearchBar";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
-import { Grid } from "@/components/Grid";
-import { MovieCardSkeleton } from "@/components/MovieCardSkeleton";
+import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
 import { ErrorState } from "@/components/ErrorState";
 import { EmptyState } from "@/components/EmptyState";
 import { Pagination } from "@/components/Pagination";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { useSearch } from "@/hooks/useSearch";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { resolveApiError } from "@/utils/error-messages";
 import { fadeUp } from "@/utils/animations";
 
@@ -43,6 +43,7 @@ function SearchPanel() {
     urlPage,
     PAGE_SIZE,
   );
+  const showSkeleton = useDelayedFlag(loading);
 
   const onSearch = useCallback(
     (q: string) => {
@@ -80,12 +81,8 @@ function SearchPanel() {
         );
       })()}
 
-      {!error && loading && (
-        <Grid cols={4}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <MovieCardSkeleton key={i} />
-          ))}
-        </Grid>
+      {!error && loading && showSkeleton && (
+        <MovieGridSkeleton count={8} cols={4} />
       )}
 
       {!error && !loading && urlQuery && (
