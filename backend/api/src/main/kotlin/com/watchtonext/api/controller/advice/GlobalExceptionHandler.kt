@@ -33,13 +33,13 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
                 message = violation.message,
             )
         }
-        return build(ErrorEnum.VALIDATION_FAILED, "Validation failed", details)
+        return build(ErrorEnum.VALIDATION_FAILED, "Alguns campos estão inválidos. Revise e tente novamente.", details)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException, request: HttpServletRequest): ResponseEntity<ApiError> {
         log.warn("IllegalArgumentException on {}: {}", request.requestURI, ex.message)
-        return build(ErrorEnum.VALIDATION_FAILED, "invalid argument")
+        return build(ErrorEnum.VALIDATION_FAILED, "Não foi possível processar a requisição. Verifique os valores e tente novamente.")
     }
 
     @ExceptionHandler(ResponseStatusException::class)
@@ -52,19 +52,19 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrity(ex: DataIntegrityViolationException, request: HttpServletRequest): ResponseEntity<ApiError> {
         log.warn("Data integrity violation on {}: {}", request.requestURI, ex.mostSpecificCause.message)
-        return build(ErrorEnum.RESOURCE_CONFLICT, "resource conflict")
+        return build(ErrorEnum.RESOURCE_CONFLICT, "Essa ação conflita com dados existentes.")
     }
 
     @ExceptionHandler(QueryTimeoutException::class, TimeoutException::class)
     fun handleTimeout(ex: Exception, request: HttpServletRequest): ResponseEntity<ApiError> {
         log.warn("Timeout on {}: {}", request.requestURI, ex.message)
-        return build(ErrorEnum.UPSTREAM_TIMEOUT, "upstream timeout")
+        return build(ErrorEnum.UPSTREAM_TIMEOUT, "O servidor demorou muito para responder. Tente novamente em instantes.")
     }
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(ex: Exception, request: HttpServletRequest): ResponseEntity<ApiError> {
         log.error("Unhandled exception on {}", request.requestURI, ex)
-        return build(ErrorEnum.INTERNAL_ERROR, "Internal server error")
+        return build(ErrorEnum.INTERNAL_ERROR, "Algo deu errado do nosso lado. Tente novamente em instantes.")
     }
 
     /**

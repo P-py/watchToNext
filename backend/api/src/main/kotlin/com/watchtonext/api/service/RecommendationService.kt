@@ -63,7 +63,7 @@ class RecommendationService(
     @Transactional(readOnly = true)
     fun similarTo(movieId: Long, limit: Int): List<RecommendationDto> {
         if (!movieRepository.existsById(movieId)) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "movie $movieId not found")
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Não encontramos o filme solicitado.")
         }
 
         val seeds = listOf(WeightedMovie(movieId = movieId, weight = 1.0))

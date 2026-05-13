@@ -40,6 +40,6 @@ class MovieService(private val movieRepository: MovieRepository) {
         movieRepository.findById(id)
             .map(MovieSummaryDto::from)
             .orElseThrow {
-                ResponseStatusException(HttpStatus.NOT_FOUND, "movie $id not found")
+                ResponseStatusException(HttpStatus.NOT_FOUND, "Não encontramos o filme solicitado.")
             }
 }
