@@ -22,12 +22,17 @@ class MovieService(private val movieRepository: MovieRepository) {
         return PageDto.from(mapped)
     }
 
+    @Cacheable(cacheNames = ["movies-search"], key = "#query + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
-    fun searchByTitle(query: String, limit: Int): List<MovieSummaryDto> =
-        movieRepository.findByTitleContainingIgnoreCaseOrderByPopularityDesc(
-            query,
-            PageRequest.of(0, limit),
-        ).map(MovieSummaryDto::from)
+    fun searchByTitle(query: String, page: Int, size: Int): PageDto<MovieSummaryDto> {
+        val mapped = movieRepository
+            .findByTitleContainingIgnoreCaseOrderByPopularityDesc(
+                query,
+                PageRequest.of(page - 1, size),
+            )
+            .map(MovieSummaryDto::from)
+        return PageDto.from(mapped)
+    }
 
     @Cacheable(cacheNames = ["movies-detail"], key = "#id")
     @Transactional(readOnly = true)

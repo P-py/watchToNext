@@ -121,7 +121,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET`  | `/api/movies`                       | Search or list movies (supports filters/query params) |
+| `GET`  | `/api/movies?q=&page=&size=`        | Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
 | `GET`  | `/api/movies/{id}`                  | Movie details |
 | `GET`  | `/api/movies/popular?page=&size=`   | Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]) |
 | `GET`  | `/api/recommendations`              | Recommendations for a movie (requires `movieId` query parameter) |

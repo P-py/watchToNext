@@ -47,6 +47,7 @@ class CacheConfig : CachingConfigurer {
 
         val perCacheTtl = mapOf(
             "movies-popular" to defaults.entryTtl(Duration.ofMinutes(5)),
+            "movies-search" to defaults.entryTtl(Duration.ofMinutes(2)),
             "movies-detail" to defaults.entryTtl(Duration.ofHours(1)),
             "recommendations" to defaults.entryTtl(Duration.ofMinutes(2)),
         )
