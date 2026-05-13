@@ -46,9 +46,3 @@ export interface MovieSummary {
   genres: Genre[];
 }
 
-export interface MovieSearchResult {
-  movies: Movie[];
-  totalResults: number;
-  totalPages: number;
-  currentPage: number;
-}

@@ -1,21 +1,45 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/utils/cn";
 
+const DEBOUNCE_MS = 500;
+
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  initialValue?: string;
   loading?: boolean;
   className?: string;
 }
 
-export function SearchBar({ onSearch, loading = false, className }: SearchBarProps) {
-  const [value, setValue] = useState("");
+export function SearchBar({
+  onSearch,
+  initialValue = "",
+  loading = false,
+  className,
+}: SearchBarProps) {
+  const [value, setValue] = useState(initialValue);
+  const lastEmitted = useRef(initialValue.trim());
+
+  // Debounce input so a fast-typing user produces one request per pause, not
+  // one per keystroke. Form submit (below) flushes the pending debounce.
+  useEffect(() => {
+    const next = value.trim();
+    if (next === lastEmitted.current) return;
+    const timer = setTimeout(() => {
+      lastEmitted.current = next;
+      onSearch(next);
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [value, onSearch]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSearch(value);
+    const next = value.trim();
+    if (next === lastEmitted.current) return;
+    lastEmitted.current = next;
+    onSearch(next);
   }
 
   return (
