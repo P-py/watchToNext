@@ -3,13 +3,6 @@ export interface Genre {
   name: string;
 }
 
-export interface CastMember {
-  id: number;
-  name: string;
-  character: string;
-  profilePath: string | null;
-}
-
 export interface Movie {
   id: number;
   title: string;
@@ -23,15 +16,9 @@ export interface Movie {
   runtime: number | null;
 }
 
-export interface MovieDetails extends Movie {
-  cast: CastMember[];
-  similarMovies: Movie[];
-}
-
 /**
- * Subset returned by listing endpoints (`/movies/popular`, `/movies?q=…`).
- * Mirrors the backend `MovieSummaryDto`. Use `Movie` / `MovieDetails` for the
- * richer detail view.
+ * Subset returned by listing endpoints (`/movies/popular`, `/movies?q=…`, `/movies/{id}`).
+ * Mirrors the backend `MovieSummaryDto`.
  */
 export interface MovieSummary {
   id: number;
@@ -46,3 +33,15 @@ export interface MovieSummary {
   genres: Genre[];
 }
 
+/**
+ * Shape returned by `/recommendations` and `/recommendations/similar`.
+ * Mirrors the backend `RecommendationDto`.
+ */
+export interface SimilarMovie {
+  movieId: number;
+  tmdbId: number;
+  title: string;
+  posterPath: string | null;
+  voteAverage: number | null;
+  score: number;
+}

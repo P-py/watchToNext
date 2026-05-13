@@ -1,4 +1,4 @@
-import { Movie, MovieDetails, Genre } from "@/types/movie";
+import { Movie, Genre } from "@/types/movie";
 import { UserProfile } from "@/types/user";
 
 export const GENRES: Genre[] = [
@@ -173,21 +173,6 @@ export const MOCK_MOVIES: Movie[] = [
     runtime: 201,
   },
 ];
-
-export const MOCK_MOVIE_DETAILS: Record<number, MovieDetails> = Object.fromEntries(
-  MOCK_MOVIES.map((movie) => [
-    movie.id,
-    {
-      ...movie,
-      cast: [
-        { id: 1, name: "Actor One", character: "Lead Role", profilePath: null },
-        { id: 2, name: "Actor Two", character: "Supporting Role", profilePath: null },
-        { id: 3, name: "Actor Three", character: "Antagonist", profilePath: null },
-      ],
-      similarMovies: MOCK_MOVIES.filter((m) => m.id !== movie.id).slice(0, 4),
-    },
-  ])
-);
 
 export const MOCK_USER_PROFILE: UserProfile = {
   id: "user-1",

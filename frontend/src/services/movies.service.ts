@@ -1,7 +1,22 @@
 import { api, USE_MOCKS } from "./api";
-import { Movie, MovieDetails, MovieSummary } from "@/types/movie";
+import { Movie, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
-import { MOCK_MOVIES, MOCK_MOVIE_DETAILS } from "@/mocks/data";
+import { MOCK_MOVIES } from "@/mocks/data";
+
+function toSummary(m: Movie): MovieSummary {
+  return {
+    id: m.id,
+    tmdbId: m.id,
+    title: m.title,
+    overview: m.overview,
+    posterPath: m.posterPath,
+    voteAverage: m.voteAverage,
+    voteCount: m.voteCount,
+    popularity: null,
+    releaseDate: m.releaseDate,
+    genres: m.genres,
+  };
+}
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -31,19 +46,17 @@ export const moviesService = {
       const matches = MOCK_MOVIES.filter((m) =>
         m.title.toLowerCase().includes(needle),
       );
-      return Promise.resolve(
-        paginate(matches as unknown as MovieSummary[], page, size),
-      );
+      return Promise.resolve(paginate(matches.map(toSummary), page, size));
     }
     return api.get(
       `/movies?q=${encodeURIComponent(trimmed)}&page=${page}&size=${size}`,
     );
   },
 
-  getById: (id: number): Promise<MovieDetails> => {
+  getById: (id: number): Promise<MovieSummary> => {
     if (USE_MOCKS) {
-      const movie = MOCK_MOVIE_DETAILS[id] ?? MOCK_MOVIE_DETAILS[MOCK_MOVIES[0].id];
-      return Promise.resolve(movie);
+      const movie = MOCK_MOVIES.find((m) => m.id === id) ?? MOCK_MOVIES[0];
+      return Promise.resolve(toSummary(movie));
     }
     return api.get(`/movies/${id}`);
   },
@@ -61,7 +74,7 @@ export const moviesService = {
     size = DEFAULT_PAGE_SIZE,
   ): Promise<PaginatedResponse<MovieSummary>> => {
     if (USE_MOCKS) {
-      return Promise.resolve(paginate(MOCK_MOVIES as unknown as MovieSummary[], page, size));
+      return Promise.resolve(paginate(MOCK_MOVIES.map(toSummary), page, size));
     }
     return api.get(`/movies/popular?page=${page}&size=${size}`);
   },
