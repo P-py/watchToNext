@@ -18,7 +18,7 @@ class MovieMetadataAdapter(private val movieRepository: MovieRepository) : Movie
         movieRepository.findByTitleContainingIgnoreCase(query).map { it.toDomain() }
 
     override fun findPopular(limit: Int): List<Movie> =
-        movieRepository.findTopByPopularity(PageRequest.of(0, limit)).map { it.toDomain() }
+        movieRepository.findTopByPopularity(PageRequest.of(0, limit)).content.map { it.toDomain() }
 
     private fun MovieEntity.toDomain() = Movie(
         tmdbId = tmdbId,

@@ -10,7 +10,9 @@
     { "key": "movieId", "value": "1", "type": "string", "description": "movies.id (local PK)" },
     { "key": "rating",  "value": "4.5", "type": "string" },
     { "key": "limit",   "value": "20", "type": "string" },
-    { "key": "q",       "value": "matrix", "type": "string" }
+    { "key": "q",       "value": "matrix", "type": "string" },
+    { "key": "page",    "value": "1", "type": "string" },
+    { "key": "size",    "value": "20", "type": "string" }
   ],
   "item": [
     {
@@ -94,11 +96,12 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{baseUrl}}/movies/popular?limit={{limit}}",
+          "raw": "{{baseUrl}}/movies/popular?page={{page}}&size={{size}}",
           "host": ["{{baseUrl}}"],
           "path": ["movies", "popular"],
           "query": [
-            { "key": "limit", "value": "{{limit}}" }
+            { "key": "page", "value": "{{page}}" },
+            { "key": "size", "value": "{{size}}" }
           ]
         }
       }
