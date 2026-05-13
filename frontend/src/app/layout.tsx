@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { AcademicDisclaimer } from "@/components/AcademicDisclaimer";
 import TmdbAttribution from "@/components/TmdbAttribution";
@@ -29,13 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body
         className={`${dmSans.variable} ${dmMono.variable} flex min-h-screen flex-col bg-zinc-950 text-zinc-100 antialiased`}
       >
         <AcademicDisclaimer />
         <div className="flex-1">{children}</div>
         <TmdbAttribution />
+        <Toaster theme="dark" position="bottom-right" richColors closeButton />
       </body>
     </html>
   );
