@@ -1,14 +1,84 @@
-# Transient artifacts from the /task skill — copy/paste into SCRUM + GitHub
+# watchToNext — monorepo .gitignore.
+# Unanchored patterns match at any depth; a leading `/` anchors to the repo root.
+
+# /task skill artifacts
 task.md
 pr.md
 
-# Datasets — download manually, never commit
+# Datasets — download manually, see README
 *.csv
 *.zip
 *Zone.Identifier
 
-# Local env overrides — copy from .env.example
+# Env overrides
 .env
+.env.*
+!.env.example
+!.env*.example
 
-# IDE
+# OS / editors
+.DS_Store
 .idea/
+.vscode/
+*.pem
+
+# Backend — Gradle / Kotlin / Spring
+.gradle/
+.kotlin/
+build/
+bin/
+out/
+HELP.md
+
+# Backend — Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# Backend — IntelliJ loose files (the `.idea/` folder itself is covered above)
+*.iml
+*.iws
+*.ipr
+
+# Backend — NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Backend — tracked artifacts inside source trees
+!backend/gradle/wrapper/gradle-wrapper.jar
+!backend/**/src/main/**/build/
+!backend/**/src/test/**/build/
+!backend/**/src/main/**/bin/
+!backend/**/src/test/**/bin/
+!backend/**/src/main/**/out/
+!backend/**/src/test/**/out/
+
+# Frontend — Next.js / Node
+node_modules/
+coverage/
+.next/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.vercel
+*.tsbuildinfo
+/frontend/next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Slidev
+/presentation/dist/
+/presentation/.slidev/
+*.local
