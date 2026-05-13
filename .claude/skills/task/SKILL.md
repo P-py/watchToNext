@@ -71,14 +71,15 @@ Also create a TaskCreate task list mirroring the Escopo bullets so progress is t
 
 ## Phase 5 — Wrap (PR description)
 
-**Do:** write the filled-in PR description to `pr.md` at the repo root, using the template at `.claude/skills/task/templates/pr-description.md`.
+**Do:**
+1. Write the filled-in PR description to `pr.md` at the repo root, using the template at `.claude/skills/task/templates/pr-description.md`.
+   - Title uses the project's conventional-commit + gitmoji style.
+   - The template's **Test plan** section holds the test steps — cover the golden path **and** the main edge cases identified in Phase 2.
+   - Overwrite any existing `pr.md` (it's a transient artifact for copy/paste into GitHub, not a tracked file).
+   - Print only a one-line confirmation in chat (e.g. `pr.md written — 42 lines`). Do not dump the full body into chat; the file is the deliverable.
+2. **Always** plan the commit organization next — don't wait to be asked. Propose a logical sequence of commits (each one independently reviewable, building forward) so the user can review the plan before any commit happens. Each entry must include the conventional-commit + gitmoji subject and the files it covers. Group by atomic concern (e.g. backend endpoint, frontend types, UI wiring, docs/postman sync); avoid one giant catch-all commit. Print this as a short numbered list in chat.
 
-- Title uses the project's conventional-commit + gitmoji style.
-- The template's **Test plan** section holds the test steps — cover the golden path **and** the main edge cases identified in Phase 2.
-- Overwrite any existing `pr.md` (it's a transient artifact for copy/paste into GitHub, not a tracked file).
-- Print only a one-line confirmation in chat (e.g. `pr.md written — 42 lines`). Do not dump the full body into chat; the file is the deliverable.
-
-**Final checkpoint:** wait for the user to say whether to commit/push. Never commit or push without an explicit instruction (per project + global rules).
+**Final checkpoint:** the pipeline ends here. **Never run `git add`, `git commit`, `git branch`, `git push`, or `gh pr create` as part of `/task`** — even if the user previously approved the commit plan. The commit plan is a *deliverable*, not an instruction to act. The user owns staging, branching, committing, and pushing. Only run those commands if the user explicitly asks for them in a separate, post-pipeline message ("commit it", "push", "open the PR"), and only with the scope they specify.
 
 ## Resuming mid-pipeline
 
