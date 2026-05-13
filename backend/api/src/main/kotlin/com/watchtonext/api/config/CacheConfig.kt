@@ -50,6 +50,7 @@ class CacheConfig : CachingConfigurer {
             "movies-search" to defaults.entryTtl(Duration.ofMinutes(2)),
             "movies-detail" to defaults.entryTtl(Duration.ofHours(1)),
             "recommendations" to defaults.entryTtl(Duration.ofMinutes(2)),
+            "recommendations-similar" to defaults.entryTtl(Duration.ofMinutes(10)),
         )
 
         return RedisCacheManager.builder(connectionFactory)

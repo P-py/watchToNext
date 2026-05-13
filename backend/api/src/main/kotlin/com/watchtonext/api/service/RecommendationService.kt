@@ -10,8 +10,10 @@ import com.watchtonext.engine.port.MovieFeaturesProvider
 import com.watchtonext.engine.recommender.ContentKnnRecommender
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
@@ -45,6 +47,27 @@ class RecommendationService(
 
         val excluded = ratings.map { it.movieId }.toSet()
         val ranked = recommender().recommend(seeds, limit, excluded)
+        if (ranked.isEmpty()) return emptyList()
+
+        val moviesById = movieRepository.findAllById(ranked.map { it.movieId }).associateBy { it.id }
+        return ranked.mapNotNull { scored ->
+            moviesById[scored.movieId]?.let { RecommendationDto.from(RecommendationResult(it, scored.score)) }
+        }
+    }
+
+    @Cacheable(
+        cacheNames = ["recommendations-similar"],
+        key = "#movieId + ':' + #limit",
+        unless = "#result.isEmpty()",
+    )
+    @Transactional(readOnly = true)
+    fun similarTo(movieId: Long, limit: Int): List<RecommendationDto> {
+        if (!movieRepository.existsById(movieId)) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "movie $movieId not found")
+        }
+
+        val seeds = listOf(WeightedMovie(movieId = movieId, weight = 1.0))
+        val ranked = recommender().recommend(seeds, limit, setOf(movieId))
         if (ranked.isEmpty()) return emptyList()
 
         val moviesById = movieRepository.findAllById(ranked.map { it.movieId }).associateBy { it.id }
