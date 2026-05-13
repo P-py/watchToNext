@@ -1,9 +1,7 @@
-import { api } from "./api";
+import { api, USE_MOCKS } from "./api";
 import { Movie, MovieDetails, MovieSearchResult } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES, MOCK_MOVIE_DETAILS } from "@/mocks/data";
-
-const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
 
 const PAGE_SIZE = 8;
 

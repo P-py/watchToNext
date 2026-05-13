@@ -1,8 +1,6 @@
-import { api } from "./api";
+import { api, USE_MOCKS } from "./api";
 import { Movie } from "@/types/movie";
 import { MOCK_MOVIES } from "@/mocks/data";
-
-const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
 
 export const recommendationsService = {
   getForMovie: (movieId: number): Promise<Movie[]> => {
