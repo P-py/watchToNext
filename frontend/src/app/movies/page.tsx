@@ -5,12 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
-import { Grid } from "@/components/Grid";
-import { MovieCardSkeleton } from "@/components/MovieCardSkeleton";
+import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
 import { ErrorState } from "@/components/ErrorState";
 import { Pagination } from "@/components/Pagination";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
 import { usePopularMovies } from "@/hooks/useMovies";
+import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { resolveApiError } from "@/utils/error-messages";
 import { fadeUp } from "@/utils/animations";
 
@@ -27,6 +27,7 @@ function MoviesGrid() {
   const page = parsePage(searchParams.get("page"));
 
   const { movies, totalPages, loading, error } = usePopularMovies(page, PAGE_SIZE);
+  const showSkeleton = useDelayedFlag(loading);
 
   const onPageChange = useCallback(
     (next: number) => {
@@ -45,12 +46,8 @@ function MoviesGrid() {
     <>
       {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
 
-      {!error && loading && (
-        <Grid cols={4}>
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-            <MovieCardSkeleton key={i} />
-          ))}
-        </Grid>
+      {!error && loading && showSkeleton && (
+        <MovieGridSkeleton count={PAGE_SIZE} cols={4} />
       )}
 
       {!error && !loading && (
@@ -75,16 +72,6 @@ function MoviesGrid() {
   );
 }
 
-function GridFallback() {
-  return (
-    <Grid cols={4}>
-      {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-        <MovieCardSkeleton key={i} />
-      ))}
-    </Grid>
-  );
-}
-
 export default function MoviesPage() {
   return (
     <>
@@ -99,7 +86,7 @@ export default function MoviesPage() {
           Movies
         </motion.h1>
 
-        <Suspense fallback={<GridFallback />}>
+        <Suspense fallback={<MovieGridSkeleton count={PAGE_SIZE} cols={4} />}>
           <MoviesGrid />
         </Suspense>
       </main>
