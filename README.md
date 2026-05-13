@@ -51,7 +51,7 @@ The CSV is gitignored and must never be committed.
 #### 2 — Start the databases
 
 ```bash
-cp .env.example .env          # first time only
+cp backend/.env.example backend/.env   # first time only — backend credentials
 docker compose up -d
 ```
 
