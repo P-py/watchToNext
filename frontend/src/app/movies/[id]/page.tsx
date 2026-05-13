@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
 import { MovieCardData } from "@/modules/movies/components/MovieCard";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
+import { resolveApiError } from "@/utils/error-messages";
 import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
 import { Star, Calendar } from "lucide-react";
 import { fadeUp, fadeIn, slideInLeft, slideInRight, staggerContainer, heroStagger } from "@/utils/animations";
@@ -60,14 +61,14 @@ export default function MoviePage({ params }: MoviePageProps) {
   }
 
   if (error || !movie) {
+    const resolved = error
+      ? resolveApiError(error)
+      : { title: "Filme não encontrado", message: "Não encontramos o filme solicitado." };
     return (
       <>
         <Navbar />
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <ErrorState
-            title={error ? "Failed to load movie" : "Movie not found"}
-            message={error ?? undefined}
-          />
+          <ErrorState title={resolved.title} message={resolved.message} />
         </main>
       </>
     );
