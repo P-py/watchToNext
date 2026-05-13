@@ -1,3 +1,12 @@
+import Image from "next/image";
+
+const TMDB_LOGO_NATIVE_WIDTH = 273.42;
+const TMDB_LOGO_NATIVE_HEIGHT = 35.52;
+const TMDB_LOGO_RENDER_HEIGHT = 14;
+const TMDB_LOGO_RENDER_WIDTH = Math.round(
+  (TMDB_LOGO_NATIVE_WIDTH / TMDB_LOGO_NATIVE_HEIGHT) * TMDB_LOGO_RENDER_HEIGHT,
+);
+
 export default function TmdbAttribution() {
   return (
     <footer className="border-t border-zinc-800 bg-zinc-950 py-5">
@@ -9,29 +18,34 @@ export default function TmdbAttribution() {
             rel="noopener noreferrer"
             aria-label="The Movie Database"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+            <Image
+              src="/tmdb-logo.svg"
               alt="TMDB"
-              height={14}
-              style={{ height: "14px", width: "auto" }}
+              width={TMDB_LOGO_RENDER_WIDTH}
+              height={TMDB_LOGO_RENDER_HEIGHT}
+              priority={false}
             />
           </a>
           <p className="text-xs text-zinc-500">
             This product uses the TMDB API but is not endorsed or certified by TMDB.
           </p>
         </div>
-        <p className="text-xs text-zinc-600">
-          Movie data provided by{" "}
-          <a
-            href="https://www.themoviedb.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-400 underline-offset-2 hover:underline"
-          >
-            The Movie Database (TMDB)
-          </a>
-        </p>
+        <div className="flex flex-col items-end gap-1">
+          <p className="text-xs text-zinc-600">
+            Movie data provided by{" "}
+            <a
+              href="https://www.themoviedb.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 underline-offset-2 hover:underline"
+            >
+              The Movie Database (TMDB)
+            </a>
+          </p>
+          <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
+            Academic project · temporary · non-commercial
+          </p>
+        </div>
       </div>
     </footer>
   );
