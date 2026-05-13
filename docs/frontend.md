@@ -182,6 +182,32 @@ Never render `err.message` directly — always go through the resolver. This kee
 
 For 400 responses with `details[]`, `utils/error-fields.ts` exposes `toFieldErrors(err) → Record<string, string>` — a map of field name to message, ready to bind to form inputs. The first message wins when the backend sends multiple errors for the same field.
 
+## Loading states
+
+Every fetching surface uses a shared skeleton component, never an inline `animate-pulse` block. The pattern:
+
+| Surface | Skeleton |
+|---|---|
+| Card grids (`/movies`, `/search`, similar strip) | `MovieGridSkeleton` (wraps `Grid` + N × `MovieCardSkeleton`) |
+| Detail page (`/movies/[id]`) main card | `MovieDetailSkeleton` |
+| Profile page (`/profile`) | `ProfileSkeleton` |
+| Inline action (button submitting, `SearchBar` while debounced query is in flight) | Shared `Spinner` |
+
+### Anti-flicker delay
+
+Skeletons are gated by `useDelayedFlag(loading, 150)` from `hooks/useDelayedFlag.ts`. The hook returns `true` only after the source flag has stayed truthy for the delay window, and resets to `false` immediately when it drops. Cached/fast responses (< 150 ms) skip the skeleton entirely, avoiding a one-frame flash.
+
+```tsx
+const { movies, loading } = usePopularMovies(page);
+const showSkeleton = useDelayedFlag(loading);
+// ...
+{loading && showSkeleton && <MovieGridSkeleton count={PAGE_SIZE} />}
+```
+
+### Independent fetches, independent skeletons
+
+When a page coordinates multiple fetches, the hook exposes one loading flag per fetch so each section can render as soon as its data arrives. `useMovieDetails` returns both `loadingMovie` and `loadingSimilar` — the main card renders the moment the movie resolves, while the similar strip continues to show its own `MovieGridSkeleton` until the KNN call returns.
+
 ## URL state for listings
 
 Listing pages (`/movies`, `/search`) keep their pagination — and where applicable, the search query — in the URL via `useSearchParams` + `router.push`. Reload, browser back/forward, and shared links all reproduce the exact view the user was looking at.
