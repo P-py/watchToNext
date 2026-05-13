@@ -1,8 +1,8 @@
-export function formatRating(rating: number): string {
-  return rating.toFixed(1);
+export function formatRating(rating: number | null): string {
+  return rating == null ? "—" : rating.toFixed(1);
 }
 
-export function formatYear(releaseDate: string): string {
+export function formatYear(releaseDate: string | null): string {
   return releaseDate ? new Date(releaseDate).getFullYear().toString() : "N/A";
 }
 

@@ -28,6 +28,24 @@ export interface MovieDetails extends Movie {
   similarMovies: Movie[];
 }
 
+/**
+ * Subset returned by listing endpoints (`/movies/popular`, `/movies?q=…`).
+ * Mirrors the backend `MovieSummaryDto`. Use `Movie` / `MovieDetails` for the
+ * richer detail view.
+ */
+export interface MovieSummary {
+  id: number;
+  tmdbId: number;
+  title: string;
+  overview: string | null;
+  posterPath: string | null;
+  voteAverage: number | null;
+  voteCount: number | null;
+  popularity: number | null;
+  releaseDate: string | null;
+  genres: Genre[];
+}
+
 export interface MovieSearchResult {
   movies: Movie[];
   totalResults: number;

@@ -1,18 +1,18 @@
 import { api, USE_MOCKS } from "./api";
-import { Movie, MovieDetails, MovieSearchResult } from "@/types/movie";
+import { Movie, MovieDetails, MovieSearchResult, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES, MOCK_MOVIE_DETAILS } from "@/mocks/data";
 
-const PAGE_SIZE = 8;
+const DEFAULT_PAGE_SIZE = 20;
 
-function paginate<T>(items: T[], page: number): PaginatedResponse<T> {
-  const start = (page - 1) * PAGE_SIZE;
+function paginate<T>(items: T[], page: number, size: number): PaginatedResponse<T> {
+  const start = (page - 1) * size;
   return {
-    content: items.slice(start, start + PAGE_SIZE),
+    content: items.slice(start, start + size),
     totalElements: items.length,
-    totalPages: Math.ceil(items.length / PAGE_SIZE),
+    totalPages: Math.max(1, Math.ceil(items.length / size)),
     currentPage: page,
-    pageSize: PAGE_SIZE,
+    pageSize: size,
   };
 }
 
@@ -28,7 +28,7 @@ export const moviesService = {
       return Promise.resolve({
         movies,
         totalResults: movies.length,
-        totalPages: Math.ceil(movies.length / PAGE_SIZE),
+        totalPages: Math.ceil(movies.length / DEFAULT_PAGE_SIZE),
         currentPage: page,
       });
     }
@@ -46,13 +46,18 @@ export const moviesService = {
   getByGenre: (genreId: number, page = 1): Promise<PaginatedResponse<Movie>> => {
     if (USE_MOCKS) {
       const filtered = MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId));
-      return Promise.resolve(paginate(filtered, page));
+      return Promise.resolve(paginate(filtered, page, DEFAULT_PAGE_SIZE));
     }
     return api.get(`/movies?genreId=${genreId}&page=${page}`);
   },
 
-  getPopular: (page = 1): Promise<PaginatedResponse<Movie>> => {
-    if (USE_MOCKS) return Promise.resolve(paginate(MOCK_MOVIES, page));
-    return api.get(`/movies/popular?page=${page}`);
+  getPopular: (
+    page = 1,
+    size = DEFAULT_PAGE_SIZE,
+  ): Promise<PaginatedResponse<MovieSummary>> => {
+    if (USE_MOCKS) {
+      return Promise.resolve(paginate(MOCK_MOVIES as unknown as MovieSummary[], page, size));
+    }
+    return api.get(`/movies/popular?page=${page}&size=${size}`);
   },
 };

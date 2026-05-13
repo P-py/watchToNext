@@ -4,13 +4,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { Movie } from "@/types/movie";
 import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
 import { cardItem } from "@/utils/animations";
 
+/**
+ * Structural type covering both `Movie` and `MovieSummary` — the card only
+ * needs these five fields, so coupling to either richer interface is overkill.
+ */
+export interface MovieCardData {
+  id: number;
+  title: string;
+  posterPath: string | null;
+  releaseDate: string | null;
+  voteAverage: number | null;
+}
+
 interface MovieCardProps {
-  movie: Movie;
-  onClick?: (movie: Movie) => void;
+  movie: MovieCardData;
+  onClick?: (movie: MovieCardData) => void;
 }
 
 export function MovieCard({ movie, onClick }: MovieCardProps) {
