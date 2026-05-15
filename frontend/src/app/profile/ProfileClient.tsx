@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { ProfileSkeleton } from "@/components/ProfileSkeleton";
+import { EditProfileModal } from "@/modules/user/components/EditProfileModal";
 import { UserProfile } from "@/modules/user/components/UserProfile";
 import { userService } from "@/services/user.service";
 import { UserProfile as UserProfileType } from "@/types/user";
@@ -14,6 +15,7 @@ export function ProfileClient() {
   const [profile, setProfile] = useState<UserProfileType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiHttpError | null>(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +51,17 @@ export function ProfileClient() {
     <>
       {loading && showSkeleton && <ProfileSkeleton />}
       {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
-      {profile && <UserProfile profile={profile} />}
+      {profile && (
+        <UserProfile profile={profile} onEdit={() => setEditing(true)} />
+      )}
+      {profile && (
+        <EditProfileModal
+          open={editing}
+          onClose={() => setEditing(false)}
+          profile={profile}
+          onUpdated={setProfile}
+        />
+      )}
     </>
   );
 }

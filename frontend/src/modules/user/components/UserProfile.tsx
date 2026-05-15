@@ -1,9 +1,11 @@
-import { Heart, Star, User } from "lucide-react";
+import { Heart, Pencil, Star, User } from "lucide-react";
+import { Button } from "@/components/Button";
 import { UserProfile as UserProfileType } from "@/types/user";
 import { formatDate } from "@/utils/format";
 
 interface UserProfileProps {
   profile: UserProfileType;
+  onEdit?: () => void;
 }
 
 interface StatCardProps {
@@ -26,22 +28,35 @@ function StatCard({ icon, label, value }: StatCardProps) {
   );
 }
 
-export function UserProfile({ profile }: UserProfileProps) {
+export function UserProfile({ profile, onEdit }: UserProfileProps) {
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
-          <User className="h-8 w-8 text-zinc-400" />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
+            <User className="h-8 w-8 text-zinc-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-zinc-100">{profile.displayName}</h1>
+            {profile.email && (
+              <p className="text-sm text-zinc-500">{profile.email}</p>
+            )}
+            <p className="mt-1 text-xs text-zinc-600">
+              Membro desde {formatDate(profile.createdAt)}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-zinc-100">{profile.displayName}</h1>
-          {profile.email && (
-            <p className="text-sm text-zinc-500">{profile.email}</p>
-          )}
-          <p className="mt-1 text-xs text-zinc-600">
-            Membro desde {formatDate(profile.createdAt)}
-          </p>
-        </div>
+
+        {onEdit && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onEdit}
+            leftIcon={<Pencil className="h-4 w-4" />}
+          >
+            Editar perfil
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
