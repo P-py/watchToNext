@@ -8,26 +8,26 @@ WatchToNext is a movie recommendation platform designed to help users discover n
 
 The system uses the K-Nearest Neighbors (KNN) algorithm to recommend movies that are similar to others previously selected or viewed by the user.
 
-The platform integrates with the TMDB (The Movie Database) API to retrieve detailed information about movies, including metadata such as genres, ratings, cast, and descriptions.
+Movie metadata (titles, overviews, genres, ratings, poster paths) comes from the Full TMDB Movies Dataset on Kaggle, imported once into the database by the seeder. The backend makes no live external API calls after that; the only runtime external fetch is the browser loading poster images from TMDB's image CDN.
 
 The main objective of the platform is to provide more relevant movie suggestions compared to generic ranking-based recommendation systems.
 
 ## Core Features
 
-- Movie search
+- Public catalog browsing and title search
 - Movie details visualization
-- Similar movie recommendations
-- Genre browsing
-- User profile
-- Personalized recommendations
-- Movie discovery interface
+- Similar-movie recommendations (KNN)
+- Favorites, ratings, and watched history — each with its own list page
+- Authenticated suggestions page — quick (full history), seed-picked movies, or by genre
+- User profile with list summaries
+- Keycloak-backed sign-up / login
 
 ## Recommendation Flow
 
 ```mermaid
 flowchart LR
-  A(["User selects\na movie"]) --> B["Extract\nfeature vector\n(genres · rating · year)"]
-  B --> C["KNN search\nagainst movie dataset"]
+  A(["User selects\na movie"]) --> B["Extract\nfeature vector\n(genres · vote avg · vote count · popularity)"]
+  B --> C["KNN search\n(cosine similarity)"]
   C --> D["Return K\nnearest neighbors"]
   D --> E(["Display\nrecommendations"])
 ```
@@ -38,15 +38,15 @@ The system follows a distributed architecture composed of:
 
 ```mermaid
 graph TD
-  Frontend["Frontend\nNext.js · TypeScript · TailwindCSS"]
+  Frontend["Frontend + BFF\nNext.js · TypeScript · TailwindCSS"]
   Backend["Backend\nKotlin · Spring Boot · REST API"]
   Data["Data Layer\nPostgreSQL · Redis"]
   Auth["Authentication\nKeycloak · OAuth2 / OIDC"]
-  External["External Services\nTMDB API"]
+  Seed["Kaggle TMDB dataset\n(one-time offline seed)"]
 
-  Frontend <-->|REST| Backend
+  Frontend <-->|REST via BFF proxy| Backend
   Backend <--> Data
-  Frontend <-->|OAuth2| Auth
+  Frontend <-->|OAuth2 / OIDC| Auth
   Backend <-->|Token validation| Auth
-  Backend <-->|Movie metadata| External
+  Seed -.->|seeded once| Data
 ```

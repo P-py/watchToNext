@@ -81,7 +81,7 @@ cd backend
 ./gradlew :api:dbSetup
 ```
 
-This runs **Flyway schema migrations** (creates tables) then **seeds all ~1 M movies** from the CSV. The command is idempotent and resumable — interrupting it (Ctrl-C) keeps every committed batch, and re-running picks up where it stopped (duplicates are skipped via `ON CONFLICT`). With a 629 MB dataset expect **10–20 minutes**; progress is logged after every batch commit (default 5 000 rows).
+This runs **Flyway schema migrations** (creates tables) then **seeds the movies** from the CSV (~930 k rows; titles flagged `adult` are skipped). The command is idempotent and resumable — interrupting it (Ctrl-C) keeps every committed batch, and re-running picks up where it stopped (duplicates are skipped via `ON CONFLICT`). With a 629 MB dataset expect **10–20 minutes**; progress is logged after every batch commit (default 5 000 rows).
 
 Overrides:
 
@@ -101,6 +101,12 @@ Overrides:
 > After the seed the CSV can be deleted — the database is the source of truth.
 > See [`docs/backend.md`](docs/backend.md) for full architecture details.
 
+## Deployment
+
+The full stack deploys to **Railway** as a single project — frontend and Keycloak public, the backend and the three data stores (PostgreSQL, two Redis) on the private network. Instead of re-running the seeder in the cloud, a `pg_dump` of the seeded database is restored straight into the Railway Postgres.
+
+Dockerfiles live in `frontend/`, `backend/`, and `infra/keycloak/`. Full step-by-step — services, env vars, the dump restore, post-deploy Keycloak config — in [`docs/deployment.md`](docs/deployment.md).
+
 ## Project structure
 
 ```
@@ -119,6 +125,7 @@ CLAUDE.md         AI assistant context and conventions
 | [`docs/architecture.md`](docs/architecture.md) | System architecture and service topology |
 | [`docs/frontend.md`](docs/frontend.md) | Frontend stack, auth BFF, security headers, env vars |
 | [`docs/backend.md`](docs/backend.md) | Backend stack, Keycloak setup, API shape |
+| [`docs/deployment.md`](docs/deployment.md) | Railway deployment runbook — services, env vars, dump restore |
 | [`docs/recommender-model.md`](docs/recommender-model.md) | Recommender feature vector, similarity metric, configuration |
 | [`docs/error-handling.md`](docs/error-handling.md) | Error contract, `ApiError` shape, exception handler rules |
 | [`docs/coding-standards.md`](docs/coding-standards.md) | Code style, naming, animations, commit convention |

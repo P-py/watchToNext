@@ -2,233 +2,182 @@
 
 > **Academic project — temporary, non-commercial.** Not a production service and not affiliated with any movie studio, streaming provider, or TMDB. See the [README](../README.md) for the full disclaimer.
 
-> These diagrams reflect the **planned backend design** derived from the frontend type definitions, API contracts, and architecture docs.
+> These diagrams reflect the **implemented** system — the schema comes from the
+> Flyway migrations (`backend/api/.../db/migration`) and the classes from the
+> `:api` and `:engine` modules. The `.png` exports under `diagrams/` predate the
+> implementation and are stale; the Mermaid blocks below are the source of truth.
 
 ---
 
 ## ER Diagram
 
+The catalog tables (`genres`, `movies`, `movie_genres`) are populated once by the
+seeder from the Kaggle dataset. The `users` row is provisioned from the JWT on
+first authenticated request; the three preference tables are written by the app.
+
 ```mermaid
 erDiagram
-    MOVIE {
-        bigint id PK
-        int tmdb_id UK
-        varchar title
-        text overview
-        varchar poster_path
-        varchar backdrop_path
-        date release_date
-        decimal vote_average
-        int vote_count
-        int runtime
-    }
-
-    GENRE {
+    genres {
         int id PK
         varchar name
     }
-
-    PERSON {
+    movies {
         bigint id PK
-        int tmdb_id UK
-        varchar name
-        varchar profile_path
+        bigint tmdb_id UK
+        varchar title
+        text overview
+        varchar poster_path
+        numeric vote_average
+        int vote_count
+        numeric popularity
+        date release_date
     }
-
-    USER {
+    movie_genres {
+        bigint movie_id PK,FK
+        int genre_id PK,FK
+    }
+    users {
         uuid id PK
-        varchar username
+        varchar display_name
         varchar email UK
-        varchar avatar_url
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    user_movie_ratings {
+        uuid user_id PK,FK
+        bigint movie_id PK,FK
+        numeric rating
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    user_favorites {
+        uuid user_id PK,FK
+        bigint movie_id PK,FK
+        timestamptz created_at
+    }
+    user_watched_movies {
+        uuid user_id PK,FK
+        bigint movie_id PK,FK
+        timestamptz watched_at
     }
 
-    MOVIE_GENRE {
-        bigint movie_id FK
-        int genre_id FK
-    }
-
-    MOVIE_CAST {
-        bigint movie_id FK
-        bigint person_id FK
-        varchar character
-    }
-
-    USER_WATCHED_MOVIE {
-        uuid user_id FK
-        bigint movie_id FK
-        timestamp watched_at
-    }
-
-    USER_FAVORITE_GENRE {
-        uuid user_id FK
-        int genre_id FK
-    }
-
-    MOVIE ||--o{ MOVIE_GENRE : "belongs to"
-    GENRE ||--o{ MOVIE_GENRE : "tags"
-    MOVIE ||--o{ MOVIE_CAST : "features"
-    PERSON ||--o{ MOVIE_CAST : "acts in"
-    USER ||--o{ USER_WATCHED_MOVIE : "watches"
-    MOVIE ||--o{ USER_WATCHED_MOVIE : "watched by"
-    USER ||--o{ USER_FAVORITE_GENRE : "prefers"
-    GENRE ||--o{ USER_FAVORITE_GENRE : "preferred by"
+    movies ||--o{ movie_genres : "tagged with"
+    genres ||--o{ movie_genres : "tags"
+    users ||--o{ user_movie_ratings : "rates"
+    movies ||--o{ user_movie_ratings : "rated by"
+    users ||--o{ user_favorites : "favorites"
+    movies ||--o{ user_favorites : "favorited by"
+    users ||--o{ user_watched_movies : "watched"
+    movies ||--o{ user_watched_movies : "watched by"
 ```
 
 ---
 
 ## Class Diagram
 
+Layered `:api` (controllers → services → repositories) plus the Spring-free
+`:engine` module, which the API reaches through the `MovieFeaturesProvider`
+port. No live TMDB client — movie data is seeded offline.
+
 ```mermaid
 classDiagram
-    %% ── Controllers ──
-    class MovieController {
-        +getMovies(query, page) PaginatedResponseDTO~MovieDTO~
-        +getMovieById(id) MovieDetailsDTO
-        +getPopularMovies(page) PaginatedResponseDTO~MovieDTO~
-    }
-    class RecommendationController {
-        +getRecommendations(movieId) List~MovieDTO~
-        +getPersonalized() List~MovieDTO~
-    }
-    class UserController {
-        +getProfile() UserProfileDTO
-        +addWatched(movieId) void
-    }
+    %% ── :api — controllers (thin HTTP) ──
+    class MovieController
+    class GenreController
+    class RecommendationController
+    class RatingController
+    class FavoriteController
+    class WatchedController
+    class UserController
 
-    %% ── Services ──
+    %% ── :api — services ──
     class MovieService {
-        +findAll(query, page) PaginatedResponse~Movie~
-        +findById(id) MovieDetails
-        +findPopular(page) PaginatedResponse~Movie~
-        +findByGenre(genreId, page) PaginatedResponse~Movie~
+        +listPopular(page, size) PageDto~MovieSummaryDto~
+        +listPopularByGenre(genreId, page, size) PageDto~MovieSummaryDto~
+        +searchByTitle(query, page, size) PageDto~MovieSummaryDto~
+        +getById(id) MovieSummaryDto
+    }
+    class GenreService {
+        +listGenres() List~GenreDto~
     }
     class RecommendationService {
-        +getForMovie(movieId) List~Movie~
-        +getPersonalized(userId) List~Movie~
+        +recommendFor(userId, limit) List~RecommendationDto~
+        +similarTo(movieId, limit) List~RecommendationDto~
+        +recommendFromSeeds(movieIds, limit) List~RecommendationDto~
     }
-    class KnnService {
-        +buildFeatureVector(movie) DoubleArray
-        +findKNearest(target, candidates, k) List~Movie~
-        -cosineSimilarity(a, b) Double
+    class UserPreferenceService {
+        +upsertRating(userId, movieId, rating)
+        +addFavorite(userId, movieId)
+        +markWatched(userId, movieId)
+        +listRatingItems(userId) List~RatingItemDto~
+        +listFavoriteItems(userId) List~FavoriteItemDto~
+        +listWatchedItems(userId) List~WatchedItemDto~
     }
     class UserService {
-        +getProfile(userId) UserProfile
-        +addWatchedMovie(userId, movieId) void
+        +getMe(jwt) UserMeDto
+        +updateMe(jwt, request) UserMeDto
     }
 
-    %% ── Repositories ──
-    class MovieRepository {
-        +findById(id) Optional~Movie~
-        +findByTmdbId(tmdbId) Optional~Movie~
-        +findAllByGenre(genreId, pageable) Page~Movie~
-        +findPopular(pageable) Page~Movie~
-    }
-    class UserRepository {
-        +findById(id) Optional~User~
-        +findByEmail(email) Optional~User~
-    }
-    class GenreRepository {
-        +findAll() List~Genre~
+    %% ── :api — persistence (Spring Data JPA) ──
+    class MovieRepository
+    class GenreRepository
+    class UserRepository
+    class UserMovieRatingRepository
+    class UserFavoriteRepository
+    class UserWatchedRepository
+
+    %% ── :api — adapter (port implementation) ──
+    class MovieFeaturesAdapter {
+        +loadCatalog() List~MovieFeatures~
     }
 
-    %% ── Domain Models ──
-    class Movie {
-        +Long id
-        +Int tmdbId
-        +String title
-        +String overview
-        +String posterPath
-        +String backdropPath
-        +LocalDate releaseDate
+    %% ── :engine — KNN recommender (no Spring) ──
+    class MovieFeaturesProvider {
+        <<interface>>
+        +loadCatalog() List~MovieFeatures~
+    }
+    class ContentKnnRecommender {
+        +recommend(seeds, limit, excluded) List~ScoredMovie~
+        -cosineSimilarity(a, b) Double
+    }
+    class MovieFeatures {
+        +Long movieId
+        +Set~Int~ genreIds
         +Double voteAverage
         +Int voteCount
-        +Int runtime
-        +List~Genre~ genres
+        +Double popularity
     }
-    class Genre {
-        +Int id
-        +String name
+    class WeightedMovie {
+        +Long movieId
+        +Double weight
     }
-    class Person {
-        +Long id
-        +Int tmdbId
-        +String name
-        +String profilePath
-    }
-    class MovieCast {
-        +Movie movie
-        +Person person
-        +String character
-    }
-    class User {
-        +UUID id
-        +String username
-        +String email
-        +String avatarUrl
-        +List~Movie~ watchedMovies
-        +List~Genre~ favoriteGenres
+    class ScoredMovie {
+        +Long movieId
+        +Double score
     }
 
-    %% ── DTOs ──
-    class MovieDTO {
-        +Long id
-        +String title
-        +String overview
-        +String posterPath
-        +String backdropPath
-        +String releaseDate
-        +Double voteAverage
-        +Int voteCount
-        +Int runtime
-        +List~GenreDTO~ genres
-    }
-    class MovieDetailsDTO {
-        +List~CastMemberDTO~ cast
-        +List~MovieDTO~ similarMovies
-    }
-    class UserProfileDTO {
-        +UUID id
-        +String username
-        +String email
-        +String avatarUrl
-        +List~MovieDTO~ watchedMovies
-        +List~String~ favoriteGenres
-    }
-    class PaginatedResponseDTO~T~ {
-        +List~T~ content
-        +Int totalElements
-        +Int totalPages
-        +Int currentPage
-        +Int pageSize
-    }
-
-    %% ── Integration ──
-    class TmdbClient {
-        +searchMovies(query, page) TmdbSearchResponse
-        +getMovieDetails(tmdbId) TmdbMovieResponse
-        +getPopularMovies(page) TmdbSearchResponse
-    }
-
-    %% ── Relationships ──
     MovieController --> MovieService
+    GenreController --> GenreService
     RecommendationController --> RecommendationService
+    RatingController --> UserPreferenceService
+    FavoriteController --> UserPreferenceService
+    WatchedController --> UserPreferenceService
     UserController --> UserService
 
     MovieService --> MovieRepository
-    MovieService --> TmdbClient
-    RecommendationService --> KnnService
-    RecommendationService --> MovieRepository
-    RecommendationService --> UserRepository
+    GenreService --> GenreRepository
     UserService --> UserRepository
-    UserService --> MovieRepository
+    UserPreferenceService --> MovieRepository
+    UserPreferenceService --> UserMovieRatingRepository
+    UserPreferenceService --> UserFavoriteRepository
+    UserPreferenceService --> UserWatchedRepository
+    RecommendationService --> MovieRepository
+    RecommendationService --> ContentKnnRecommender
+    RecommendationService --> MovieFeaturesProvider
 
-    Movie "1" --> "*" Genre
-    Movie "1" --> "*" MovieCast
-    MovieCast --> Person
-    User "1" --> "*" Movie : watched
-    User "1" --> "*" Genre : favorites
-
-    MovieDTO --|> MovieDetailsDTO : extends
-    MovieDetailsDTO ..> MovieDTO : contains
-    UserProfileDTO ..> MovieDTO : contains
+    MovieFeaturesAdapter ..|> MovieFeaturesProvider
+    MovieFeaturesAdapter --> MovieRepository
+    ContentKnnRecommender --> MovieFeatures
+    ContentKnnRecommender --> WeightedMovie
+    ContentKnnRecommender --> ScoredMovie
 ```

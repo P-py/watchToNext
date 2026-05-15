@@ -25,6 +25,33 @@ and delete the project afterwards.
 "Internal" = no public domain generated. Services reach each other at
 `http://<service>.railway.internal:<port>`.
 
+```mermaid
+graph TD
+  Browser([User browser])
+
+  subgraph public["Public — internet-facing"]
+    FE["frontend<br/>Next.js + BFF"]
+    KC["keycloak"]
+  end
+
+  subgraph private["Private network — *.railway.internal"]
+    BE["backend<br/>Spring Boot"]
+    PG[("postgres")]
+    RC[("redis-cache")]
+    RA[("redis-auth")]
+  end
+
+  Browser -->|HTTPS| FE
+  Browser -->|OIDC login redirect| KC
+  FE -->|REST via BFF proxy| BE
+  FE -->|token exchange| KC
+  FE -->|sessions| RA
+  BE --> PG
+  BE --> RC
+  BE -->|JWKS| KC
+  KC --> PG
+```
+
 ## Prerequisites
 
 - The repo on GitHub, with `main` at the tagged release.
