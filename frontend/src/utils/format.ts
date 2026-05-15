@@ -6,6 +6,17 @@ export function formatYear(releaseDate: string | null): string {
   return releaseDate ? new Date(releaseDate).getFullYear().toString() : "N/A";
 }
 
+const DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+export function formatDate(iso: string): string {
+  const parsed = new Date(iso);
+  return Number.isNaN(parsed.getTime()) ? "—" : DATE_FORMATTER.format(parsed);
+}
+
 export function formatRuntime(minutes: number | null): string {
   if (!minutes) return "N/A";
   const h = Math.floor(minutes / 60);
