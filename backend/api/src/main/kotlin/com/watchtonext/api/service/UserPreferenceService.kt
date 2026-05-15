@@ -50,6 +50,12 @@ class UserPreferenceService(
         recommendationCacheEvictor.evictFor(userId)
     }
 
+    @Transactional(readOnly = true)
+    fun getRating(userId: UUID, movieId: Long): Double? =
+        ratingRepository.findById(UserMovieRatingId(userId, movieId))
+            .map { it.rating }
+            .orElse(null)
+
     @Transactional
     fun addFavorite(userId: UUID, movieId: Long): UserFavoriteEntity {
         if (!movieRepository.existsById(movieId)) {
