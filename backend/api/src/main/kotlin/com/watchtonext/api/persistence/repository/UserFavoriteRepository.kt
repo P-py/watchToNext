@@ -9,4 +9,6 @@ import java.util.UUID
 @Repository
 interface UserFavoriteRepository : JpaRepository<UserFavoriteEntity, UserFavoriteId> {
     fun findByUserId(userId: UUID): List<UserFavoriteEntity>
+
+    fun countByUserId(userId: UUID): Long
 }

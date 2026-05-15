@@ -9,4 +9,6 @@ import java.util.UUID
 @Repository
 interface UserMovieRatingRepository : JpaRepository<UserMovieRatingEntity, UserMovieRatingId> {
     fun findByUserId(userId: UUID): List<UserMovieRatingEntity>
+
+    fun countByUserId(userId: UUID): Long
 }
