@@ -20,12 +20,46 @@ services:
     image: redis:7-alpine
     container_name: watchtonext-redis
     restart: unless-stopped
+    # LRU-friendly cache for recommendation results. Eviction allowed.
+    command: ["redis-server", "--maxmemory-policy", "allkeys-lru"]
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-redis:
+    image: redis:7-alpine
+    container_name: watchtonext-auth-redis
+    restart: unless-stopped
+    # Session store. Different policy: no eviction (sessions MUST NOT be dropped under
+    # memory pressure), AOF on for durability across container restarts, password auth.
+    command:
+      - "redis-server"
+      - "--requirepass"
+      - "${AUTH_REDIS_PASSWORD:-changeme}"
+      - "--maxmemory-policy"
+      - "noeviction"
+      - "--appendonly"
+      - "yes"
+    env_file:
+      - ./backend/.env
+    ports:
+      - "6380:6379"
+    volumes:
+      - auth_redis_data:/data
+    healthcheck:
+      test:
+        - "CMD"
+        - "redis-cli"
+        - "-a"
+        - "${AUTH_REDIS_PASSWORD:-changeme}"
+        - "--no-auth-warning"
+        - "ping"
       interval: 5s
       timeout: 5s
       retries: 10
@@ -58,4 +92,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  auth_redis_data:
   keycloak_data:
