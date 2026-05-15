@@ -1,4 +1,4 @@
-import { Heart, Pencil, Star, User } from "lucide-react";
+import { Eye, Heart, Pencil, Star, User } from "lucide-react";
 import { Button } from "@/components/Button";
 import { UserProfile as UserProfileType } from "@/types/user";
 import { formatDate } from "@/utils/format";
@@ -59,7 +59,7 @@ export function UserProfile({ profile, onEdit }: UserProfileProps) {
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <StatCard
           icon={<Star className="h-5 w-5" />}
           label="Avaliações"
@@ -69,6 +69,11 @@ export function UserProfile({ profile, onEdit }: UserProfileProps) {
           icon={<Heart className="h-5 w-5" />}
           label="Favoritos"
           value={profile.favoritesCount}
+        />
+        <StatCard
+          icon={<Eye className="h-5 w-5" />}
+          label="Assistidos"
+          value={profile.watchedCount}
         />
       </div>
     </div>
