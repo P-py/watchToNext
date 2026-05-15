@@ -7,11 +7,11 @@ import type { Session } from "@/lib/auth/types";
 import { MobileMenu } from "./MobileMenu";
 
 const NAV_LINKS = [
-  { href: "/movies", label: "Movies" },
-  { href: "/search", label: "Search" },
-  { href: "/suggestions", label: "Suggestions" },
-  { href: "/about", label: "About" },
-  { href: "/profile", label: "Profile" },
+  { href: "/movies", label: "Filmes" },
+  { href: "/search", label: "Buscar" },
+  { href: "/suggestions", label: "Sugestões" },
+  { href: "/about", label: "Sobre" },
+  { href: "/profile", label: "Perfil" },
 ];
 
 function AuthActionsDesktop({ session }: { session: Session | null }) {

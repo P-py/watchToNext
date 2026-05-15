@@ -28,12 +28,12 @@ export default function TmdbAttribution() {
             />
           </a>
           <p className="text-xs text-zinc-500">
-            This product uses the TMDB API but is not endorsed or certified by TMDB.
+            Este produto usa dados do TMDB, mas não é endossado nem certificado pelo TMDB.
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <p className="text-xs text-zinc-600">
-            Movie data provided by{" "}
+            Dados de filmes fornecidos por{" "}
             <a
               href="https://www.themoviedb.org"
               target="_blank"
@@ -45,7 +45,7 @@ export default function TmdbAttribution() {
           </p>
           {showAcademic && (
             <p className="text-[11px] uppercase tracking-wide text-amber-300/70">
-              Academic project · temporary · non-commercial
+              Projeto acadêmico · temporário · não comercial
             </p>
           )}
         </div>

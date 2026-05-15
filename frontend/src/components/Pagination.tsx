@@ -13,7 +13,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <Button
         variant="ghost"
         size="md"
-        aria-label="Previous page"
+        aria-label="Página anterior"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
         className="!w-10 !px-0"
@@ -28,7 +28,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <Button
         variant="ghost"
         size="md"
-        aria-label="Next page"
+        aria-label="Próxima página"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
         className="!w-10 !px-0"

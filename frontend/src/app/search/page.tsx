@@ -96,7 +96,7 @@ function SearchPanel() {
               transition={{ duration: 0.2 }}
             >
               <p className="mb-4 text-sm text-zinc-500">
-                Results for &quot;{query}&quot;
+                Resultados para &quot;{query}&quot;
               </p>
               <AnimatedGrid cols={4}>
                 {results.map((movie) => (
@@ -125,8 +125,8 @@ function SearchPanel() {
             <EmptyState
               key="empty"
               icon={<SearchX className="h-8 w-8" />}
-              title="No movies found"
-              description={`Nothing matched "${query}". Try a different search.`}
+              title="Nenhum filme encontrado"
+              description={`Nada corresponde a "${query}". Tente outra busca.`}
             />
           )}
         </AnimatePresence>
@@ -146,7 +146,7 @@ export default function SearchPage() {
           animate="visible"
           className="mb-6 text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl"
         >
-          Search
+          Buscar
         </motion.h1>
 
         <Suspense fallback={null}>

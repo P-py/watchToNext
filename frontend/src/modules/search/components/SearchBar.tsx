@@ -49,7 +49,7 @@ export function SearchBar({
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search movies..."
+        placeholder="Buscar filmes..."
         className="h-12 w-full rounded-xl border border-zinc-700 bg-zinc-800 pl-11 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
       />
       {loading && (

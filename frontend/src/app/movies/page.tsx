@@ -83,7 +83,7 @@ export default function MoviesPage() {
           animate="visible"
           className="mb-8 text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl"
         >
-          Movies
+          Filmes
         </motion.h1>
 
         <Suspense fallback={<MovieGridSkeleton count={PAGE_SIZE} cols={4} />}>

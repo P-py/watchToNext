@@ -98,7 +98,7 @@ export function Modal({ open, onClose, title, footer, children, className }: Mod
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close modal"
+                aria-label="Fechar"
                 className="ml-auto text-zinc-500 transition-colors hover:text-zinc-300"
               >
                 <X className="h-5 w-5" />

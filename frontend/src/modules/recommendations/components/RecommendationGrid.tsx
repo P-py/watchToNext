@@ -9,7 +9,7 @@ interface RecommendationGridProps {
 
 export function RecommendationGrid({
   movies,
-  title = "Recommended for you",
+  title = "Recomendados para você",
 }: RecommendationGridProps) {
   if (movies.length === 0) return null;
 

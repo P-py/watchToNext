@@ -11,10 +11,10 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Something went wrong",
+  title = "Algo deu errado",
   message,
   onRetry,
-  retryLabel = "Try again",
+  retryLabel = "Tentar novamente",
   className,
 }: ErrorStateProps) {
   return (

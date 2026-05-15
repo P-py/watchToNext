@@ -138,7 +138,7 @@ export default function MoviePage({ params }: MoviePageProps) {
         )}
         {!loadingSimilar && similarCards.length > 0 && (
           <motion.div variants={fadeUp} initial="hidden" animate="visible">
-            <RecommendationGrid movies={similarCards} title="Similar Movies" />
+            <RecommendationGrid movies={similarCards} title="Filmes parecidos" />
           </motion.div>
         )}
       </main>
