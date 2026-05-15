@@ -175,6 +175,8 @@ The `--import-realm` flag is idempotent — it only imports if the realm doesn't
 
 `config/JwtConverter` extracts realm roles from `realm_access.roles` and maps them to `ROLE_<name>` Spring authorities. `service/UserProvisioningFilter` runs after the Spring Security bearer-token filter and idempotently calls `UserProvisioningService.provision(jwt)` to upsert the `users` row keyed by the JWT `sub`. Failures during provisioning are logged but do not break the request.
 
+On **creation**, `provision()` seeds `displayName` from the JWT claims (`preferred_username` → `name` → synthetic `user-<sub-prefix>` fallback). On **subsequent calls** it only reconciles `email`; `displayName` is owned by the user via `PATCH /api/users/me` and is no longer overwritten from upstream claims. This means a manual rename via `Account Console` in the IdP won't propagate, but the user-driven edit also won't be silently wiped on the next login.
+
 Controllers no longer take `@RequestParam userId`. They read `@AuthenticationPrincipal Jwt jwt` and derive `UUID.fromString(jwt.subject)`. This applies to `RatingController`, `FavoriteController`, and `RecommendationController.recommend()`. `RecommendationController.similar()` stays unauthenticated and has no userId.
 
 ## API Style
@@ -193,6 +195,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
 | `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
 | `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
+| `PATCH` | `/api/users/me` (body `{displayName}`) | **Authenticated.** Updates the caller's editable profile. Only `displayName` is supported (validated `@NotBlank` + length 1..255; server trims whitespace). Email is read-only and comes from Keycloak. Returns the refreshed `UserMeDto`. `UserProvisioningService` no longer overwrites `displayName` on subsequent logins. |
 
 ## Errors
 
