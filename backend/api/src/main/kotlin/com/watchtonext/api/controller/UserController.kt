@@ -1,10 +1,14 @@
 package com.watchtonext.api.controller
 
+import com.watchtonext.api.dto.UpdateUserMeRequest
 import com.watchtonext.api.dto.UserMeDto
 import com.watchtonext.api.service.UserService
+import jakarta.validation.Valid
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -14,4 +18,10 @@ class UserController(private val service: UserService) {
 
     @GetMapping("/me")
     fun me(@AuthenticationPrincipal jwt: Jwt): UserMeDto = service.getMe(jwt)
+
+    @PatchMapping("/me")
+    fun updateMe(
+        @AuthenticationPrincipal jwt: Jwt,
+        @Valid @RequestBody body: UpdateUserMeRequest,
+    ): UserMeDto = service.updateMe(jwt, body)
 }
