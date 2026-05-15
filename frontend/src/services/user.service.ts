@@ -7,9 +7,4 @@ export const userService = {
     if (USE_MOCKS) return Promise.resolve(MOCK_USER_PROFILE);
     return api.get("/users/me");
   },
-
-  addToWatched: (movieId: number): Promise<void> => {
-    if (USE_MOCKS) return Promise.resolve();
-    return api.post("/users/me/watched", { movieId });
-  },
 };
