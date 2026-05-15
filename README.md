@@ -9,10 +9,12 @@ Movie recommendation platform powered by KNN similarity analysis. Discover what 
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js · TypeScript · TailwindCSS · framer-motion |
-| Backend | Kotlin · Spring Boot · REST API |
-| Database | PostgreSQL · Redis · Flyway |
-| Auth | Keycloak · OAuth2 / OpenID Connect |
+| Frontend | Next.js (App Router) · TypeScript · TailwindCSS · framer-motion |
+| Backend-for-Frontend | Next.js route handlers (server-side OIDC + BFF proxy) |
+| Backend | Kotlin · Spring Boot · REST API (Gradle multi-module: `:api`, `:engine`) |
+| Database | PostgreSQL · Flyway (migrations) |
+| Cache & session | Redis (recommendation cache) · auth-redis (encrypted BFF sessions) |
+| Auth | Keycloak · OAuth2 / OpenID Connect (Authorization Code + PKCE) |
 | Data | TMDB (via static dataset seed) |
 
 ## Getting started
@@ -26,9 +28,15 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-> Set `NEXT_PUBLIC_USE_MOCKS=true` in `.env.local` to run with mock data while the backend is not yet running.
+> The Next app is a **Backend-for-Frontend**: it runs the OIDC flow server-side and proxies API calls to the Spring Boot backend at `API_UPSTREAM_URL`. The browser only ever sees the relative `/api/proxy/*` and an opaque session cookie. Set `NEXT_PUBLIC_USE_MOCKS=true` in `.env.local` to bypass the BFF and use mock data while the backend is not yet running.
 >
-> The API base URL (incl. the `/api` prefix) is configured via `NEXT_PUBLIC_API_URL`. See [`docs/frontend.md`](docs/frontend.md#api-base-url) for the precedence rules and production requirement.
+> A new `SESSION_ENCRYPTION_KEY` (32 bytes base64) is required for `auth-redis` payload encryption — generate one with:
+>
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+> ```
+>
+> Full env-var reference and auth architecture in [`docs/frontend.md`](docs/frontend.md#auth-bff--opaque-session).
 
 ### Backend
 
@@ -48,14 +56,23 @@ watchToNext/
 
 The CSV is gitignored and must never be committed.
 
-#### 2 — Start the databases
+#### 2 — Start the infrastructure
 
 ```bash
-cp backend/.env.example backend/.env   # first time only — backend credentials
+cp backend/.env.example backend/.env   # first time only — Postgres + Keycloak + auth-redis credentials
 docker compose up -d
 ```
 
-This starts **PostgreSQL** (port 5432) and **Redis** (port 6379). Both have health checks — wait until `docker compose ps` shows them as `healthy`.
+This starts:
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| `postgres` | 5432 | App data (movies, ratings, favorites, users) |
+| `redis` | 6379 | Recommendation cache (LRU eviction) |
+| `auth-redis` | 6380 | BFF session store, password-protected, no eviction, AOF on |
+| `keycloak` | 8180 | OIDC provider; realm imported from `infra/keycloak/realm-export.json` on first boot |
+
+All four have health checks — wait until `docker compose ps` reports them as `healthy`. Keycloak admin console: <http://localhost:8180/admin> (`admin` / `admin`, dev only).
 
 #### 3 — Create schema + seed data
 
@@ -87,7 +104,9 @@ Overrides:
 ## Project structure
 
 ```
-frontend/         Next.js application
+backend/          Spring Boot multi-module (Kotlin) — :api + :engine
+frontend/         Next.js application + BFF route handlers
+infra/            Keycloak realm export and other infrastructure assets
 docs/             Architecture and standards documentation
 CLAUDE.md         AI assistant context and conventions
 ```
@@ -97,10 +116,13 @@ CLAUDE.md         AI assistant context and conventions
 | File | Contents |
 |---|---|
 | [`docs/project-overview.md`](docs/project-overview.md) | Goals and core features |
-| [`docs/architecture.md`](docs/architecture.md) | System architecture |
-| [`docs/frontend.md`](docs/frontend.md) | Frontend stack and typography |
-| [`docs/backend.md`](docs/backend.md) | Backend stack and API shape |
+| [`docs/architecture.md`](docs/architecture.md) | System architecture and service topology |
+| [`docs/frontend.md`](docs/frontend.md) | Frontend stack, auth BFF, security headers, env vars |
+| [`docs/backend.md`](docs/backend.md) | Backend stack, Keycloak setup, API shape |
+| [`docs/recommender-model.md`](docs/recommender-model.md) | Recommender feature vector, similarity metric, configuration |
+| [`docs/error-handling.md`](docs/error-handling.md) | Error contract, `ApiError` shape, exception handler rules |
 | [`docs/coding-standards.md`](docs/coding-standards.md) | Code style, naming, animations, commit convention |
+| [`docs/diagrams.md`](docs/diagrams.md) | Architecture diagrams index |
 
 ## Attribution
 
