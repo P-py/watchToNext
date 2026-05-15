@@ -11,15 +11,22 @@ data class UserMeDto(
     val createdAt: OffsetDateTime,
     val ratingsCount: Long,
     val favoritesCount: Long,
+    val watchedCount: Long,
 ) {
     companion object {
-        fun from(user: UserEntity, ratingsCount: Long, favoritesCount: Long) = UserMeDto(
+        fun from(
+            user: UserEntity,
+            ratingsCount: Long,
+            favoritesCount: Long,
+            watchedCount: Long,
+        ) = UserMeDto(
             id = user.id,
             displayName = user.displayName,
             email = user.email,
             createdAt = user.createdAt,
             ratingsCount = ratingsCount,
             favoritesCount = favoritesCount,
+            watchedCount = watchedCount,
         )
     }
 }
