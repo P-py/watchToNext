@@ -129,33 +129,135 @@ Toggle `NEXT_PUBLIC_USE_MOCKS=true` to bypass the network and return mock data f
 
 Set `NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER=false` to hide both the top-of-page banner (`AcademicDisclaimer`) and the matching line in the footer (`TmdbAttribution`). Defaults to shown; only the literal string `"false"` hides the disclaimer. TMDB attribution itself is unaffected — that one is required by TMDB's terms regardless.
 
-## Auth — signup flow
+## Auth (BFF + opaque session)
 
-The `/signup` route is the only auth entry point exposed today. It's a thin landing page that delegates account creation to the Keycloak realm provisioned by the project (see [backend Keycloak section](./backend.md#keycloak-auth-provider)).
+The Next.js app is a **Backend-for-Frontend**: it runs the OAuth2 Authorization Code + PKCE dance server-side, holds tokens in a dedicated Redis (`auth-redis`, see [backend Keycloak section](./backend.md#keycloak-auth-provider)), and gives the browser only an **opaque 32-byte session id** in a single cookie. The browser never sees a JWT, never sees an access/refresh/id token, never sees PII via cookies. Even the Redis payload is **envelope-encrypted (AES-256-GCM)** before it touches disk.
 
-Flow:
+### High-level diagram
 
-1. User clicks **Criar conta** in the Navbar (amber CTA, both desktop and mobile drawer) → lands on `/signup`.
-2. User clicks **Continuar** on the landing → `src/utils/keycloak.ts:buildKeycloakRegisterUrl()` runs:
-   - generates a random PKCE `code_verifier` (32 bytes via `crypto.getRandomValues`),
-   - derives the `code_challenge` (SHA-256 + base64url),
-   - stores the verifier in `sessionStorage` under `watchtonext.pkce.verifier` (exported as `PKCE_VERIFIER_STORAGE_KEY`),
-   - assembles `${BASE}/realms/${realm}/protocol/openid-connect/registrations?client_id=…&redirect_uri=…&response_type=code&scope=openid&kc_action=REGISTER&code_challenge=…&code_challenge_method=S256`.
-3. `window.location.assign(...)` navigates to Keycloak; user completes the registration form.
-4. Keycloak redirects back to `${NEXT_PUBLIC_AUTH_REDIRECT_URI}/?code=…&session_state=…`. **The home currently ignores those params** — the callback handler that exchanges `code + verifier` for tokens is a separate card.
+```
+              ┌────────────────┐
+Browser <───> │ wtn_session    │  ← 32 bytes random, base64url, HttpOnly+Lax
+              │ (only cookie)  │
+              └────┬───────────┘
+                   │
+                   ▼
+              ┌──────────────────────────────────────┐
+   Next BFF   │ app/api/auth/*  + app/api/proxy/*    │
+              │   - login / signup / callback        │
+              │   - refresh / logout / me            │
+              │   - proxy → upstream with Bearer     │
+              └────┬───────────────────────┬─────────┘
+       lookup ▼                            ▼ Bearer
+   ┌──────────────────┐         ┌──────────────────────┐
+   │ auth-redis       │         │ Spring Boot (8080)   │
+   │ wtn:session:<id> │         │ JWT validated via    │
+   │ AES-256-GCM      │         │ Keycloak JWKs        │
+   │ {tokens, claims} │         └──────────────────────┘
+   └──────────────────┘
+```
 
-The helper throws `Error("Missing Keycloak env var(s): …")` if any of the four env vars below is unset, naming the missing variable.
+### Cookies
+
+| Cookie | Path | Lifetime | Content |
+|--------|------|----------|---------|
+| `wtn_session` | `/` | refresh-token lifespan (capped by `SESSION_MAX_LIFESPAN_SECONDS`) | Opaque 32-byte random id (base64url). Maps to a record in `auth-redis`. |
+| `wtn_pkce_verifier` | `/api/auth/callback` | 10 min | Single-use PKCE verifier for the in-flight auth request. |
+| `wtn_oauth_state` | `/api/auth/callback` | 10 min | CSRF token bound to the in-flight auth request. |
+
+All cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` when `AUTH_COOKIE_SECURE=true` (mandatory in any non-localhost deploy).
+
+### Session record (Redis, encrypted)
+
+`lib/auth/store.ts` writes the encrypted JSON of:
+
+```
+{
+  sub, displayName, email, roles,           // identity (from id_token claims)
+  accessToken, refreshToken, idToken,        // OIDC tokens
+  accessExpiresAt, refreshExpiresAt,         // epoch seconds
+  createdAt, lastAccessedAt
+}
+```
+
+Key: `wtn:session:<sessionId>`. TTL: `min(refresh_expires_in, SESSION_MAX_LIFESPAN_SECONDS)`. Absolute cap: when `createdAt + SESSION_MAX_LIFESPAN_SECONDS < now`, the entry is destroyed regardless of refresh window.
+
+Encryption: AES-256-GCM with a 32-byte key from `SESSION_ENCRYPTION_KEY`. Each entry has a per-record 12-byte nonce. A tampered or unkeyable entry decrypts to an exception → the entry is dropped and the user becomes anonymous.
+
+### Routes
+
+| Route | Verb | Purpose |
+|-------|------|---------|
+| `/api/auth/login` | GET | Generates verifier+state, sets temp cookies, 302 to Keycloak `/auth?prompt=login`. |
+| `/api/auth/signup` | GET | Same as login but hits Keycloak `/registrations` (no `prompt`, no `kc_action`). |
+| `/api/auth/callback` | GET | Validates state, exchanges `code + verifier` for tokens, verifies id_token via `jose` + JWKs, creates session in Redis, sets `wtn_session`. |
+| `/api/auth/refresh` | POST | Refreshes tokens via `grant_type=refresh_token`, updates Redis record (cookie keeps the same id), renews maxAge. Auto-called by `/api/proxy/*` on a 401. |
+| `/api/auth/logout` | POST/GET | Destroys Redis entry, clears cookie, 303 to Keycloak `end_session` with `id_token_hint`. |
+| `/api/auth/me` | GET | Returns the identity (`{sub, displayName, email, roles}`) or `null`. Always 200 — the Navbar uses this to switch between logged-in and logged-out UI without seeing tokens. |
+| `/api/proxy/[...path]` | ALL | BFF proxy: reads session, attaches `Authorization: Bearer <access>`, forwards to `API_UPSTREAM_URL`. On 401 calls `/api/auth/refresh` once (deduped per process), then retries. |
+
+### Frontend service layer
+
+`services/api.ts` points at `/api/proxy` (same origin). The browser never knows the upstream URL — that's a server-only env var (`API_UPSTREAM_URL`). All existing services (`movies`, `recommendations`, `user`) call `api.get/post/...` unchanged.
+
+### Server-only modules
+
+Lives in `src/lib/auth/`. All files start with `import "server-only"` to make accidental client imports fail the build:
+
+- `keycloak.ts` — issuer/auth/token/end-session URL builders from env.
+- `pkce.ts` — `generateVerifier`, `deriveChallenge`, `generateState` via `node:crypto`.
+- `cookies.ts` — cookie names + helpers (`setSessionCookie`, `clearTempAuthCookies`, etc.).
+- `redis.ts` — `ioredis` client singleton with hot-reload safety.
+- `crypto.ts` — `encryptPayload` / `decryptPayload` (AES-256-GCM).
+- `store.ts` — `SessionStore` interface + `RedisSessionStore` implementation.
+- `session.ts` — `readSession()` (identity for UI) and `readSessionRecord()` (full record incl. tokens, used only by the proxy/refresh routes).
+- `types.ts` — `Session` interface. **The only file in `lib/auth/` safe to import from a client component.**
 
 ### Env vars
 
-| Variable | Default (dev) | Purpose |
-|----------|--------------|---------|
-| `NEXT_PUBLIC_KEYCLOAK_BASE_URL`   | `http://localhost:8180`  | Keycloak issuer base, no realm segment. Trailing slash trimmed. |
-| `NEXT_PUBLIC_KEYCLOAK_REALM`      | `watchtonext`            | Realm name (URL-encoded by the helper). |
-| `NEXT_PUBLIC_KEYCLOAK_CLIENT_ID`  | `watchtonext-frontend`   | Public client configured with PKCE S256 only. |
-| `NEXT_PUBLIC_AUTH_REDIRECT_URI`   | `http://localhost:3000`  | Must match a `redirectUris` entry on the client (`http://localhost:3000/*` in the dev realm). |
+#### Client-side (`NEXT_PUBLIC_*`)
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_KEYCLOAK_BASE_URL`   | Keycloak issuer base (e.g. `http://localhost:8180`). Used server-side too. |
+| `NEXT_PUBLIC_KEYCLOAK_REALM`      | Realm name. |
+| `NEXT_PUBLIC_KEYCLOAK_CLIENT_ID`  | Public SPA client id. |
+| `NEXT_PUBLIC_AUTH_REDIRECT_URI`   | App origin, e.g. `http://localhost:3000`. `/api/auth/callback` is appended internally. |
 
-All four are required at runtime — the helper validates them and throws on missing values rather than building a half-baked URL.
+#### Server-only
+| Variable | Purpose |
+|----------|---------|
+| `API_UPSTREAM_URL`              | Upstream Spring Boot base (e.g. `http://localhost:8080/api`). The BFF proxy reads this. |
+| `KEYCLOAK_JWKS_URL`             | JWKs endpoint used by `jose.jwtVerify` for the id_token at callback. |
+| `AUTH_REDIS_URL`                | Connection string for the session store (e.g. `redis://:changeme@localhost:6380`). |
+| `AUTH_COOKIE_SECURE`            | `"true"` → cookies get the `Secure` flag. Required for HTTPS deploys. |
+| `SESSION_MAX_LIFESPAN_SECONDS`  | Absolute upper bound on a session (default `36000` = 10 h). |
+| `SESSION_ENCRYPTION_KEY`        | 32 bytes base64. **Required.** Generate via `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. |
+
+### Security headers
+
+`next.config.ts` exports `async headers()` returning the same set on every response:
+
+| Header | Value |
+|--------|-------|
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` |
+| `X-Frame-Options` | `DENY` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `no-referrer` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), interest-cohort=()` |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://image.tmdb.org data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; form-action 'self' http://localhost:8180; frame-ancestors 'none'; base-uri 'self'; object-src 'none'` |
+
+CSP `connect-src 'self'` is enough because the BFF proxy fans out to upstream server-side; the browser only ever fetches `/api/proxy/*`, never the upstream directly. `form-action` allows the redirect to Keycloak's hosted forms.
+
+### Tests to validate token isolation
+
+Run these after `npm run build` to confirm the BFF doesn't leak anything client-side:
+
+- `grep -rE "wtn_access|wtn_refresh|wtn_id_token|wtn_session|jwtVerify" .next/static/` → empty.
+- `grep -rl "jose" .next/static/` → empty.
+- `grep -rl "ioredis" .next/static/` → empty.
+- `grep -rE 'from "@/lib/auth/' src/ --include="*.tsx" --include="*.ts" | grep -v "/types"` → only files in `src/app/api/**/route.ts` and `src/app/profile/page.tsx` (server components).
+- In a logged-in browser session, `document.cookie` returns `""` (HttpOnly).
+- `curl -s -H "Cookie: $COOKIE" http://localhost:3000/ | grep -cE "eyJ[A-Za-z0-9_-]{20,}"` → `0` for every page (no JWT in SSR HTML).
 
 ## HTTP client
 
