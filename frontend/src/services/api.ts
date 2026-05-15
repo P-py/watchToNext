@@ -8,18 +8,10 @@ import {
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-function resolveBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_API_URL;
-  if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, "");
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "NEXT_PUBLIC_API_URL is required in production. Set it in your environment or .env file."
-    );
-  }
-  return "http://localhost:8080/api";
-}
-
-const BASE_URL = resolveBaseUrl();
+// Same-origin path served by the Next BFF (app/api/proxy/[...path]/route.ts).
+// The proxy attaches the Bearer token from httpOnly cookies before forwarding
+// to the upstream Spring Boot API — the browser never sees the token.
+const BASE_URL = "/api/proxy";
 
 /**
  * Single switch for the whole frontend's mock mode. Services import this
