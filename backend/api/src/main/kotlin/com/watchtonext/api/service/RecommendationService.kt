@@ -5,6 +5,7 @@ import com.watchtonext.api.dto.RecommendationDto
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import com.watchtonext.engine.model.WeightedMovie
 import com.watchtonext.engine.port.MovieFeaturesProvider
 import com.watchtonext.engine.recommender.ContentKnnRecommender
@@ -22,6 +23,7 @@ class RecommendationService(
     private val featuresProvider: MovieFeaturesProvider,
     private val ratingRepository: UserMovieRatingRepository,
     private val favoriteRepository: UserFavoriteRepository,
+    private val watchedRepository: UserWatchedRepository,
     private val movieRepository: MovieRepository,
     private val properties: RecommenderProperties,
 ) {
@@ -45,7 +47,10 @@ class RecommendationService(
             WeightedMovie(movieId = r.movieId, weight = r.rating * multiplier)
         }
 
-        val excluded = ratings.map { it.movieId }.toSet()
+        // Exclude both rated and watched movies — never recommend something the user
+        // has already seen, even when they watched it without rating it.
+        val watchedIds = watchedRepository.findByUserId(userId).map { it.movieId }
+        val excluded = ratings.map { it.movieId }.toSet() + watchedIds
         val ranked = recommender().recommend(seeds, limit, excluded)
         if (ranked.isEmpty()) return emptyList()
 
