@@ -192,6 +192,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `GET`  | `/api/recommendations/similar?movieId=&limit=` | **Public.** Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
 | `PUT`  | `/api/ratings/{movieId}` (body `{rating}`) | **Authenticated.** Upsert a rating for the caller. |
 | `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
+| `GET`  | `/api/favorites`                    | **Authenticated.** Lists the caller's favorites as `FavoriteDto[]` (`{userId, movieId, createdAt}`). |
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
 | `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
 | `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount, watchedCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
