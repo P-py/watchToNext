@@ -4,9 +4,12 @@ import com.watchtonext.api.persistence.entity.UserFavoriteEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteId
 import com.watchtonext.api.persistence.entity.UserMovieRatingEntity
 import com.watchtonext.api.persistence.entity.UserMovieRatingId
+import com.watchtonext.api.persistence.entity.UserWatchedEntity
+import com.watchtonext.api.persistence.entity.UserWatchedId
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -24,11 +27,13 @@ class UserPreferenceServiceTest {
 
     private val ratingRepository = mockk<UserMovieRatingRepository>()
     private val favoriteRepository = mockk<UserFavoriteRepository>()
+    private val watchedRepository = mockk<UserWatchedRepository>()
     private val movieRepository = mockk<MovieRepository>()
     private val cacheEvictor = mockk<RecommendationCacheEvictor>()
     private val service = UserPreferenceService(
         ratingRepository,
         favoriteRepository,
+        watchedRepository,
         movieRepository,
         cacheEvictor,
     )
@@ -37,6 +42,7 @@ class UserPreferenceServiceTest {
     private val movieId = 42L
     private val ratingId = UserMovieRatingId(userId, movieId)
     private val favoriteId = UserFavoriteId(userId, movieId)
+    private val watchedId = UserWatchedId(userId, movieId)
 
     @Test
     fun `upsertRating saves a fresh entity and evicts cache when no prior rating exists`() {
@@ -146,5 +152,67 @@ class UserPreferenceServiceTest {
 
         verify(exactly = 1) { favoriteRepository.deleteById(favoriteId) }
         verify(exactly = 1) { cacheEvictor.evictFor(userId) }
+    }
+
+    @Test
+    fun `markWatched saves a new entity when not yet watched and evicts cache`() {
+        every { movieRepository.existsById(movieId) } returns true
+        every { watchedRepository.findById(watchedId) } returns Optional.empty()
+        val captured = slot<UserWatchedEntity>()
+        every { watchedRepository.save(capture(captured)) } answers { captured.captured }
+        justRun { cacheEvictor.evictFor(userId) }
+
+        val result = service.markWatched(userId, movieId)
+
+        assertThat(result.userId).isEqualTo(userId)
+        assertThat(result.movieId).isEqualTo(movieId)
+        verify(exactly = 1) { watchedRepository.save(any()) }
+        verify(exactly = 1) { cacheEvictor.evictFor(userId) }
+    }
+
+    @Test
+    fun `markWatched is idempotent — no save when already watched`() {
+        val existing = UserWatchedEntity(userId, movieId)
+        every { movieRepository.existsById(movieId) } returns true
+        every { watchedRepository.findById(watchedId) } returns Optional.of(existing)
+        justRun { cacheEvictor.evictFor(userId) }
+
+        val result = service.markWatched(userId, movieId)
+
+        assertThat(result).isSameAs(existing)
+        verify(exactly = 0) { watchedRepository.save(any()) }
+        verify(exactly = 1) { cacheEvictor.evictFor(userId) }
+    }
+
+    @Test
+    fun `markWatched throws 404 with the friendly pt-BR reason when the movie is missing`() {
+        every { movieRepository.existsById(movieId) } returns false
+
+        assertThatThrownBy { service.markWatched(userId, movieId) }
+            .isInstanceOfSatisfying(ResponseStatusException::class.java) { ex ->
+                assertThat(ex.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+                assertThat(ex.reason).isEqualTo("Não encontramos o filme solicitado.")
+            }
+        verify(exactly = 0) { cacheEvictor.evictFor(any()) }
+    }
+
+    @Test
+    fun `unmarkWatched delegates to the repository and evicts cache`() {
+        justRun { watchedRepository.deleteById(watchedId) }
+        justRun { cacheEvictor.evictFor(userId) }
+
+        service.unmarkWatched(userId, movieId)
+
+        verify(exactly = 1) { watchedRepository.deleteById(watchedId) }
+        verify(exactly = 1) { cacheEvictor.evictFor(userId) }
+    }
+
+    @Test
+    fun `isWatched reflects repository presence`() {
+        every { watchedRepository.existsById(watchedId) } returns true
+        assertThat(service.isWatched(userId, movieId)).isTrue()
+
+        every { watchedRepository.existsById(watchedId) } returns false
+        assertThat(service.isWatched(userId, movieId)).isFalse()
     }
 }
