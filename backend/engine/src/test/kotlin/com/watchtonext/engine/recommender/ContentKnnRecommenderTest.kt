@@ -2,19 +2,18 @@ package com.watchtonext.engine.recommender
 
 import com.watchtonext.engine.model.MovieFeatures
 import com.watchtonext.engine.model.WeightedMovie
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class ContentKnnRecommenderTest {
 
     // Three "action" movies (genre 28), two "romance" movies (genre 10749).
     // Numeric features chosen so genre overlap dominates the cosine signal.
-    private val actionA = MovieFeatures(1L, setOf(28),    voteAverage = 7.5, voteCount = 1000, popularity = 50.0)
-    private val actionB = MovieFeatures(2L, setOf(28),    voteAverage = 7.8, voteCount = 1200, popularity = 60.0)
-    private val actionC = MovieFeatures(3L, setOf(28),    voteAverage = 6.9, voteCount = 800,  popularity = 40.0)
-    private val romanceA = MovieFeatures(4L, setOf(10749), voteAverage = 7.0, voteCount = 700,  popularity = 35.0)
-    private val romanceB = MovieFeatures(5L, setOf(10749), voteAverage = 7.2, voteCount = 900,  popularity = 45.0)
+    private val actionA = MovieFeatures(1L, setOf(28), voteAverage = 7.5, voteCount = 1000, popularity = 50.0)
+    private val actionB = MovieFeatures(2L, setOf(28), voteAverage = 7.8, voteCount = 1200, popularity = 60.0)
+    private val actionC = MovieFeatures(3L, setOf(28), voteAverage = 6.9, voteCount = 800, popularity = 40.0)
+    private val romanceA = MovieFeatures(4L, setOf(10749), voteAverage = 7.0, voteCount = 700, popularity = 35.0)
+    private val romanceB = MovieFeatures(5L, setOf(10749), voteAverage = 7.2, voteCount = 900, popularity = 45.0)
 
     private val catalog = listOf(actionA, actionB, actionC, romanceA, romanceB)
     private val recommender = ContentKnnRecommender(catalog)
@@ -22,13 +21,12 @@ class ContentKnnRecommenderTest {
     @Test
     fun `recommends same-genre movies for a single action seed`() {
         val ranked = recommender.recommend(seeds = listOf(WeightedMovie(actionA.movieId, 5.0)), limit = 4)
-
         val ids = ranked.map { it.movieId }
-        // Both other action movies must rank above either romance movie.
-        assertTrue(ids.indexOf(actionB.movieId) < ids.indexOf(romanceA.movieId))
-        assertTrue(ids.indexOf(actionC.movieId) < ids.indexOf(romanceA.movieId))
-        assertTrue(ids.indexOf(actionB.movieId) < ids.indexOf(romanceB.movieId))
-        assertTrue(ids.indexOf(actionC.movieId) < ids.indexOf(romanceB.movieId))
+
+        assertThat(ids.indexOf(actionB.movieId)).isLessThan(ids.indexOf(romanceA.movieId))
+        assertThat(ids.indexOf(actionC.movieId)).isLessThan(ids.indexOf(romanceA.movieId))
+        assertThat(ids.indexOf(actionB.movieId)).isLessThan(ids.indexOf(romanceB.movieId))
+        assertThat(ids.indexOf(actionC.movieId)).isLessThan(ids.indexOf(romanceB.movieId))
     }
 
     @Test
@@ -38,45 +36,94 @@ class ContentKnnRecommenderTest {
             limit = 10,
             excludeIds = setOf(actionB.movieId),
         )
-        val ids = ranked.map { it.movieId }.toSet()
-        assertTrue(actionA.movieId !in ids, "seed must not be recommended back")
-        assertTrue(actionB.movieId !in ids, "excluded id must not appear")
+        val ids = ranked.map { it.movieId }
+
+        assertThat(ids).doesNotContain(actionA.movieId, actionB.movieId)
     }
 
     @Test
     fun `weights add up across multiple seeds`() {
-        // Two action seeds, both with positive weight — actionC should accumulate score from both.
         val ranked = recommender.recommend(
             seeds = listOf(WeightedMovie(actionA.movieId, 5.0), WeightedMovie(actionB.movieId, 5.0)),
             limit = 5,
         )
-        assertEquals(actionC.movieId, ranked.first().movieId)
+
+        assertThat(ranked.first().movieId).isEqualTo(actionC.movieId)
     }
 
     @Test
     fun `empty seeds returns empty result`() {
-        assertTrue(recommender.recommend(seeds = emptyList(), limit = 10).isEmpty())
+        assertThat(recommender.recommend(seeds = emptyList(), limit = 10)).isEmpty()
+    }
+
+    @Test
+    fun `non-positive limit returns empty result`() {
+        assertThat(recommender.recommend(seeds = listOf(WeightedMovie(actionA.movieId, 1.0)), limit = 0)).isEmpty()
     }
 
     @Test
     fun `respects limit`() {
         val ranked = recommender.recommend(seeds = listOf(WeightedMovie(actionA.movieId, 1.0)), limit = 2)
-        assertEquals(2, ranked.size)
+
+        assertThat(ranked).hasSize(2)
     }
 
     @Test
     fun `favorite boost weighting changes ranking`() {
-        // Without boost: ratings push two action seeds equally.
-        val baseline = recommender.recommend(
-            seeds = listOf(WeightedMovie(actionA.movieId, 4.0), WeightedMovie(romanceA.movieId, 4.0)),
-            limit = 5,
-        )
-        // With boost on the romance seed: romance candidates should outrank action candidates.
         val boosted = recommender.recommend(
             seeds = listOf(WeightedMovie(actionA.movieId, 4.0), WeightedMovie(romanceA.movieId, 4.0 * 5.0)),
             limit = 5,
         )
-        assertTrue(baseline.first().movieId != romanceB.movieId || true) // sanity
-        assertEquals(romanceB.movieId, boosted.first().movieId)
+
+        assertThat(boosted.first().movieId).isEqualTo(romanceB.movieId)
+    }
+
+    @Test
+    fun `unknown seed id is ignored without crashing`() {
+        val ranked = recommender.recommend(
+            seeds = listOf(WeightedMovie(movieId = 9_999L, weight = 1.0)),
+            limit = 5,
+        )
+
+        // No seeds in the catalog -> nothing to score against -> empty result.
+        assertThat(ranked).isEmpty()
+    }
+
+    @Test
+    fun `single-movie catalog recommends nothing for that seed`() {
+        val singletonRecommender = ContentKnnRecommender(listOf(actionA))
+
+        val ranked = singletonRecommender.recommend(
+            seeds = listOf(WeightedMovie(actionA.movieId, 1.0)),
+            limit = 5,
+        )
+
+        // Only candidate is the seed itself, which is excluded.
+        assertThat(ranked).isEmpty()
+    }
+
+    @Test
+    fun `empty catalog yields empty recommendations`() {
+        val emptyRecommender = ContentKnnRecommender(emptyList())
+
+        val ranked = emptyRecommender.recommend(
+            seeds = listOf(WeightedMovie(1L, 1.0)),
+            limit = 5,
+        )
+
+        assertThat(ranked).isEmpty()
+    }
+
+    @Test
+    fun `zero-vector candidate is filtered by cosine guard`() {
+        // A candidate with no genres (empty set) and all numeric features at the min value
+        // produces a zero-norm vector; cosine must return 0 (not NaN) and the candidate must
+        // be skipped rather than tying with positive matches.
+        val zero = MovieFeatures(99L, emptySet(), voteAverage = 0.0, voteCount = 0, popularity = 0.0)
+        val r = ContentKnnRecommender(listOf(actionA, actionB, zero))
+
+        val ranked = r.recommend(seeds = listOf(WeightedMovie(actionA.movieId, 1.0)), limit = 5)
+
+        assertThat(ranked.map { it.movieId }).doesNotContain(zero.movieId)
     }
 }
