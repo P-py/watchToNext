@@ -192,6 +192,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
 | `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
+| `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
 
 ## Errors
 
