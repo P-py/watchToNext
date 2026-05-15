@@ -9,3 +9,7 @@ export interface UserProfile extends User {
   ratingsCount: number;
   favoritesCount: number;
 }
+
+export interface UpdateProfileInput {
+  displayName: string;
+}
