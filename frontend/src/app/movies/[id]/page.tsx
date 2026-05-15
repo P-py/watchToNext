@@ -10,6 +10,7 @@ import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
 import { WatchedButton } from "@/modules/movies/components/WatchedButton";
 import { FavoriteButton } from "@/modules/movies/components/FavoriteButton";
+import { RatingStars } from "@/modules/movies/components/RatingStars";
 import { MovieCardData } from "@/modules/movies/components/MovieCard";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
@@ -124,9 +125,10 @@ export default function MoviePage({ params }: MoviePageProps) {
               </motion.p>
             )}
 
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-3">
               <WatchedButton movieId={movie.id} />
               <FavoriteButton movieId={movie.id} />
+              <RatingStars movieId={movie.id} />
             </motion.div>
           </motion.div>
         </div>
