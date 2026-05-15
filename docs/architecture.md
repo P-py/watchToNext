@@ -32,7 +32,7 @@ graph TD
   Backend -->|HTTP| TMDB
 ```
 
-> **Keycloak status:** runs as a real service in `docker-compose.yml` (image `quay.io/keycloak/keycloak:26.0`, port `8180`) with a pre-imported realm at `infra/keycloak/realm-export.json`. The `Frontend → Keycloak` edge is live (the `/signup` route redirects users through the OIDC Authorization Code + PKCE flow). The `Backend → Keycloak` edge is *configured* (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri` points at the realm) but **not yet enforced** — `SecurityConfig` is `permitAll()` until the JWT-enforcement card lands. See [`backend.md → Keycloak`](./backend.md#keycloak-auth-provider) for setup details.
+> **Keycloak + BFF status:** both edges are live. The frontend is a **Backend-for-Frontend** — `app/api/auth/*` runs the OAuth2 Authorization Code + PKCE flow server-side, and stores token bundles in a dedicated Redis (`auth-redis`, also in `docker-compose.yml`, separate from the recommendation cache). The browser holds only an opaque 32-byte session id in a single cookie; tokens never reach client JS. `app/api/proxy/[...path]` forwards calls from the browser to Spring Boot with `Authorization: Bearer <access>` attached server-side, with auto-refresh on 401. Session payloads in Redis are envelope-encrypted (AES-256-GCM) — separates "Redis access" from "ability to read tokens". Backend enforces JWT on personal endpoints (`/api/ratings/*`, `/api/favorites/*`, `/api/recommendations`); catalog reads (`/api/movies/*`, `/api/recommendations/similar`) stay public. See [`backend.md → Keycloak`](./backend.md#keycloak-auth-provider) and [`frontend.md → Auth (BFF + opaque session)`](./frontend.md#auth-bff--opaque-session).
 
 ## Frontend Architecture
 

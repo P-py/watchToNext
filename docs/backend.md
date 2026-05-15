@@ -160,19 +160,38 @@ KC_BOOTSTRAP_ADMIN_PASSWORD=…
 
 The `--import-realm` flag is idempotent — it only imports if the realm doesn't already exist. Safe to leave in the deploy command.
 
+### Token validation in the API
+
+`SecurityConfig` activates `oauth2ResourceServer.jwt()` with the JWK set URI from `application.properties` (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri`). Authorization is selective:
+
+| Endpoint | Auth |
+|----------|------|
+| `GET /api/movies`, `GET /api/movies/popular`, `GET /api/movies/{id}` | public — catalog browsing |
+| `GET /api/recommendations/similar` | public — used by movie detail page |
+| `GET /api/recommendations` (personal) | authenticated |
+| `PUT/DELETE /api/ratings/{movieId}` | authenticated |
+| `PUT/DELETE /api/favorites/{movieId}` | authenticated |
+| `OPTIONS /**` | public (CORS pre-flight) |
+
+`config/JwtConverter` extracts realm roles from `realm_access.roles` and maps them to `ROLE_<name>` Spring authorities. `service/UserProvisioningFilter` runs after the Spring Security bearer-token filter and idempotently calls `UserProvisioningService.provision(jwt)` to upsert the `users` row keyed by the JWT `sub`. Failures during provisioning are logged but do not break the request.
+
+Controllers no longer take `@RequestParam userId`. They read `@AuthenticationPrincipal Jwt jwt` and derive `UUID.fromString(jwt.subject)`. This applies to `RatingController`, `FavoriteController`, and `RecommendationController.recommend()`. `RecommendationController.similar()` stays unauthenticated and has no userId.
+
 ## API Style
 
 The backend is planned to expose a REST API with the following endpoints (subject to change during implementation):
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET`  | `/api/movies?q=&page=&size=`        | Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
-| `GET`  | `/api/movies/{id}`                  | Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
-| `GET`  | `/api/movies/popular?page=&size=`   | Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]) |
-| `GET`  | `/api/recommendations?userId=&limit=` | Personalized recommendations for a user (KNN over the user's ratings, `limit` ∈ [1,100]) |
-| `GET`  | `/api/recommendations/similar?movieId=&limit=` | Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
-| `GET`  | `/api/users/me`                     | Fetch the current authenticated user's profile |
-| `POST` | `/api/users/me/watched`             | Mark a movie as watched for the current user |
+| `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
+| `GET`  | `/api/movies/{id}`                  | **Public.** Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
+| `GET`  | `/api/movies/popular?page=&size=`   | **Public.** Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]). |
+| `GET`  | `/api/recommendations?limit=`       | **Authenticated.** Personalized recommendations (KNN over the caller's ratings; userId from JWT `sub`, `limit` ∈ [1,100]). |
+| `GET`  | `/api/recommendations/similar?movieId=&limit=` | **Public.** Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
+| `PUT`  | `/api/ratings/{movieId}` (body `{rating}`) | **Authenticated.** Upsert a rating for the caller. |
+| `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
+| `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
+| `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
 
 ## Errors
 
