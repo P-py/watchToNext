@@ -4,6 +4,8 @@ import com.watchtonext.api.dto.RecommendationDto
 import com.watchtonext.api.service.RecommendationService
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,10 +20,12 @@ class RecommendationController(private val service: RecommendationService) {
 
     @GetMapping
     fun recommend(
-        @RequestParam userId: UUID,
+        @AuthenticationPrincipal jwt: Jwt,
         @RequestParam(defaultValue = "20") limit: Int,
-    ): List<RecommendationDto> =
-        service.recommendFor(userId, limit.coerceIn(1, 100))
+    ): List<RecommendationDto> {
+        val userId = UUID.fromString(jwt.subject)
+        return service.recommendFor(userId, limit.coerceIn(1, 100))
+    }
 
     @GetMapping("/similar")
     fun similar(
