@@ -1,11 +1,9 @@
-import { redirect } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
-import { readSession } from "@/lib/auth/session";
+import { requireSession } from "@/lib/auth/guards";
 import { ProfileClient } from "./ProfileClient";
 
 export default async function ProfilePage() {
-  const session = await readSession();
-  if (!session) redirect("/login");
+  await requireSession();
 
   return (
     <>
