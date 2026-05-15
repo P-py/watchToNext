@@ -3,7 +3,9 @@ import { DM_Sans, DM_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { AcademicDisclaimer } from "@/components/AcademicDisclaimer";
+import { SessionProvider } from "@/components/SessionProvider";
 import TmdbAttribution from "@/components/TmdbAttribution";
+import { readSession } from "@/lib/auth/session";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -24,20 +26,24 @@ export const metadata: Metadata = {
   description: "Discover your next favorite movie with KNN-powered recommendations",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await readSession();
+
   return (
     <html lang="pt-BR">
       <body
         className={`${dmSans.variable} ${dmMono.variable} flex min-h-screen flex-col bg-zinc-950 text-zinc-100 antialiased`}
       >
-        <AcademicDisclaimer />
-        <div className="flex-1">{children}</div>
-        <TmdbAttribution />
-        <Toaster theme="dark" position="bottom-right" richColors closeButton />
+        <SessionProvider initialSession={session}>
+          <AcademicDisclaimer />
+          <div className="flex-1">{children}</div>
+          <TmdbAttribution />
+          <Toaster theme="dark" position="bottom-right" richColors closeButton />
+        </SessionProvider>
       </body>
     </html>
   );
