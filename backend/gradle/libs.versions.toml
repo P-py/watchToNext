@@ -3,6 +3,9 @@ kotlin = "2.2.21"
 spring-boot = "4.0.6"
 spring-dependency-management = "1.1.7"
 opencsv = "5.9"
+junit-jupiter = "5.11.4"
+assertj = "3.26.3"
+mockk = "1.13.13"
 
 [libraries]
 # Kotlin
@@ -26,8 +29,10 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
 
 # Test
-kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm",           version.ref = "kotlin" }
