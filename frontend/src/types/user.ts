@@ -8,6 +8,7 @@ export interface UserProfile extends User {
   createdAt: string;
   ratingsCount: number;
   favoritesCount: number;
+  watchedCount: number;
 }
 
 export interface UpdateProfileInput {

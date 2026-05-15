@@ -181,4 +181,5 @@ export const MOCK_USER_PROFILE: UserProfile = {
   createdAt: "2026-01-15T10:00:00Z",
   ratingsCount: 12,
   favoritesCount: 5,
+  watchedCount: 23,
 };
