@@ -3,6 +3,7 @@ import { DM_Sans, DM_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { AcademicDisclaimer } from "@/components/AcademicDisclaimer";
+import { FavoritesProvider } from "@/components/FavoritesProvider";
 import { SessionProvider } from "@/components/SessionProvider";
 import TmdbAttribution from "@/components/TmdbAttribution";
 import { readSession } from "@/lib/auth/session";
@@ -39,10 +40,12 @@ export default async function RootLayout({
         className={`${dmSans.variable} ${dmMono.variable} flex min-h-screen flex-col bg-zinc-950 text-zinc-100 antialiased`}
       >
         <SessionProvider initialSession={session}>
-          <AcademicDisclaimer />
-          <div className="flex-1">{children}</div>
-          <TmdbAttribution />
-          <Toaster theme="dark" position="bottom-right" richColors closeButton />
+          <FavoritesProvider>
+            <AcademicDisclaimer />
+            <div className="flex-1">{children}</div>
+            <TmdbAttribution />
+            <Toaster theme="dark" position="bottom-right" richColors closeButton />
+          </FavoritesProvider>
         </SessionProvider>
       </body>
     </html>
