@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Film } from "lucide-react";
+import { useSession } from "@/components/SessionProvider";
 import type { Session } from "@/lib/auth/types";
 import { MobileMenu } from "./MobileMenu";
 
@@ -47,22 +47,7 @@ function AuthActionsDesktop({ session }: { session: Session | null }) {
 }
 
 export function Navbar() {
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/me", { credentials: "same-origin" })
-      .then((res) => res.json() as Promise<Session | null>)
-      .then((data) => {
-        if (!cancelled) setSession(data);
-      })
-      .catch(() => {
-        if (!cancelled) setSession(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const session = useSession();
 
   return (
     <nav className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
