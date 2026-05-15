@@ -271,6 +271,30 @@
       }
     },
     {
+      "name": "Get my profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/users/me",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "users",
+            "me"
+          ]
+        },
+        "description": "Authenticated. Returns the caller's profile: id, displayName, email, createdAt, ratingsCount, favoritesCount. User id is read from the JWT `sub`."
+      },
+      "response": []
+    },
+    {
       "name": "Get recommendations",
       "request": {
         "method": "GET",
