@@ -6,6 +6,7 @@ import com.watchtonext.api.persistence.entity.UserEntity
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
 import com.watchtonext.api.persistence.repository.UserRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +19,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val ratingRepository: UserMovieRatingRepository,
     private val favoriteRepository: UserFavoriteRepository,
+    private val watchedRepository: UserWatchedRepository,
 ) {
 
     fun getMe(jwt: Jwt): UserMeDto {
@@ -50,6 +52,7 @@ class UserService(
     private fun dtoFor(user: UserEntity): UserMeDto {
         val ratingsCount = ratingRepository.countByUserId(user.id)
         val favoritesCount = favoriteRepository.countByUserId(user.id)
-        return UserMeDto.from(user, ratingsCount, favoritesCount)
+        val watchedCount = watchedRepository.countByUserId(user.id)
+        return UserMeDto.from(user, ratingsCount, favoritesCount, watchedCount)
     }
 }
