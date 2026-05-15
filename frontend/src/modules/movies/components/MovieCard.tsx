@@ -6,6 +6,7 @@ import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
 import { cardItem } from "@/utils/animations";
+import { FavoriteHeart } from "./FavoriteHeart";
 
 /**
  * Structural type covering both `Movie` and `MovieSummary` — the card only
@@ -51,7 +52,12 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
   );
 
   return (
-    <motion.div variants={cardItem} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
+    <motion.div
+      className="relative"
+      variants={cardItem}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+    >
       {onClick ? (
         <button
           type="button"
@@ -65,6 +71,9 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
           {inner}
         </Link>
       )}
+      {/* Sibling of the link/button — keeps the favorite control out of the
+          card's clickable element (no nested interactive elements). */}
+      <FavoriteHeart movieId={movie.id} />
     </motion.div>
   );
 }
