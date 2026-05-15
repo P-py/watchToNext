@@ -11,29 +11,28 @@ import java.util.UUID
  * Idempotent on-demand provisioning of a [UserEntity] from a Keycloak JWT.
  *
  * The persisted row's primary key is the token's `sub` claim, so this service is the only
- * write path for the `users` table. It is meant to be invoked once per authenticated request
- * (filter or controller advice — wired in a separate card) and will reconcile `displayName`
- * and `email` whenever the claims diverge from the stored row.
+ * write path the auth filter touches on the `users` table. On creation we seed
+ * `displayName` from the JWT claims; on subsequent calls we **only reconcile `email`**,
+ * leaving `displayName` for the user to edit via `PATCH /users/me` without it being
+ * silently overwritten on the next login.
  */
 @Service
 class UserProvisioningService(private val userRepository: UserRepository) {
 
     fun provision(jwt: Jwt): UserEntity {
         val id = UUID.fromString(jwt.subject)
-        val claimedDisplayName = resolveDisplayName(jwt, id)
         val claimedEmail = jwt.getClaimAsString(EMAIL_CLAIM)
 
         val existing = userRepository.findById(id).orElse(null)
         if (existing == null) {
+            val claimedDisplayName = resolveDisplayName(jwt, id)
             return userRepository.save(
                 UserEntity(id = id, displayName = claimedDisplayName, email = claimedEmail),
             )
         }
 
-        val needsUpdate = existing.displayName != claimedDisplayName || existing.email != claimedEmail
-        if (!needsUpdate) return existing
+        if (existing.email == claimedEmail) return existing
 
-        existing.displayName = claimedDisplayName
         existing.email = claimedEmail
         existing.updatedAt = OffsetDateTime.now()
         return userRepository.save(existing)
