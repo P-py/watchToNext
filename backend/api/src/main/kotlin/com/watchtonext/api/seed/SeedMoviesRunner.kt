@@ -116,11 +116,19 @@ internal class MovieSeeder(
             val idx = headers.indexed()
             var inserted = 0
             var processed = 0
+            var skippedAdult = 0
 
             var row: Array<String>?
             loop@ while (reader.readNext().also { row = it } != null) {
                 val r = row!!
                 processed++
+
+                // Academic project — never seed adult / inappropriate titles.
+                // TMDB marks them with the `adult` boolean column.
+                if (r.at(idx, "adult")?.equals("true", ignoreCase = true) == true) {
+                    skippedAdult++
+                    continue
+                }
 
                 val tmdbId = r.at(idx, "id")?.toLongOrNull() ?: continue
                 val title  = r.at(idx, "title")?.takeIf { it.isNotBlank() } ?: continue
@@ -170,7 +178,10 @@ internal class MovieSeeder(
                 }
             }
 
-            log.info("Inserted $inserted movies total (processed $processed rows).")
+            log.info(
+                "Inserted $inserted movies total (processed $processed rows, " +
+                    "$skippedAdult adult rows filtered out)."
+            )
         }
         }}}
     }

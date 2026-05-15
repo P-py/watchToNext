@@ -108,6 +108,8 @@ seed/          One-time database seeder (run via ./gradlew :api:dbSetup)
 
 Movie data comes from the [Full TMDB Movies Dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies) (Kaggle, ODC-By license). The system is **fully offline after the initial seed** — no runtime calls to TMDB.
 
+The seeder (`SeedMoviesRunner`) **filters out adult titles** — any CSV row whose `adult` column is `true` is skipped (the count is logged). This is an academic project, so adult / inappropriate content never enters the catalog. The filter applies at import time only: a database seeded before this change keeps any adult rows, so re-seed from a clean database to purge them.
+
 | Step | Command |
 |------|---------|
 | Download CSV | From Kaggle (see README) — place `TMDB_movie_dataset_v11.csv` at repo root |
