@@ -32,6 +32,8 @@ graph TD
   Backend -->|HTTP| TMDB
 ```
 
+> **Keycloak status:** runs as a real service in `docker-compose.yml` (image `quay.io/keycloak/keycloak:26.0`, port `8180`) with a pre-imported realm at `infra/keycloak/realm-export.json`. The `Frontend → Keycloak` edge is live (the `/signup` route redirects users through the OIDC Authorization Code + PKCE flow). The `Backend → Keycloak` edge is *configured* (`spring.security.oauth2.resourceserver.jwt.jwk-set-uri` points at the realm) but **not yet enforced** — `SecurityConfig` is `permitAll()` until the JWT-enforcement card lands. See [`backend.md → Keycloak`](./backend.md#keycloak-auth-provider) for setup details.
+
 ## Frontend Architecture
 
 The frontend is built using Next.js with a modular component architecture.
