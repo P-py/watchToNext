@@ -193,8 +193,9 @@ Encryption: AES-256-GCM with a 32-byte key from `SESSION_ENCRYPTION_KEY`. Each e
 | `/api/auth/callback` | GET | Validates state, exchanges `code + verifier` for tokens, verifies id_token via `jose` + JWKs, creates session in Redis, sets `wtn_session`. |
 | `/api/auth/refresh` | POST | Refreshes tokens via `grant_type=refresh_token`, updates Redis record (cookie keeps the same id), renews maxAge. Auto-called by `/api/proxy/*` on a 401. |
 | `/api/auth/logout` | POST/GET | Destroys Redis entry, clears cookie, 303 to Keycloak `end_session` with `id_token_hint`. |
-| `/api/auth/me` | GET | Returns the identity (`{sub, displayName, email, roles}`) or `null`. Always 200 — the Navbar uses this to switch between logged-in and logged-out UI without seeing tokens. |
 | `/api/proxy/[...path]` | ALL | BFF proxy: reads session, attaches `Authorization: Bearer <access>`, forwards to `API_UPSTREAM_URL`. On 401 calls `/api/auth/refresh` once (deduped per process), then retries. |
+
+There is **no** `/api/auth/me` endpoint. Identity is delivered to the client via the SSR'd `SessionProvider` context (see below), not over HTTP — the only place the browser sees identity is in the React tree, with no separate network round-trip.
 
 ### Frontend service layer
 
@@ -211,7 +212,27 @@ Lives in `src/lib/auth/`. All files start with `import "server-only"` to make ac
 - `crypto.ts` — `encryptPayload` / `decryptPayload` (AES-256-GCM).
 - `store.ts` — `SessionStore` interface + `RedisSessionStore` implementation.
 - `session.ts` — `readSession()` (identity for UI) and `readSessionRecord()` (full record incl. tokens, used only by the proxy/refresh routes).
+- `guards.ts` — `requireSession(redirectTo)` and `redirectIfAuthenticated(target)`. Used by server components / layouts to enforce route policy via `redirect()` from `next/navigation`.
 - `types.ts` — `Session` interface. **The only file in `lib/auth/` safe to import from a client component.**
+
+### Route guards
+
+Server-side guards live in `lib/auth/guards.ts`. Two helpers cover the entire product surface today:
+
+- `requireSession()` — used by `app/profile/page.tsx`. Anonymous users get redirected to `/login` before render.
+- `redirectIfAuthenticated()` — used by `app/(auth)/layout.tsx`, which wraps `/login` and `/signup` under a Next.js route group. Already-authenticated users are bounced to `/` so they can't kick off a duplicate auth flow.
+
+The route group `(auth)/` is transparent to URLs (`/login` and `/signup` paths stay the same); the layout is what carries the guard. Public pages (`/`, `/movies/*`, `/search`) need no guard.
+
+### Session in the client (no /api/auth/me)
+
+The root `app/layout.tsx` is an async server component that calls `readSession()` once per SSR and injects the result into `<SessionProvider initialSession={session}>` (a client context). Any client component reads `useSession(): Session | null` from `@/components/SessionProvider` — `Navbar`, `MobileMenu`, etc. all consume identity that way.
+
+There is **no HTTP endpoint** publishing identity: the previous `/api/auth/me` route was removed in favor of this SSR-embedded path. Benefits:
+
+- No network round-trip for identity → no flicker between "Entrar/Criar conta" and the user's name on first paint.
+- No public surface advertising session state to scrapers / probes / extensions.
+- Logout/login both re-run the layout SSR on the next navigation → context reflects the new state without extra fetches.
 
 ### Env vars
 
