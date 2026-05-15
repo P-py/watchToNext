@@ -99,6 +99,9 @@ modules/
   search/             SearchBar
   recommendations/    RecommendationGrid
   user/               UserProfile
+  home/               HowItWorks · FeatureHighlights · HomeCta
+  about/              AboutIntro · HowKnnWorks (KnnDiagram · KnnPipeline)
+                      DataSource (DataImportFlow) · TechStack · AboutDisclaimer
 ```
 
 Each module should contain:

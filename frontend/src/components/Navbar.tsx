@@ -9,6 +9,7 @@ import { MobileMenu } from "./MobileMenu";
 const NAV_LINKS = [
   { href: "/movies", label: "Movies" },
   { href: "/search", label: "Search" },
+  { href: "/about", label: "About" },
   { href: "/profile", label: "Profile" },
 ];
 
