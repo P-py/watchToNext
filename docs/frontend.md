@@ -100,8 +100,8 @@ modules/
   search/             SearchBar
   recommendations/    RecommendationGrid · SuggestionsClient
                       QuickSuggestions · SeedPicker · GenreSuggestions
-  user/               UserProfile · ProfileSummary
-                      FavoritesList · WatchedList · RatingsList · ListStateView
+  user/               UserProfile · FavoritesList · WatchedList
+                      RatingsList · ListStateView
   home/               HowItWorks · FeatureHighlights · HomeCta
   about/              AboutIntro · HowKnnWorks (KnnDiagram · KnnPipeline)
                       DataSource (DataImportFlow) · TechStack · AboutDisclaimer

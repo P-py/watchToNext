@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Eye, Heart, Pencil, Star, User } from "lucide-react";
 import { Button } from "@/components/Button";
 import { UserProfile as UserProfileType } from "@/types/user";
@@ -12,11 +13,16 @@ interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: number;
+  href: string;
 }
 
-function StatCard({ icon, label, value }: StatCardProps) {
+/** Count + link to the matching list page — doubles as the profile's stats. */
+function StatCard({ icon, label, value, href }: StatCardProps) {
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+    <Link
+      href={href}
+      className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 p-5 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
+    >
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-amber-400">
         {icon}
       </div>
@@ -24,7 +30,7 @@ function StatCard({ icon, label, value }: StatCardProps) {
         <p className="text-2xl font-semibold text-zinc-100">{value}</p>
         <p className="text-xs uppercase tracking-wider text-zinc-500">{label}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -64,16 +70,19 @@ export function UserProfile({ profile, onEdit }: UserProfileProps) {
           icon={<Star className="h-5 w-5" />}
           label="Avaliações"
           value={profile.ratingsCount}
+          href="/ratings"
         />
         <StatCard
           icon={<Heart className="h-5 w-5" />}
           label="Favoritos"
           value={profile.favoritesCount}
+          href="/favorites"
         />
         <StatCard
           icon={<Eye className="h-5 w-5" />}
           label="Assistidos"
           value={profile.watchedCount}
+          href="/watched"
         />
       </div>
     </div>

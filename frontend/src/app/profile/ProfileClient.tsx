@@ -5,7 +5,6 @@ import { ErrorState } from "@/components/ErrorState";
 import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { EditProfileModal } from "@/modules/user/components/EditProfileModal";
 import { UserProfile } from "@/modules/user/components/UserProfile";
-import { ProfileSummary } from "@/modules/user/components/ProfileSummary";
 import { userService } from "@/services/user.service";
 import { UserProfile as UserProfileType } from "@/types/user";
 import { ApiHttpError } from "@/services/api-error";
@@ -55,7 +54,6 @@ export function ProfileClient() {
       {profile && (
         <UserProfile profile={profile} onEdit={() => setEditing(true)} />
       )}
-      {profile && <ProfileSummary />}
       {profile && (
         <EditProfileModal
           open={editing}
