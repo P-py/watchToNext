@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Film, Menu, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { Film } from "lucide-react";
+import type { Session } from "@/lib/auth/types";
+import { MobileMenu } from "./MobileMenu";
 
 const NAV_LINKS = [
   { href: "/movies", label: "Movies" },
@@ -11,17 +12,62 @@ const NAV_LINKS = [
   { href: "/profile", label: "Profile" },
 ];
 
+function AuthActionsDesktop({ session }: { session: Session | null }) {
+  if (session) {
+    return (
+      <div className="flex items-center gap-4">
+        <span className="text-sm text-zinc-300">{session.displayName}</span>
+        <form action="/api/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center rounded-lg border border-zinc-700 bg-zinc-800 px-4 text-sm font-medium text-zinc-100 transition-colors hover:bg-zinc-700"
+          >
+            Sair
+          </button>
+        </form>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-3">
+      <Link
+        href="/login"
+        className="text-sm text-zinc-400 transition-colors hover:text-zinc-100"
+      >
+        Entrar
+      </Link>
+      <Link
+        href="/signup"
+        className="inline-flex h-9 items-center rounded-lg bg-amber-500 px-4 text-sm font-medium text-black transition-colors hover:bg-amber-400"
+      >
+        Criar conta
+      </Link>
+    </div>
+  );
+}
+
 export function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then((res) => res.json() as Promise<Session | null>)
+      .then((data) => {
+        if (!cancelled) setSession(data);
+      })
+      .catch(() => {
+        if (!cancelled) setSession(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <nav className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-bold text-amber-400"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/" className="flex items-center gap-2 font-bold text-amber-400">
           <Film className="h-5 w-5" />
           watchToNext
         </Link>
@@ -36,57 +82,14 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/signup"
-            className="inline-flex h-9 items-center rounded-lg bg-amber-500 px-4 text-sm font-medium text-black transition-colors hover:bg-amber-400"
-          >
-            Criar conta
-          </Link>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 transition-colors hover:bg-zinc-800 md:hidden"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
+        <div className="hidden md:flex">
+          <AuthActionsDesktop session={session} />
+        </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md md:hidden"
-          >
-            <div className="mx-auto flex max-w-7xl flex-col px-4 py-2 sm:px-6">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="flex h-12 items-center text-sm text-zinc-300 transition-colors hover:text-amber-400"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/signup"
-                onClick={() => setOpen(false)}
-                className="mt-2 mb-3 inline-flex h-11 items-center justify-center rounded-lg bg-amber-500 px-4 text-sm font-medium text-black transition-colors hover:bg-amber-400"
-              >
-                Criar conta
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <MobileMenu session={session} links={NAV_LINKS} />
+      </div>
     </nav>
   );
 }
