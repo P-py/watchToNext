@@ -36,6 +36,12 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/signup"
+            className="inline-flex h-9 items-center rounded-lg bg-amber-500 px-4 text-sm font-medium text-black transition-colors hover:bg-amber-400"
+          >
+            Criar conta
+          </Link>
         </div>
 
         <button
@@ -70,6 +76,13 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/signup"
+                onClick={() => setOpen(false)}
+                className="mt-2 mb-3 inline-flex h-11 items-center justify-center rounded-lg bg-amber-500 px-4 text-sm font-medium text-black transition-colors hover:bg-amber-400"
+              >
+                Criar conta
+              </Link>
             </div>
           </motion.div>
         )}
