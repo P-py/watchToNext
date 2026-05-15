@@ -1,10 +1,29 @@
+import { Heart, Star, User } from "lucide-react";
 import { UserProfile as UserProfileType } from "@/types/user";
-import { Grid } from "@/components/Grid";
-import { MovieCard } from "@/modules/movies/components/MovieCard";
-import { User } from "lucide-react";
+import { formatDate } from "@/utils/format";
 
 interface UserProfileProps {
   profile: UserProfileType;
+}
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}
+
+function StatCard({ icon, label, value }: StatCardProps) {
+  return (
+    <div className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 p-5">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-amber-400">
+        {icon}
+      </div>
+      <div>
+        <p className="text-2xl font-semibold text-zinc-100">{value}</p>
+        <p className="text-xs uppercase tracking-wider text-zinc-500">{label}</p>
+      </div>
+    </div>
+  );
 }
 
 export function UserProfile({ profile }: UserProfileProps) {
@@ -15,41 +34,28 @@ export function UserProfile({ profile }: UserProfileProps) {
           <User className="h-8 w-8 text-zinc-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-zinc-100">{profile.username}</h1>
-          <p className="text-sm text-zinc-500">{profile.email}</p>
+          <h1 className="text-xl font-bold text-zinc-100">{profile.displayName}</h1>
+          {profile.email && (
+            <p className="text-sm text-zinc-500">{profile.email}</p>
+          )}
+          <p className="mt-1 text-xs text-zinc-600">
+            Membro desde {formatDate(profile.createdAt)}
+          </p>
         </div>
       </div>
 
-      {profile.favoriteGenres.length > 0 && (
-        <div>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wider text-zinc-500">
-            Favorite Genres
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {profile.favoriteGenres.map((genre) => (
-              <span
-                key={genre}
-                className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300"
-              >
-                {genre}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {profile.watchedMovies.length > 0 && (
-        <div>
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500">
-            Watched ({profile.watchedMovies.length})
-          </h2>
-          <Grid cols={4}>
-            {profile.watchedMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
-            ))}
-          </Grid>
-        </div>
-      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <StatCard
+          icon={<Star className="h-5 w-5" />}
+          label="Avaliações"
+          value={profile.ratingsCount}
+        />
+        <StatCard
+          icon={<Heart className="h-5 w-5" />}
+          label="Favoritos"
+          value={profile.favoritesCount}
+        />
+      </div>
     </div>
   );
 }
