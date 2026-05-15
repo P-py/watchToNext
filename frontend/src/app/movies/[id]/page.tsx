@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { MovieDetailSkeleton } from "@/components/MovieDetailSkeleton";
 import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
 import { RecommendationGrid } from "@/modules/recommendations/components/RecommendationGrid";
+import { WatchedButton } from "@/modules/movies/components/WatchedButton";
 import { MovieCardData } from "@/modules/movies/components/MovieCard";
 import { useMovieDetails } from "@/hooks/useMovieDetails";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
@@ -121,6 +122,10 @@ export default function MoviePage({ params }: MoviePageProps) {
                 {movie.overview}
               </motion.p>
             )}
+
+            <motion.div variants={fadeUp}>
+              <WatchedButton movieId={movie.id} />
+            </motion.div>
           </motion.div>
         </div>
 
