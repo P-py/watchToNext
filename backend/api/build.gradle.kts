@@ -36,6 +36,34 @@ dependencies {
 //   ./gradlew :api:dbSetup -Pseed.csvPath=/data/tmdb
 //   ./gradlew :api:dbSetup -Pseed.batchSize=10000 -Pseed.maxRows=100000
 
+// JaCoCo exclusions: wiring, entities, DTOs without mappers, and layers not unit-tested
+// here. `controller/*` (single star) excludes the top-level controllers but keeps
+// `controller/advice/**` in scope, since that's where GlobalExceptionHandler lives.
+private val coverageExclusions = listOf(
+    "com/watchtonext/api/ApiApplicationKt*",
+    "com/watchtonext/api/config/**",
+    "com/watchtonext/api/persistence/entity/**",
+    "com/watchtonext/api/persistence/repository/**",
+    "com/watchtonext/api/controller/*",
+    "com/watchtonext/api/seed/**",
+    "com/watchtonext/api/dto/ApiError*",
+    "com/watchtonext/api/dto/FieldError*",
+    "com/watchtonext/api/dto/RateMovieRequest*",
+)
+
+private fun applyExclusions(task: org.gradle.testing.jacoco.tasks.JacocoReportBase) {
+    task.classDirectories.setFrom(
+        files(task.classDirectories.files.map {
+            fileTree(it) {
+                coverageExclusions.forEach { exclude(it) }
+            }
+        }),
+    )
+}
+
+tasks.jacocoTestCoverageVerification { applyExclusions(this) }
+tasks.jacocoTestReport { applyExclusions(this) }
+
 tasks.register<JavaExec>("dbSetup") {
     group = "database"
     description = "Creates schema via Flyway and seeds from TMDB CSVs"
