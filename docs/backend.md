@@ -115,6 +115,51 @@ Movie data comes from the [Full TMDB Movies Dataset](https://www.kaggle.com/data
 
 > This product uses the TMDB API but is not endorsed or certified by TMDB.
 
+## Keycloak (auth provider)
+
+Keycloak runs as a real service in `docker-compose.yml` (`quay.io/keycloak/keycloak:26.0`, port `8180:8080`). The realm is provisioned on first boot by bind-mounting `infra/keycloak/realm-export.json` and starting with `start-dev --import-realm`. Subsequent boots **do not** re-import — to apply a changed JSON, wipe the volume: `docker compose down keycloak && docker volume rm watchtonext_keycloak_data && docker compose up -d keycloak`.
+
+| What | Where |
+|------|-------|
+| Admin console | http://localhost:8180/admin (`admin` / `admin` — dev only, from `backend/.env`) |
+| OIDC discovery | http://localhost:8180/realms/watchtonext/.well-known/openid-configuration |
+| Realm export | `infra/keycloak/realm-export.json` (gold-standard config, see below) |
+| Health check | `/health/ready` on port `9000` (used by the compose healthcheck) |
+
+### Realm `watchtonext`
+
+- **Registration:** open (`registrationAllowed: true`, `registrationEmailAsUsername: true`); email-as-username, no email verification (no SMTP wired), no password reset flow.
+- **Password policy:** `length(12) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and notUsername and notEmail and passwordHistory(3)`.
+- **Brute-force protection:** enabled — 5 failures locks the account for 15 minutes (`failureFactor: 5`, `maxFailureWaitSeconds: 900`).
+- **Tokens:** 5-minute access token, 30-minute idle SSO session, 10-hour SSO max, refresh-token rotation (`revokeRefreshToken: true`, `refreshTokenMaxReuse: 0`).
+- **Events:** user + admin events enabled, 14-day retention — auditable from the admin console.
+- **Roles:** realm roles `USER` (default, auto-assigned via the composite `default-roles-watchtonext`) and `ADMIN`.
+
+### Clients
+
+| Client | Type | Purpose |
+|--------|------|---------|
+| `watchtonext-frontend` | public, PKCE S256 only | Used by the Next.js SPA. Standard flow only — ROPC / implicit / service-accounts all explicitly disabled. Redirect URI `http://localhost:3000/*`. |
+| `watchtonext-api` | confidential, bearer-only | Resource server for the Spring Boot backend. Secret in the export is the literal placeholder `dev-only-change-me` — **rotate it via the admin console** in any deployed environment. |
+
+### Deploying to Railway (or similar)
+
+The same image works in production with mode `start --optimized` and these env vars (Postgres reused from the project DB, separate schema):
+
+```
+KC_DB=postgres
+KC_DB_URL=jdbc:postgresql://<host>:5432/<db>
+KC_DB_USERNAME=…
+KC_DB_PASSWORD=…
+KC_HOSTNAME=<public-fqdn>
+KC_PROXY=edge
+KC_HTTP_ENABLED=true
+KC_BOOTSTRAP_ADMIN_USERNAME=…
+KC_BOOTSTRAP_ADMIN_PASSWORD=…
+```
+
+The `--import-realm` flag is idempotent — it only imports if the realm doesn't already exist. Safe to leave in the deploy command.
+
 ## API Style
 
 The backend is planned to expose a REST API with the following endpoints (subject to change during implementation):

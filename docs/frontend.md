@@ -129,6 +129,34 @@ Toggle `NEXT_PUBLIC_USE_MOCKS=true` to bypass the network and return mock data f
 
 Set `NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER=false` to hide both the top-of-page banner (`AcademicDisclaimer`) and the matching line in the footer (`TmdbAttribution`). Defaults to shown; only the literal string `"false"` hides the disclaimer. TMDB attribution itself is unaffected — that one is required by TMDB's terms regardless.
 
+## Auth — signup flow
+
+The `/signup` route is the only auth entry point exposed today. It's a thin landing page that delegates account creation to the Keycloak realm provisioned by the project (see [backend Keycloak section](./backend.md#keycloak-auth-provider)).
+
+Flow:
+
+1. User clicks **Criar conta** in the Navbar (amber CTA, both desktop and mobile drawer) → lands on `/signup`.
+2. User clicks **Continuar** on the landing → `src/utils/keycloak.ts:buildKeycloakRegisterUrl()` runs:
+   - generates a random PKCE `code_verifier` (32 bytes via `crypto.getRandomValues`),
+   - derives the `code_challenge` (SHA-256 + base64url),
+   - stores the verifier in `sessionStorage` under `watchtonext.pkce.verifier` (exported as `PKCE_VERIFIER_STORAGE_KEY`),
+   - assembles `${BASE}/realms/${realm}/protocol/openid-connect/registrations?client_id=…&redirect_uri=…&response_type=code&scope=openid&kc_action=REGISTER&code_challenge=…&code_challenge_method=S256`.
+3. `window.location.assign(...)` navigates to Keycloak; user completes the registration form.
+4. Keycloak redirects back to `${NEXT_PUBLIC_AUTH_REDIRECT_URI}/?code=…&session_state=…`. **The home currently ignores those params** — the callback handler that exchanges `code + verifier` for tokens is a separate card.
+
+The helper throws `Error("Missing Keycloak env var(s): …")` if any of the four env vars below is unset, naming the missing variable.
+
+### Env vars
+
+| Variable | Default (dev) | Purpose |
+|----------|--------------|---------|
+| `NEXT_PUBLIC_KEYCLOAK_BASE_URL`   | `http://localhost:8180`  | Keycloak issuer base, no realm segment. Trailing slash trimmed. |
+| `NEXT_PUBLIC_KEYCLOAK_REALM`      | `watchtonext`            | Realm name (URL-encoded by the helper). |
+| `NEXT_PUBLIC_KEYCLOAK_CLIENT_ID`  | `watchtonext-frontend`   | Public client configured with PKCE S256 only. |
+| `NEXT_PUBLIC_AUTH_REDIRECT_URI`   | `http://localhost:3000`  | Must match a `redirectUris` entry on the client (`http://localhost:3000/*` in the dev realm). |
+
+All four are required at runtime — the helper validates them and throws on missing values rather than building a half-baked URL.
+
 ## HTTP client
 
 `services/api.ts` exposes `api.get / .post / .put / .patch / .del`. The transport is the native `fetch` — `axios` is intentionally **not** a dependency.
