@@ -18,6 +18,11 @@ interface TokenResponse {
 }
 
 export async function GET(request: NextRequest) {
+  // Build redirects from the app's configured public URL, never from
+  // `request.url` — behind the platform proxy the latter resolves to the
+  // container's internal bind address (e.g. 0.0.0.0:3000).
+  const appBase = keycloakConfig().redirectUri;
+
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   const error = request.nextUrl.searchParams.get("error");
@@ -26,17 +31,17 @@ export async function GET(request: NextRequest) {
   if (kcActionStatus === "error") {
     console.warn("[callback] kc_action_status=error — Keycloak signalled the action did not complete");
     await clearTempAuthCookies();
-    return NextResponse.redirect(new URL("/signup?error=kc_action_error", request.url));
+    return NextResponse.redirect(new URL("/signup?error=kc_action_error", appBase));
   }
 
   if (error) {
     await clearTempAuthCookies();
-    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, request.url));
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, appBase));
   }
 
   if (!code || !state) {
     await clearTempAuthCookies();
-    return NextResponse.redirect(new URL("/login?error=missing_code", request.url));
+    return NextResponse.redirect(new URL("/login?error=missing_code", appBase));
   }
 
   const expectedState = await readStateCookie();
@@ -44,7 +49,7 @@ export async function GET(request: NextRequest) {
 
   if (!expectedState || expectedState !== state || !verifier) {
     await clearTempAuthCookies();
-    return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
+    return NextResponse.redirect(new URL("/login?error=invalid_state", appBase));
   }
 
   const { clientId } = keycloakConfig();
@@ -66,17 +71,17 @@ export async function GET(request: NextRequest) {
   await clearTempAuthCookies();
 
   if (!tokenResponse.ok) {
-    return NextResponse.redirect(new URL("/login?error=token_exchange_failed", request.url));
+    return NextResponse.redirect(new URL("/login?error=token_exchange_failed", appBase));
   }
 
   const tokens = (await tokenResponse.json()) as TokenResponse;
   if (!tokens.id_token) {
-    return NextResponse.redirect(new URL("/login?error=missing_id_token", request.url));
+    return NextResponse.redirect(new URL("/login?error=missing_id_token", appBase));
   }
 
   const identity = await verifyAndExtractIdentity(tokens.id_token);
   if (!identity) {
-    return NextResponse.redirect(new URL("/login?error=invalid_id_token", request.url));
+    return NextResponse.redirect(new URL("/login?error=invalid_id_token", appBase));
   }
 
   const { sessionId, ttlSeconds } = await sessionStore().create({
@@ -91,5 +96,5 @@ export async function GET(request: NextRequest) {
   });
   await setSessionCookie(sessionId, ttlSeconds);
 
-  return NextResponse.redirect(new URL("/", request.url));
+  return NextResponse.redirect(new URL("/", appBase));
 }

@@ -13,9 +13,24 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# NEXT_PUBLIC_* values are inlined into the client bundle at build time, so
-# they must be present in the environment here (Railway injects service
-# variables into the Docker build).
+
+# NEXT_PUBLIC_* values are read at build time — by next.config.ts (the CSP) and
+# inlined into the client bundle. Railway supplies service variables to the
+# build as args; declare them as ARG and promote to ENV so `next build` sees
+# them. Without this, next.config.ts falls back to its localhost defaults.
+ARG NEXT_PUBLIC_KEYCLOAK_BASE_URL
+ARG NEXT_PUBLIC_KEYCLOAK_REALM
+ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+ARG NEXT_PUBLIC_AUTH_REDIRECT_URI
+ARG NEXT_PUBLIC_USE_MOCKS
+ARG NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER
+ENV NEXT_PUBLIC_KEYCLOAK_BASE_URL=$NEXT_PUBLIC_KEYCLOAK_BASE_URL \
+    NEXT_PUBLIC_KEYCLOAK_REALM=$NEXT_PUBLIC_KEYCLOAK_REALM \
+    NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID \
+    NEXT_PUBLIC_AUTH_REDIRECT_URI=$NEXT_PUBLIC_AUTH_REDIRECT_URI \
+    NEXT_PUBLIC_USE_MOCKS=$NEXT_PUBLIC_USE_MOCKS \
+    NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER=$NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER
+
 RUN npm run build
 
 # ---- runtime -------------------------------------------------------------
