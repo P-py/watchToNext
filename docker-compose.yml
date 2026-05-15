@@ -30,6 +30,32 @@ services:
       timeout: 5s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: watchtonext-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8180:8080"
+      - "9000:9000"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./infra/keycloak/realm-export.json:/opt/keycloak/data/import/watchtonext-realm.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
 volumes:
   postgres_data:
   redis_data:
+  keycloak_data:
