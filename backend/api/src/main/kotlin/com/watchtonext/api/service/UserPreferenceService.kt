@@ -69,6 +69,10 @@ class UserPreferenceService(
         recommendationCacheEvictor.evictFor(userId)
     }
 
+    @Transactional(readOnly = true)
+    fun listFavorites(userId: UUID): List<UserFavoriteEntity> =
+        favoriteRepository.findByUserId(userId)
+
     @Transactional
     fun markWatched(userId: UUID, movieId: Long): UserWatchedEntity {
         if (!movieRepository.existsById(movieId)) {

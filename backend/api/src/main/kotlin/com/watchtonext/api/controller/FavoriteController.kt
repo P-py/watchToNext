@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,6 +16,12 @@ import java.util.UUID
 @RestController
 @RequestMapping("/favorites")
 class FavoriteController(private val service: UserPreferenceService) {
+
+    @GetMapping
+    fun list(@AuthenticationPrincipal jwt: Jwt): List<FavoriteDto> {
+        val userId = UUID.fromString(jwt.subject)
+        return service.listFavorites(userId).map(FavoriteDto::from)
+    }
 
     @PutMapping("/{movieId}")
     fun favorite(
