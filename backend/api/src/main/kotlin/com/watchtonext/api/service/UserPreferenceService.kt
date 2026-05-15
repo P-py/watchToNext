@@ -4,9 +4,12 @@ import com.watchtonext.api.persistence.entity.UserFavoriteEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteId
 import com.watchtonext.api.persistence.entity.UserMovieRatingEntity
 import com.watchtonext.api.persistence.entity.UserMovieRatingId
+import com.watchtonext.api.persistence.entity.UserWatchedEntity
+import com.watchtonext.api.persistence.entity.UserWatchedId
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +21,7 @@ import java.util.UUID
 class UserPreferenceService(
     private val ratingRepository: UserMovieRatingRepository,
     private val favoriteRepository: UserFavoriteRepository,
+    private val watchedRepository: UserWatchedRepository,
     private val movieRepository: MovieRepository,
     private val recommendationCacheEvictor: RecommendationCacheEvictor,
 ) {
@@ -64,4 +68,27 @@ class UserPreferenceService(
         favoriteRepository.deleteById(UserFavoriteId(userId, movieId))
         recommendationCacheEvictor.evictFor(userId)
     }
+
+    @Transactional
+    fun markWatched(userId: UUID, movieId: Long): UserWatchedEntity {
+        if (!movieRepository.existsById(movieId)) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Não encontramos o filme solicitado.")
+        }
+        val id = UserWatchedId(userId, movieId)
+        val saved = watchedRepository.findById(id).orElseGet {
+            watchedRepository.save(UserWatchedEntity(userId, movieId))
+        }
+        recommendationCacheEvictor.evictFor(userId)
+        return saved
+    }
+
+    @Transactional
+    fun unmarkWatched(userId: UUID, movieId: Long) {
+        watchedRepository.deleteById(UserWatchedId(userId, movieId))
+        recommendationCacheEvictor.evictFor(userId)
+    }
+
+    @Transactional(readOnly = true)
+    fun isWatched(userId: UUID, movieId: Long): Boolean =
+        watchedRepository.existsById(UserWatchedId(userId, movieId))
 }
