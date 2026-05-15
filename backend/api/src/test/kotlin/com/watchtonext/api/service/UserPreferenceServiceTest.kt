@@ -215,4 +215,15 @@ class UserPreferenceServiceTest {
         every { watchedRepository.existsById(watchedId) } returns false
         assertThat(service.isWatched(userId, movieId)).isFalse()
     }
+
+    @Test
+    fun `listFavorites delegates to the repository and returns the user's favorites`() {
+        val favorites = listOf(UserFavoriteEntity(userId, 1L), UserFavoriteEntity(userId, 2L))
+        every { favoriteRepository.findByUserId(userId) } returns favorites
+
+        val result = service.listFavorites(userId)
+
+        assertThat(result).isEqualTo(favorites)
+        verify(exactly = 1) { favoriteRepository.findByUserId(userId) }
+    }
 }
