@@ -6,9 +6,30 @@ This document is the single source of truth for the variables the recommender co
 
 ## Approach
 
-**Content-based item-item KNN.** Every movie in the candidate pool is encoded as a numeric vector. Similarity between two movies is **cosine** over that vector. A user's recommendations come from aggregating cosine similarity between the movies they've shown preference for (seeds) and every other candidate, weighted by how strongly they like each seed.
+**Content-based item-item KNN.** Every movie in the candidate pool is encoded as a numeric vector. Similarity between two movies is **cosine** over that vector — see [Similarity metric — why cosine](#similarity-metric--why-cosine) for the comparison against euclidean distance and the reasoning behind the choice. A user's recommendations come from aggregating that similarity between the movies they've shown preference for (seeds) and every other candidate, weighted by how strongly they like each seed.
 
 No collaborative filtering, no user-user matrix, no external ratings dataset. The preference signal is built entirely from the user's own in-app behaviour (ratings + favorites).
+
+## Similarity metric — why cosine
+
+The recommender needs a similarity function over feature vectors shaped as `[ one-hot genres | voteAverage | voteCount | popularity ]`. The one-hot block is high-dimensional and sparse (each movie activates 1–3 of ~20 genre slots); the three trailing scalars are min-max scaled to `[0, 1]`. Two candidates were considered: **cosine similarity** and **euclidean distance** (converted to a similarity via `1 / (1 + d)`).
+
+| Criterion                         | Cosine                                                                 | Euclidean                                                                 |
+|-----------------------------------|------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| Behaviour on sparse / one-hot     | Naturally rewards overlapping non-zero dimensions; ignores joint zeros | Joint zeros lower the distance, so two unrelated movies that "lack the same genres" look artificially close |
+| Magnitude sensitivity             | Insensitive — compares direction only                                  | Sensitive — a movie with more active genres drifts away from one with fewer, even if they share the same genres |
+| Output range                      | `[-1, 1]` (here `[0, 1]` thanks to min-max + non-negative one-hot)     | `[0, ∞)`, requires normalisation to a bounded similarity                  |
+| Cost per pair                     | `O(n)` — one dot product, two norms                                    | `O(n)` — one diff + square sum + sqrt — equivalent in practice            |
+
+**Decision: cosine.** Three reasons, all anchored to the vector layout above:
+1. The dominant signal is genre overlap, which lives in a sparse one-hot block; cosine handles that block cleanly while euclidean rewards shared *absence* of genres.
+2. We want a movie that activates many genres (e.g. an action/adventure/sci-fi blockbuster) to be considered similar to a narrower movie sharing one of those genres, not penalised for having a larger active set.
+3. The bounded output makes the seed-weighted sum `Σ cosine × weight` behave predictably regardless of how many seeds the user has.
+
+**Consequences.**
+- Cosine over a vector with positive components is bounded in `[0, 1]`. That's why every numeric feature is **min-max scaled to `[0, 1]`** (see [Movie variables](#movie-variables-feature-vector)) — without it, a negative-scaled coordinate could drag the similarity below zero and break the "negative score ⇒ skip" guard in `ContentKnnRecommender.recommend(...)`.
+- Ranking is invariant under scaling the whole vector; only the *direction* matters. Adding new numeric features later does not require revisiting existing scaling factors as long as each new feature is min-max scaled.
+- Swapping to euclidean (or any other metric) later would mean extracting a `SimilarityMetric` strategy in `:engine` and parameterising `ContentKnnRecommender`. **Out of scope for now** — the strategy port is a known extension point, not a current requirement.
 
 ## Pipeline
 
