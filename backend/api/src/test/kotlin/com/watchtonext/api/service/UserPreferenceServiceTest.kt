@@ -226,4 +226,19 @@ class UserPreferenceServiceTest {
         assertThat(result).isEqualTo(favorites)
         verify(exactly = 1) { favoriteRepository.findByUserId(userId) }
     }
+
+    @Test
+    fun `getRating returns the stored rating when one exists`() {
+        val existing = UserMovieRatingEntity(userId = userId, movieId = movieId, rating = 4.5)
+        every { ratingRepository.findById(ratingId) } returns Optional.of(existing)
+
+        assertThat(service.getRating(userId, movieId)).isEqualTo(4.5)
+    }
+
+    @Test
+    fun `getRating returns null when the user has not rated the movie`() {
+        every { ratingRepository.findById(ratingId) } returns Optional.empty()
+
+        assertThat(service.getRating(userId, movieId)).isNull()
+    }
 }
