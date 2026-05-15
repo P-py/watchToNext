@@ -4,9 +4,11 @@ import com.watchtonext.api.config.RecommenderProperties
 import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteEntity
 import com.watchtonext.api.persistence.entity.UserMovieRatingEntity
+import com.watchtonext.api.persistence.entity.UserWatchedEntity
 import com.watchtonext.api.persistence.repository.MovieRepository
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import com.watchtonext.engine.model.MovieFeatures
 import com.watchtonext.engine.port.MovieFeaturesProvider
 import io.mockk.every
@@ -23,6 +25,7 @@ class RecommendationServiceTest {
     private val featuresProvider = mockk<MovieFeaturesProvider>()
     private val ratingRepository = mockk<UserMovieRatingRepository>()
     private val favoriteRepository = mockk<UserFavoriteRepository>()
+    private val watchedRepository = mockk<UserWatchedRepository>()
     private val movieRepository = mockk<MovieRepository>()
     private val properties = RecommenderProperties(favoriteBoost = 5.0, minVoteCount = 0)
 
@@ -30,6 +33,7 @@ class RecommendationServiceTest {
         featuresProvider,
         ratingRepository,
         favoriteRepository,
+        watchedRepository,
         movieRepository,
         properties,
     )
@@ -70,6 +74,9 @@ class RecommendationServiceTest {
     private fun favorite(movieId: Long) =
         UserFavoriteEntity(userId = userId, movieId = movieId)
 
+    private fun watched(movieId: Long) =
+        UserWatchedEntity(userId = userId, movieId = movieId)
+
     private fun movieEntity(id: Long, title: String = "M$id") =
         MovieEntity(id = id, tmdbId = id + 1_000, title = title)
 
@@ -86,6 +93,7 @@ class RecommendationServiceTest {
     fun `recommendFor maps ranked engine results into DTOs`() {
         every { ratingRepository.findByUserId(userId) } returns listOf(rating(actionA.movieId))
         every { favoriteRepository.findByUserId(userId) } returns emptyList()
+        every { watchedRepository.findByUserId(userId) } returns emptyList()
         every { movieRepository.findAllById(any<Iterable<Long>>()) } answers {
             firstArg<Iterable<Long>>().map { movieEntity(it) }
         }
@@ -100,6 +108,23 @@ class RecommendationServiceTest {
     }
 
     @Test
+    fun `recommendFor excludes movies the user has already watched`() {
+        every { ratingRepository.findByUserId(userId) } returns listOf(rating(actionA.movieId))
+        every { favoriteRepository.findByUserId(userId) } returns emptyList()
+        // actionB would normally rank near the top for an action seed — but it's watched.
+        every { watchedRepository.findByUserId(userId) } returns listOf(watched(actionB.movieId))
+        every { movieRepository.findAllById(any<Iterable<Long>>()) } answers {
+            firstArg<Iterable<Long>>().map { movieEntity(it) }
+        }
+
+        val result = service.recommendFor(userId, limit = 5)
+
+        val ids = result.map { it.movieId }
+        assertThat(ids).doesNotContain(actionB.movieId)
+        assertThat(ids).contains(actionC.movieId)
+    }
+
+    @Test
     fun `recommendFor applies favorite boost so the boosted seed dominates ranking`() {
         // User has equal-weight ratings for one action and one romance seed.
         // The romance one is favorited -> 5x boost -> the other romance wins overall.
@@ -108,6 +133,7 @@ class RecommendationServiceTest {
             rating(romanceA.movieId, rating = 4.0),
         )
         every { favoriteRepository.findByUserId(userId) } returns listOf(favorite(romanceA.movieId))
+        every { watchedRepository.findByUserId(userId) } returns emptyList()
         every { movieRepository.findAllById(any<Iterable<Long>>()) } answers {
             firstArg<Iterable<Long>>().map { movieEntity(it) }
         }
@@ -153,6 +179,7 @@ class RecommendationServiceTest {
             featuresProvider,
             ratingRepository,
             favoriteRepository,
+            watchedRepository,
             movieRepository,
             properties,
         )

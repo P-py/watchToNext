@@ -5,6 +5,7 @@ import com.watchtonext.api.persistence.entity.UserEntity
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
 import com.watchtonext.api.persistence.repository.UserRepository
+import com.watchtonext.api.persistence.repository.UserWatchedRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -24,11 +25,13 @@ class UserServiceTest {
     private val userRepository = mockk<UserRepository>()
     private val ratingRepository = mockk<UserMovieRatingRepository>()
     private val favoriteRepository = mockk<UserFavoriteRepository>()
+    private val watchedRepository = mockk<UserWatchedRepository>()
     private val service = UserService(
         userProvisioningService,
         userRepository,
         ratingRepository,
         favoriteRepository,
+        watchedRepository,
     )
 
     private val subject = UUID.fromString("11111111-1111-1111-1111-111111111111")
@@ -57,6 +60,7 @@ class UserServiceTest {
         every { userRepository.findById(subject) } returns Optional.of(user)
         every { ratingRepository.countByUserId(subject) } returns 7L
         every { favoriteRepository.countByUserId(subject) } returns 3L
+        every { watchedRepository.countByUserId(subject) } returns 9L
 
         val dto = service.getMe(token)
 
@@ -66,6 +70,7 @@ class UserServiceTest {
         assertThat(dto.createdAt).isEqualTo(user.createdAt)
         assertThat(dto.ratingsCount).isEqualTo(7L)
         assertThat(dto.favoritesCount).isEqualTo(3L)
+        assertThat(dto.watchedCount).isEqualTo(9L)
         verify(exactly = 1) { userProvisioningService.provision(token) }
     }
 
@@ -80,6 +85,7 @@ class UserServiceTest {
             .hasMessageContaining(subject.toString())
         verify(exactly = 0) { ratingRepository.countByUserId(any()) }
         verify(exactly = 0) { favoriteRepository.countByUserId(any()) }
+        verify(exactly = 0) { watchedRepository.countByUserId(any()) }
     }
 
     @Test
@@ -92,6 +98,7 @@ class UserServiceTest {
         every { userRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
         every { ratingRepository.countByUserId(subject) } returns 12L
         every { favoriteRepository.countByUserId(subject) } returns 4L
+        every { watchedRepository.countByUserId(subject) } returns 8L
 
         val dto = service.updateMe(token, UpdateUserMeRequest(displayName = "Alice Doe"))
 
@@ -99,6 +106,7 @@ class UserServiceTest {
         assertThat(dto.displayName).isEqualTo("Alice Doe")
         assertThat(dto.ratingsCount).isEqualTo(12L)
         assertThat(dto.favoritesCount).isEqualTo(4L)
+        assertThat(dto.watchedCount).isEqualTo(8L)
         verify(exactly = 1) { userRepository.save(any()) }
     }
 
@@ -112,6 +120,7 @@ class UserServiceTest {
         every { userRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
         every { ratingRepository.countByUserId(subject) } returns 0L
         every { favoriteRepository.countByUserId(subject) } returns 0L
+        every { watchedRepository.countByUserId(subject) } returns 0L
 
         val dto = service.updateMe(token, UpdateUserMeRequest(displayName = "  alice  "))
 
