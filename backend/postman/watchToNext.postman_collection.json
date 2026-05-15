@@ -94,6 +94,30 @@
   ],
   "item": [
     {
+      "name": "Rating status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/ratings/{{movieId}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "ratings",
+            "{{movieId}}"
+          ]
+        },
+        "description": "Authenticated. Returns { rating: number | null } — the caller's rating for the movie, or null when not rated."
+      },
+      "response": []
+    },
+    {
       "name": "Rate movie (upsert)",
       "request": {
         "method": "PUT",
