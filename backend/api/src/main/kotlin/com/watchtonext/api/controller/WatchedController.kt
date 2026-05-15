@@ -1,6 +1,7 @@
 package com.watchtonext.api.controller
 
 import com.watchtonext.api.dto.WatchedDto
+import com.watchtonext.api.dto.WatchedItemDto
 import com.watchtonext.api.dto.WatchedStatusDto
 import com.watchtonext.api.service.UserPreferenceService
 import org.springframework.http.ResponseEntity
@@ -17,6 +18,12 @@ import java.util.UUID
 @RestController
 @RequestMapping("/watched")
 class WatchedController(private val service: UserPreferenceService) {
+
+    @GetMapping
+    fun list(@AuthenticationPrincipal jwt: Jwt): List<WatchedItemDto> {
+        val userId = UUID.fromString(jwt.subject)
+        return service.listWatchedItems(userId)
+    }
 
     @PutMapping("/{movieId}")
     fun mark(

@@ -22,8 +22,10 @@ class MovieController(private val service: MovieService) {
     fun listPopular(
         @RequestParam(defaultValue = "1") @Min(1) page: Int,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) size: Int,
+        @RequestParam(required = false) genreId: Int?,
     ): PageDto<MovieSummaryDto> =
-        service.listPopular(page, size)
+        if (genreId != null) service.listPopularByGenre(genreId, page, size)
+        else service.listPopular(page, size)
 
     @GetMapping
     fun search(

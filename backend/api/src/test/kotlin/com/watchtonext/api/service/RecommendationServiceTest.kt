@@ -188,4 +188,29 @@ class RecommendationServiceTest {
 
         assertThat(result).isEmpty()
     }
+
+    @Test
+    fun `recommendFromSeeds ranks neighbours of the picked movies and excludes the seeds`() {
+        every { movieRepository.findAllById(any<Iterable<Long>>()) } answers {
+            firstArg<Iterable<Long>>().map { movieEntity(it) }
+        }
+
+        val result = service.recommendFromSeeds(listOf(actionA.movieId), limit = 5)
+
+        val ids = result.map { it.movieId }
+        assertThat(ids).doesNotContain(actionA.movieId)
+        assertThat(ids).contains(actionB.movieId, actionC.movieId)
+        assertThat(ids.indexOf(actionB.movieId)).isLessThan(ids.indexOf(romanceA.movieId))
+    }
+
+    @Test
+    fun `recommendFromSeeds throws 404 with the friendly pt-BR reason when no picked movie exists`() {
+        every { movieRepository.findAllById(any<Iterable<Long>>()) } returns emptyList()
+
+        assertThatThrownBy { service.recommendFromSeeds(listOf(404L), limit = 5) }
+            .isInstanceOfSatisfying(ResponseStatusException::class.java) { ex ->
+                assertThat(ex.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
+                assertThat(ex.reason).isEqualTo("Não encontramos os filmes selecionados.")
+            }
+    }
 }

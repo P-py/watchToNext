@@ -2,6 +2,7 @@ package com.watchtonext.api.controller
 
 import com.watchtonext.api.dto.RateMovieRequest
 import com.watchtonext.api.dto.RatingDto
+import com.watchtonext.api.dto.RatingItemDto
 import com.watchtonext.api.dto.RatingStatusDto
 import com.watchtonext.api.service.UserPreferenceService
 import jakarta.validation.Valid
@@ -20,6 +21,12 @@ import java.util.UUID
 @RestController
 @RequestMapping("/ratings")
 class RatingController(private val service: UserPreferenceService) {
+
+    @GetMapping
+    fun list(@AuthenticationPrincipal jwt: Jwt): List<RatingItemDto> {
+        val userId = UUID.fromString(jwt.subject)
+        return service.listRatingItems(userId)
+    }
 
     @GetMapping("/{movieId}")
     fun status(

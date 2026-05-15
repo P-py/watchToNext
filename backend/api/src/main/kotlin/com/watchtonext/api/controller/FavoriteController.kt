@@ -1,6 +1,7 @@
 package com.watchtonext.api.controller
 
 import com.watchtonext.api.dto.FavoriteDto
+import com.watchtonext.api.dto.FavoriteItemDto
 import com.watchtonext.api.service.UserPreferenceService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -18,9 +19,9 @@ import java.util.UUID
 class FavoriteController(private val service: UserPreferenceService) {
 
     @GetMapping
-    fun list(@AuthenticationPrincipal jwt: Jwt): List<FavoriteDto> {
+    fun list(@AuthenticationPrincipal jwt: Jwt): List<FavoriteItemDto> {
         val userId = UUID.fromString(jwt.subject)
-        return service.listFavorites(userId).map(FavoriteDto::from)
+        return service.listFavoriteItems(userId)
     }
 
     @PutMapping("/{movieId}")

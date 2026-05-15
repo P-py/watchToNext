@@ -95,10 +95,13 @@ Examples of reusable components:
 
 ```
 modules/
-  movies/             MovieCard
+  movies/             MovieCard · FavoriteHeart · WatchedEye
+                      FavoriteButton · WatchedButton · RatingStars
   search/             SearchBar
-  recommendations/    RecommendationGrid
-  user/               UserProfile
+  recommendations/    RecommendationGrid · SuggestionsClient
+                      QuickSuggestions · SeedPicker · GenreSuggestions
+  user/               UserProfile · ProfileSummary
+                      FavoritesList · WatchedList · RatingsList · ListStateView
   home/               HowItWorks · FeatureHighlights · HomeCta
   about/              AboutIntro · HowKnnWorks (KnnDiagram · KnnPipeline)
                       DataSource (DataImportFlow) · TechStack · AboutDisclaimer
@@ -225,7 +228,16 @@ Server-side guards live in `lib/auth/guards.ts`. Two helpers cover the entire pr
 - `requireSession()` — used by `app/profile/page.tsx`. Anonymous users get redirected to `/login` before render.
 - `redirectIfAuthenticated()` — used by `app/(auth)/layout.tsx`, which wraps `/login` and `/signup` under a Next.js route group. Already-authenticated users are bounced to `/` so they can't kick off a duplicate auth flow.
 
-The route group `(auth)/` is transparent to URLs (`/login` and `/signup` paths stay the same); the layout is what carries the guard. Public pages (`/`, `/movies/*`, `/search`) need no guard.
+The route group `(auth)/` is transparent to URLs (`/login` and `/signup` paths stay the same); the layout is what carries the guard. Public pages (`/`, `/about`, `/movies/*`, `/search`) need no guard. The authenticated pages — `/profile`, `/favorites`, `/watched`, `/ratings`, `/suggestions` — are server components that call `requireSession()` before rendering their client child.
+
+### Preference providers (favorites & watched)
+
+`app/layout.tsx` mounts two client contexts so movie cards can show toggle state without a request per card:
+
+- `FavoritesProvider` (`useFavorites()`) — loads the caller's favorite ids once via `GET /favorites`; backs `FavoriteHeart` and `FavoriteButton`.
+- `WatchedProvider` (`useWatched()`) — loads the caller's watched ids once via `GET /watched`; backs `WatchedEye` (card overlay, next to the heart) and `WatchedButton` (detail page).
+
+Both expose `is…/toggle…/ready`, do optimistic updates with rollback + a pt-BR toast on failure, and fetch nothing for anonymous visitors. The `/favorites`, `/watched`, `/ratings` list pages instead fetch *enriched* rows (`…ItemDto`) through `useAsyncList` + the shared `ListStateView`.
 
 ### Session in the client (no /api/auth/me)
 

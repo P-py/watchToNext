@@ -1,5 +1,6 @@
 package com.watchtonext.api.service
 
+import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteId
 import com.watchtonext.api.persistence.entity.UserMovieRatingEntity
@@ -20,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import java.time.OffsetDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -240,5 +242,50 @@ class UserPreferenceServiceTest {
         every { ratingRepository.findById(ratingId) } returns Optional.empty()
 
         assertThat(service.getRating(userId, movieId)).isNull()
+    }
+
+    private fun movie(id: Long) = MovieEntity(id = id, tmdbId = id * 10, title = "Movie $id")
+
+    @Test
+    fun `listFavoriteItems returns enriched movies newest-first and drops unknown movies`() {
+        val now = OffsetDateTime.now()
+        val older = UserFavoriteEntity(userId, 1L, createdAt = now.minusDays(2))
+        val newer = UserFavoriteEntity(userId, 2L, createdAt = now)
+        val orphan = UserFavoriteEntity(userId, 3L, createdAt = now.minusDays(1))
+        every { favoriteRepository.findByUserId(userId) } returns listOf(older, newer, orphan)
+        every { movieRepository.findAllById(listOf(1L, 2L, 3L)) } returns
+            listOf(movie(1L), movie(2L))
+
+        val result = service.listFavoriteItems(userId)
+
+        assertThat(result.map { it.movie.id }).containsExactly(2L, 1L)
+        assertThat(result.map { it.favoritedAt }).containsExactly(newer.createdAt, older.createdAt)
+    }
+
+    @Test
+    fun `listWatchedItems returns enriched movies newest-first`() {
+        val now = OffsetDateTime.now()
+        val older = UserWatchedEntity(userId, 1L, watchedAt = now.minusDays(1))
+        val newer = UserWatchedEntity(userId, 2L, watchedAt = now)
+        every { watchedRepository.findByUserId(userId) } returns listOf(older, newer)
+        every { movieRepository.findAllById(listOf(1L, 2L)) } returns listOf(movie(1L), movie(2L))
+
+        val result = service.listWatchedItems(userId)
+
+        assertThat(result.map { it.movie.id }).containsExactly(2L, 1L)
+    }
+
+    @Test
+    fun `listRatingItems returns enriched movies with their score newest-first`() {
+        val now = OffsetDateTime.now()
+        val older = UserMovieRatingEntity(userId, 1L, rating = 3.0, updatedAt = now.minusDays(1))
+        val newer = UserMovieRatingEntity(userId, 2L, rating = 4.5, updatedAt = now)
+        every { ratingRepository.findByUserId(userId) } returns listOf(older, newer)
+        every { movieRepository.findAllById(listOf(1L, 2L)) } returns listOf(movie(1L), movie(2L))
+
+        val result = service.listRatingItems(userId)
+
+        assertThat(result.map { it.movie.id }).containsExactly(2L, 1L)
+        assertThat(result.first().rating).isEqualTo(4.5)
     }
 }

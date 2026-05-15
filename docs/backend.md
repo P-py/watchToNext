@@ -167,11 +167,11 @@ The `--import-realm` flag is idempotent — it only imports if the realm doesn't
 
 | Endpoint | Auth |
 |----------|------|
-| `GET /api/movies`, `GET /api/movies/popular`, `GET /api/movies/{id}` | public — catalog browsing |
+| `GET /api/movies`, `GET /api/movies/popular`, `GET /api/movies/{id}`, `GET /api/genres` | public — catalog browsing |
 | `GET /api/recommendations/similar` | public — used by movie detail page |
-| `GET /api/recommendations` (personal) | authenticated |
-| `PUT/DELETE /api/ratings/{movieId}` | authenticated |
-| `PUT/DELETE /api/favorites/{movieId}` | authenticated |
+| `GET /api/recommendations`, `GET /api/recommendations/from` | authenticated |
+| `GET/PUT/DELETE /api/ratings/**` | authenticated |
+| `GET/PUT/DELETE /api/favorites/**`, `GET/PUT/DELETE /api/watched/**` | authenticated |
 | `OPTIONS /**` | public (CORS pre-flight) |
 
 `config/JwtConverter` extracts realm roles from `realm_access.roles` and maps them to `ROLE_<name>` Spring authorities. `service/UserProvisioningFilter` runs after the Spring Security bearer-token filter and idempotently calls `UserProvisioningService.provision(jwt)` to upsert the `users` row keyed by the JWT `sub`. Failures during provisioning are logged but do not break the request.
@@ -188,17 +188,21 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 |--------|----------|-------------|
 | `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
 | `GET`  | `/api/movies/{id}`                  | **Public.** Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
-| `GET`  | `/api/movies/popular?page=&size=`   | **Public.** Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]). |
+| `GET`  | `/api/movies/popular?page=&size=&genreId=` | **Public.** Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]). Optional `genreId` filters to a single genre, still ordered by popularity desc. |
+| `GET`  | `/api/genres`                       | **Public.** All genres as `GenreDto[]` (`{id, name}`), alphabetically — backs the suggestions page genre filter. |
 | `GET`  | `/api/recommendations?limit=`       | **Authenticated.** Personalized recommendations (KNN over the caller's ratings; userId from JWT `sub`, `limit` ∈ [1,100]). |
 | `GET`  | `/api/recommendations/similar?movieId=&limit=` | **Public.** Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
+| `GET`  | `/api/recommendations/from?movieIds=&limit=` | **Authenticated.** Input-seeded recommendations — KNN over an ad-hoc set of movies (`movieIds` 1..50, comma-separated), excluding the seeds. 404 when none of the ids exist. |
+| `GET`  | `/api/ratings`                      | **Authenticated.** Lists the caller's ratings as `RatingItemDto[]` (`{movie, rating, ratedAt}`), newest first. |
 | `GET`  | `/api/ratings/{movieId}`            | **Authenticated.** Returns `{rating: number\|null}` — the caller's rating for the movie, or `null` when not rated. |
 | `PUT`  | `/api/ratings/{movieId}` (body `{rating}`) | **Authenticated.** Upsert a rating for the caller (`rating` ∈ [0.0, 5.0]). |
 | `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
-| `GET`  | `/api/favorites`                    | **Authenticated.** Lists the caller's favorites as `FavoriteDto[]` (`{userId, movieId, createdAt}`). |
+| `GET`  | `/api/favorites`                    | **Authenticated.** Lists the caller's favorites as `FavoriteItemDto[]` (`{movie, favoritedAt}`), newest first. |
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
 | `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
 | `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount, watchedCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
 | `PATCH` | `/api/users/me` (body `{displayName}`) | **Authenticated.** Updates the caller's editable profile. Only `displayName` is supported (validated `@NotBlank` + length 1..255; server trims whitespace). Email is read-only and comes from Keycloak. Returns the refreshed `UserMeDto`. `UserProvisioningService` no longer overwrites `displayName` on subsequent logins. |
+| `GET`  | `/api/watched`                      | **Authenticated.** Lists the caller's watched movies as `WatchedItemDto[]` (`{movie, watchedAt}`), newest first. |
 | `PUT`  | `/api/watched/{movieId}`            | **Authenticated.** Marks a movie as watched for the caller (idempotent). Returns `WatchedDto`. 404 when the movie is unknown. |
 | `DELETE` | `/api/watched/{movieId}`          | **Authenticated.** Removes the watched mark. |
 | `GET`  | `/api/watched/{movieId}`            | **Authenticated.** Returns `{watched: boolean}` for the caller + movie. |

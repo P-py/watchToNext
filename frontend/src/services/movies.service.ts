@@ -3,7 +3,7 @@ import { Movie, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES } from "@/mocks/data";
 
-function toSummary(m: Movie): MovieSummary {
+export function toSummary(m: Movie): MovieSummary {
   return {
     id: m.id,
     tmdbId: m.id,
@@ -16,6 +16,11 @@ function toSummary(m: Movie): MovieSummary {
     releaseDate: m.releaseDate,
     genres: m.genres,
   };
+}
+
+/** Mock-mode helper: a `MovieSummary` for a given id, falling back to the first mock. */
+export function mockSummary(id: number): MovieSummary {
+  return toSummary(MOCK_MOVIES.find((m) => m.id === id) ?? MOCK_MOVIES[0]);
 }
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -61,12 +66,16 @@ export const moviesService = {
     return api.get(`/movies/${id}`);
   },
 
-  getByGenre: (genreId: number, page = 1): Promise<PaginatedResponse<Movie>> => {
+  getByGenre: (
+    genreId: number,
+    page = 1,
+    size = DEFAULT_PAGE_SIZE,
+  ): Promise<PaginatedResponse<MovieSummary>> => {
     if (USE_MOCKS) {
       const filtered = MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId));
-      return Promise.resolve(paginate(filtered, page, DEFAULT_PAGE_SIZE));
+      return Promise.resolve(paginate(filtered.map(toSummary), page, size));
     }
-    return api.get(`/movies?genreId=${genreId}&page=${page}`);
+    return api.get(`/movies/popular?genreId=${genreId}&page=${page}&size=${size}`);
   },
 
   getPopular: (

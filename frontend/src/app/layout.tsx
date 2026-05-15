@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { AcademicDisclaimer } from "@/components/AcademicDisclaimer";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
+import { WatchedProvider } from "@/components/WatchedProvider";
 import { SessionProvider } from "@/components/SessionProvider";
 import TmdbAttribution from "@/components/TmdbAttribution";
 import { readSession } from "@/lib/auth/session";
@@ -41,10 +42,12 @@ export default async function RootLayout({
       >
         <SessionProvider initialSession={session}>
           <FavoritesProvider>
-            <AcademicDisclaimer />
-            <div className="flex-1">{children}</div>
-            <TmdbAttribution />
-            <Toaster theme="dark" position="bottom-right" richColors closeButton />
+            <WatchedProvider>
+              <AcademicDisclaimer />
+              <div className="flex-1">{children}</div>
+              <TmdbAttribution />
+              <Toaster theme="dark" position="bottom-right" richColors closeButton />
+            </WatchedProvider>
           </FavoritesProvider>
         </SessionProvider>
       </body>

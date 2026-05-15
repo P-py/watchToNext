@@ -81,6 +81,30 @@ class RecommendationService(
         }
     }
 
+    /**
+     * Recommendations seeded by an ad-hoc set of movies the user picked, each
+     * weighted equally. The seeds themselves are excluded from the result.
+     */
+    @Transactional(readOnly = true)
+    fun recommendFromSeeds(movieIds: List<Long>, limit: Int): List<RecommendationDto> {
+        val seedIds = movieRepository.findAllById(movieIds).map { it.id }.toSet()
+        if (seedIds.isEmpty()) {
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Não encontramos os filmes selecionados.",
+            )
+        }
+
+        val seeds = seedIds.map { WeightedMovie(movieId = it, weight = 1.0) }
+        val ranked = recommender().recommend(seeds, limit, seedIds)
+        if (ranked.isEmpty()) return emptyList()
+
+        val moviesById = movieRepository.findAllById(ranked.map { it.movieId }).associateBy { it.id }
+        return ranked.mapNotNull { scored ->
+            moviesById[scored.movieId]?.let { RecommendationDto.from(RecommendationResult(it, scored.score)) }
+        }
+    }
+
     private fun recommender(): ContentKnnRecommender {
         recommenderRef.get()?.let { return it }
         synchronized(this) {

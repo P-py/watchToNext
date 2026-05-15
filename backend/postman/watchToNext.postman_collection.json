@@ -90,6 +90,18 @@
       "value": "",
       "type": "string",
       "description": "Opaque session id. Login at http://localhost:3000/api/auth/login, then DevTools → Application → Cookies → `wtn_session` → copy value here."
+    },
+    {
+      "key": "genreId",
+      "value": "28",
+      "type": "string",
+      "description": "genres.id (e.g. 28 = Action)"
+    },
+    {
+      "key": "movieIds",
+      "value": "1,2,3",
+      "type": "string",
+      "description": "Comma-separated movies.id list for /recommendations/from"
     }
   ],
   "item": [
@@ -190,7 +202,7 @@
             "favorites"
           ]
         },
-        "description": "Authenticated. Returns the caller's favorites as a list of FavoriteDto ({userId, movieId, createdAt})."
+        "description": "Authenticated. Returns the caller's favorites as FavoriteItemDto[] ({movie, favoritedAt}), newest first."
       },
       "response": []
     },
@@ -505,6 +517,137 @@
         },
         "description": "Public — no cookie required."
       }
+    },
+    {
+      "name": "List my ratings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/ratings",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "ratings"
+          ]
+        },
+        "description": "Authenticated. Returns the caller's ratings as RatingItemDto[] ({movie, rating, ratedAt}), newest first."
+      },
+      "response": []
+    },
+    {
+      "name": "List my watched",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/watched",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "watched"
+          ]
+        },
+        "description": "Authenticated. Returns the caller's watched movies as WatchedItemDto[] ({movie, watchedAt}), newest first."
+      },
+      "response": []
+    },
+    {
+      "name": "List genres",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{bffProxyUrl}}/genres",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "genres"
+          ]
+        },
+        "description": "Public. All genres as GenreDto[] ({id, name}), alphabetically."
+      },
+      "response": []
+    },
+    {
+      "name": "List movies by genre",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{bffProxyUrl}}/movies/popular?genreId={{genreId}}&page={{page}}&size={{size}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "movies",
+            "popular"
+          ],
+          "query": [
+            {
+              "key": "genreId",
+              "value": "{{genreId}}"
+            },
+            {
+              "key": "page",
+              "value": "{{page}}"
+            },
+            {
+              "key": "size",
+              "value": "{{size}}"
+            }
+          ]
+        },
+        "description": "Public. Popular movies filtered to a single genre, ordered by popularity desc."
+      },
+      "response": []
+    },
+    {
+      "name": "Get recommendations from seeds",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/recommendations/from?movieIds={{movieIds}}&limit={{limit}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "recommendations",
+            "from"
+          ],
+          "query": [
+            {
+              "key": "movieIds",
+              "value": "{{movieIds}}"
+            },
+            {
+              "key": "limit",
+              "value": "{{limit}}"
+            }
+          ]
+        },
+        "description": "Authenticated. Input-seeded recommendations — KNN over an ad-hoc set of movie ids (comma-separated, 1..50), excluding the seeds."
+      },
+      "response": []
     },
     {
       "name": "Keycloak (auth)",

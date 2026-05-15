@@ -24,8 +24,25 @@ export const recommendationsService = {
     return api.get(`/recommendations/similar?movieId=${movieId}&limit=${limit}`);
   },
 
-  getPersonalized: (): Promise<Movie[]> => {
-    if (USE_MOCKS) return Promise.resolve(MOCK_MOVIES.slice(0, 8));
-    return api.get("/recommendations/personalized");
+  /** Quick suggestions seeded by the user's own ratings + favorites. */
+  getPersonalized: (limit = 20): Promise<SimilarMovie[]> => {
+    if (USE_MOCKS) {
+      return Promise.resolve(MOCK_MOVIES.slice(0, limit).map((m) => toSimilar(m)));
+    }
+    return api.get(`/recommendations?limit=${limit}`);
+  },
+
+  /** Suggestions seeded by an ad-hoc set of movies the user picked. */
+  getFromSeeds: (movieIds: number[], limit = 20): Promise<SimilarMovie[]> => {
+    if (USE_MOCKS) {
+      return Promise.resolve(
+        MOCK_MOVIES.filter((m) => !movieIds.includes(m.id))
+          .slice(0, limit)
+          .map((m) => toSimilar(m)),
+      );
+    }
+    return api.get(
+      `/recommendations/from?movieIds=${movieIds.join(",")}&limit=${limit}`,
+    );
   },
 };

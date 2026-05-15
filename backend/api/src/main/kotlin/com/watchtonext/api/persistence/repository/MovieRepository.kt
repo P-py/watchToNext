@@ -27,4 +27,11 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
 
     @Query("SELECT m FROM MovieEntity m WHERE m.voteCount >= :minVoteCount")
     fun findRecommendationCandidates(minVoteCount: Int): List<MovieEntity>
+
+    @Query(
+        value = "SELECT m FROM MovieEntity m JOIN m.genres g " +
+            "WHERE g.id = :genreId ORDER BY m.popularity DESC NULLS LAST",
+        countQuery = "SELECT COUNT(m) FROM MovieEntity m JOIN m.genres g WHERE g.id = :genreId",
+    )
+    fun findTopByPopularityAndGenre(genreId: Int, pageable: Pageable): Page<MovieEntity>
 }

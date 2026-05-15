@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
@@ -7,6 +8,7 @@ import { motion } from "framer-motion";
 import { buildPosterUrl, formatRating, formatYear } from "@/utils/format";
 import { cardItem } from "@/utils/animations";
 import { FavoriteHeart } from "./FavoriteHeart";
+import { WatchedEye } from "./WatchedEye";
 
 /**
  * Structural type covering both `Movie` and `MovieSummary` — the card only
@@ -23,9 +25,11 @@ export interface MovieCardData {
 interface MovieCardProps {
   movie: MovieCardData;
   onClick?: (movie: MovieCardData) => void;
+  /** Optional overlay rendered inside the card — e.g. a personal-rating chip. */
+  badge?: ReactNode;
 }
 
-export function MovieCard({ movie, onClick }: MovieCardProps) {
+export function MovieCard({ movie, onClick, badge }: MovieCardProps) {
   const inner = (
     <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-md transition-shadow group-hover:shadow-amber-900/20 group-hover:shadow-xl">
       <div className="relative aspect-[2/3] w-full bg-zinc-800">
@@ -71,9 +75,11 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
           {inner}
         </Link>
       )}
-      {/* Sibling of the link/button — keeps the favorite control out of the
-          card's clickable element (no nested interactive elements). */}
+      {/* Siblings of the link/button — keeps the favorite/watched controls out
+          of the card's clickable element (no nested interactive elements). */}
+      <WatchedEye movieId={movie.id} />
       <FavoriteHeart movieId={movie.id} />
+      {badge}
     </motion.div>
   );
 }

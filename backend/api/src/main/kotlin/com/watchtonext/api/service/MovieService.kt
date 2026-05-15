@@ -22,6 +22,18 @@ class MovieService(private val movieRepository: MovieRepository) {
         return PageDto.from(mapped)
     }
 
+    @Cacheable(
+        cacheNames = ["movies-popular"],
+        key = "'genre:' + #genreId + ':' + #page + ':' + #size",
+    )
+    @Transactional(readOnly = true)
+    fun listPopularByGenre(genreId: Int, page: Int, size: Int): PageDto<MovieSummaryDto> {
+        val mapped = movieRepository
+            .findTopByPopularityAndGenre(genreId, PageRequest.of(page - 1, size))
+            .map(MovieSummaryDto::from)
+        return PageDto.from(mapped)
+    }
+
     @Cacheable(cacheNames = ["movies-search"], key = "#query + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
     fun searchByTitle(query: String, page: Int, size: Int): PageDto<MovieSummaryDto> {

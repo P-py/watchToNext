@@ -1,5 +1,9 @@
 package com.watchtonext.api.service
 
+import com.watchtonext.api.dto.FavoriteItemDto
+import com.watchtonext.api.dto.RatingItemDto
+import com.watchtonext.api.dto.WatchedItemDto
+import com.watchtonext.api.persistence.entity.MovieEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteEntity
 import com.watchtonext.api.persistence.entity.UserFavoriteId
 import com.watchtonext.api.persistence.entity.UserMovieRatingEntity
@@ -101,4 +105,35 @@ class UserPreferenceService(
     @Transactional(readOnly = true)
     fun isWatched(userId: UUID, movieId: Long): Boolean =
         watchedRepository.existsById(UserWatchedId(userId, movieId))
+
+    @Transactional(readOnly = true)
+    fun listFavoriteItems(userId: UUID): List<FavoriteItemDto> {
+        val favorites = favoriteRepository.findByUserId(userId)
+        val moviesById = moviesByIdFor(favorites.map { it.movieId })
+        return favorites
+            .mapNotNull { fav -> moviesById[fav.movieId]?.let { FavoriteItemDto.from(fav, it) } }
+            .sortedByDescending { it.favoritedAt }
+    }
+
+    @Transactional(readOnly = true)
+    fun listWatchedItems(userId: UUID): List<WatchedItemDto> {
+        val watched = watchedRepository.findByUserId(userId)
+        val moviesById = moviesByIdFor(watched.map { it.movieId })
+        return watched
+            .mapNotNull { entry -> moviesById[entry.movieId]?.let { WatchedItemDto.from(entry, it) } }
+            .sortedByDescending { it.watchedAt }
+    }
+
+    @Transactional(readOnly = true)
+    fun listRatingItems(userId: UUID): List<RatingItemDto> {
+        val ratings = ratingRepository.findByUserId(userId)
+        val moviesById = moviesByIdFor(ratings.map { it.movieId })
+        return ratings
+            .mapNotNull { rating -> moviesById[rating.movieId]?.let { RatingItemDto.from(rating, it) } }
+            .sortedByDescending { it.ratedAt }
+    }
+
+    /** Loads the movies backing a preference list in one query, keyed by id. */
+    private fun moviesByIdFor(movieIds: List<Long>): Map<Long, MovieEntity> =
+        movieRepository.findAllById(movieIds).associateBy { it.id }
 }

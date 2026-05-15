@@ -4,6 +4,7 @@ import com.watchtonext.api.dto.RecommendationDto
 import com.watchtonext.api.service.RecommendationService
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Size
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.validation.annotation.Validated
@@ -33,4 +34,15 @@ class RecommendationController(private val service: RecommendationService) {
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) limit: Int,
     ): List<RecommendationDto> =
         service.similarTo(movieId, limit)
+
+    /**
+     * Input-seeded recommendations: KNN neighbours of an ad-hoc set of movies
+     * the user picked on the suggestions page, rather than their own history.
+     */
+    @GetMapping("/from")
+    fun recommendFrom(
+        @RequestParam @Size(min = 1, max = 50) movieIds: List<Long>,
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) limit: Int,
+    ): List<RecommendationDto> =
+        service.recommendFromSeeds(movieIds, limit)
 }
