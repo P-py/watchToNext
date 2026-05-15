@@ -190,7 +190,8 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `GET`  | `/api/movies/popular?page=&size=`   | **Public.** Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]). |
 | `GET`  | `/api/recommendations?limit=`       | **Authenticated.** Personalized recommendations (KNN over the caller's ratings; userId from JWT `sub`, `limit` ∈ [1,100]). |
 | `GET`  | `/api/recommendations/similar?movieId=&limit=` | **Public.** Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
-| `PUT`  | `/api/ratings/{movieId}` (body `{rating}`) | **Authenticated.** Upsert a rating for the caller. |
+| `GET`  | `/api/ratings/{movieId}`            | **Authenticated.** Returns `{rating: number\|null}` — the caller's rating for the movie, or `null` when not rated. |
+| `PUT`  | `/api/ratings/{movieId}` (body `{rating}`) | **Authenticated.** Upsert a rating for the caller (`rating` ∈ [0.0, 5.0]). |
 | `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
 | `GET`  | `/api/favorites`                    | **Authenticated.** Lists the caller's favorites as `FavoriteDto[]` (`{userId, movieId, createdAt}`). |
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
