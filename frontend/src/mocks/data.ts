@@ -175,10 +175,10 @@ export const MOCK_MOVIES: Movie[] = [
 ];
 
 export const MOCK_USER_PROFILE: UserProfile = {
-  id: "user-1",
-  username: "moviefan",
+  id: "11111111-1111-1111-1111-111111111111",
+  displayName: "moviefan",
   email: "moviefan@example.com",
-  avatarUrl: null,
-  watchedMovies: MOCK_MOVIES.slice(0, 6),
-  favoriteGenres: ["Drama", "Science Fiction", "Thriller"],
+  createdAt: "2026-01-15T10:00:00Z",
+  ratingsCount: 12,
+  favoritesCount: 5,
 };
