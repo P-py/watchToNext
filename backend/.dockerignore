@@ -1,0 +1,12 @@
+# Gradle build output & caches — rebuilt inside the image.
+.gradle
+build
+**/build
+
+# IDE / local noise
+.idea
+*.iml
+.kotlin
+
+# Docs & API collection are not needed for the build.
+postman

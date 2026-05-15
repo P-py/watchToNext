@@ -38,6 +38,8 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Emit a self-contained server bundle for a lean production Docker image.
+  output: "standalone",
   images: {
     remotePatterns: [
       {

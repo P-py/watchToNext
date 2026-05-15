@@ -1,0 +1,14 @@
+# Installed/built artifacts — rebuilt inside the image.
+node_modules
+.next
+
+# Local env — secrets are injected by the platform, never baked in.
+.env*
+
+# IDE / VCS / misc noise
+.git
+.idea
+*.log
+README.md
+Dockerfile
+.dockerignore
