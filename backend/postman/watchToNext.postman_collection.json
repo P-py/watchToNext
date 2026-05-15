@@ -295,6 +295,43 @@
       "response": []
     },
     {
+      "name": "Update my profile",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"displayName\": \"Alice Doe\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{bffProxyUrl}}/users/me",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "users",
+            "me"
+          ]
+        },
+        "description": "Authenticated. Updates the caller's editable profile fields. Only `displayName` is editable in this card; email comes from Keycloak. Server trims surrounding whitespace, requires non-blank length 1..255. Returns the refreshed `UserMeDto`."
+      },
+      "response": []
+    },
+    {
       "name": "Get recommendations",
       "request": {
         "method": "GET",
