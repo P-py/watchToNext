@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { fadeUp, heroStagger } from "@/utils/animations";
 
-export default function SignupPage() {
+export default function LoginPage() {
   return (
     <>
       <Navbar />
@@ -22,20 +22,20 @@ export default function SignupPage() {
           animate="visible"
         >
           <motion.div variants={fadeUp} className="flex items-center gap-3">
-            <ShieldCheck className="h-9 w-9 text-amber-400" />
+            <KeyRound className="h-9 w-9 text-amber-400" />
             <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl">
-              Criar conta
+              Entrar
             </h1>
           </motion.div>
 
           <motion.p variants={fadeUp} className="max-w-lg text-base text-zinc-400">
-            Você será redirecionado para o nosso provedor de identidade para concluir o
-            cadastro com segurança. Suas credenciais nunca passam pelo watchToNext.
+            Você será redirecionado para o nosso provedor de identidade para autenticar
+            com segurança. O watchToNext nunca recebe sua senha.
           </motion.p>
 
           <motion.a
             variants={fadeUp}
-            href="/api/auth/signup"
+            href="/api/auth/login"
             className="inline-flex h-12 items-center gap-2 rounded-lg bg-amber-500 px-6 text-sm font-medium text-black transition-colors hover:bg-amber-400"
           >
             Continuar
@@ -43,7 +43,7 @@ export default function SignupPage() {
           </motion.a>
 
           <motion.p variants={fadeUp} className="text-xs text-zinc-500">
-            Já tem uma conta? Use <a href="/login" className="underline hover:text-amber-400">Entrar</a> após o cadastro.
+            Ainda não tem conta? <a href="/signup" className="underline hover:text-amber-400">Criar conta</a>.
           </motion.p>
         </motion.div>
       </main>
