@@ -124,6 +124,7 @@ Keycloak runs as a real service in `docker-compose.yml` (`quay.io/keycloak/keycl
 | Admin console | http://localhost:8180/admin (`admin` / `admin` — dev only, from `backend/.env`) |
 | OIDC discovery | http://localhost:8180/realms/watchtonext/.well-known/openid-configuration |
 | Realm export | `infra/keycloak/realm-export.json` (gold-standard config, see below) |
+| Login theme | `infra/keycloak/themes/watchtonext/` — CSS-only restyle of the stock login pages to match the app (dark zinc + amber). Bind-mounted at `/opt/keycloak/themes`; selected via the realm's `loginTheme`. |
 | Health check | `/health/ready` on port `9000` (used by the compose healthcheck) |
 
 ### Realm `watchtonext`

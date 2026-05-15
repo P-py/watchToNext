@@ -1,0 +1,311 @@
+/*
+ * watchToNext login theme — visual override layer.
+ *
+ * Loaded after the stock Keycloak login.css so these rules win without
+ * !important wherever possible. Selectors are doubled up across PatternFly
+ * versions (`pf-v5-c-*` for Keycloak 26, `pf-c-*` as a fallback) plus plain
+ * element selectors, so the theme survives a Keycloak minor upgrade.
+ *
+ * Palette mirrors the Next.js app (Tailwind zinc + amber):
+ *   bg        zinc-950  #09090b      card      zinc-900  #18181b
+ *   border    zinc-800  #27272a      text      zinc-100  #f4f4f5
+ *   muted     zinc-400  #a1a1aa      accent    amber-500 #f59e0b
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+
+/* ---- page background ------------------------------------------------- */
+
+html,
+body,
+.login-pf,
+.login-pf body {
+  background: #09090b !important;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  color: #f4f4f5;
+}
+
+/* ambient amber glow, matching the app's home/about hero */
+.login-pf-page {
+  background:
+    radial-gradient(
+      24rem 24rem at 50% 33%,
+      rgba(245, 158, 11, 0.1),
+      transparent 70%
+    );
+  background-color: #09090b;
+}
+
+/* ---- header / wordmark ---------------------------------------------- */
+
+#kc-header,
+#kc-header-wrapper {
+  color: #fbbf24;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 1.75rem;
+  text-transform: none;
+  padding-bottom: 0.5rem;
+}
+
+/* film-strip glyph before the "watchToNext" wordmark */
+#kc-header-wrapper::before {
+  content: "";
+  display: inline-block;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-right: 0.5rem;
+  vertical-align: -0.3rem;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2'/%3E%3Cpath d='M7 3v18'/%3E%3Cpath d='M3 7.5h4'/%3E%3Cpath d='M3 12h18'/%3E%3Cpath d='M3 16.5h4'/%3E%3Cpath d='M17 3v18'/%3E%3Cpath d='M17 7.5h4'/%3E%3Cpath d='M17 16.5h4'/%3E%3C/svg%3E");
+}
+
+/* ---- card ------------------------------------------------------------ */
+
+.login-pf-page .card-pf,
+.login-pf-page .pf-v5-c-card,
+.login-pf-page .pf-c-card {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: #f4f4f5;
+}
+
+/* ---- labels & helper text ------------------------------------------- */
+
+label,
+.pf-v5-c-form__label,
+.pf-v5-c-form__label-text,
+.pf-c-form__label,
+#kc-form-options,
+.kc-form-options {
+  color: #a1a1aa !important;
+  font-weight: 500;
+}
+
+/* ---- inputs ---------------------------------------------------------- */
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+.pf-v5-c-form-control,
+.pf-v5-c-form-control input,
+.pf-c-form-control {
+  background: #27272a !important;
+  border: 1px solid #3f3f46 !important;
+  border-radius: 0.5rem !important;
+  color: #f4f4f5 !important;
+  box-shadow: none !important;
+}
+
+input::placeholder {
+  color: #71717a;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+.pf-v5-c-form-control:focus-within,
+.pf-c-form-control:focus {
+  border-color: #f59e0b !important;
+  outline: 2px solid rgba(245, 158, 11, 0.35) !important;
+  outline-offset: 1px;
+}
+
+/* ---- primary button -------------------------------------------------- */
+
+#kc-login,
+input[type="submit"],
+button[type="submit"],
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary {
+  background: #f59e0b !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  color: #000000 !important;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+#kc-login:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover,
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-c-button.pf-m-primary:hover {
+  background: #fbbf24 !important;
+}
+
+/* secondary / link-style buttons */
+.pf-v5-c-button.pf-m-secondary,
+.pf-c-button.pf-m-secondary {
+  background: #27272a !important;
+  border: 1px solid #3f3f46 !important;
+  color: #f4f4f5 !important;
+  border-radius: 0.5rem !important;
+}
+
+/* ---- links ----------------------------------------------------------- */
+
+a,
+#kc-registration a,
+#kc-info-wrapper a,
+.kc-feedback-text a {
+  color: #fbbf24;
+}
+
+a:hover {
+  color: #fcd34d;
+  text-decoration: underline;
+}
+
+#kc-registration,
+#kc-info-wrapper {
+  color: #a1a1aa;
+}
+
+/* ---- alerts / feedback ---------------------------------------------- */
+
+.pf-v5-c-alert,
+.pf-c-alert,
+.alert {
+  background: #18181b !important;
+  border: 1px solid #3f3f46 !important;
+  color: #f4f4f5 !important;
+  border-radius: 0.5rem;
+}
+
+.pf-v5-c-alert.pf-m-danger,
+.alert-error {
+  border-color: rgba(248, 113, 113, 0.5) !important;
+}
+
+.pf-v5-c-alert.pf-m-success,
+.alert-success {
+  border-color: rgba(74, 222, 128, 0.5) !important;
+}
+
+#input-error,
+.pf-v5-c-form__helper-text.pf-m-error,
+.kc-feedback-text {
+  color: #fca5a5 !important;
+}
+
+/* =====================================================================
+ * Fixes — password input group, footer band, button sizing, page layout
+ * ===================================================================== */
+
+/* The password field sits inside an input-group wrapper that ships a white
+ * background. The input itself is already styled above; here we make the
+ * wrapper transparent so only the rounded grey field shows through. */
+.pf-v5-c-input-group,
+.pf-v5-c-input-group__item,
+.pf-c-input-group {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Show / hide password toggle — dark and rounded, matching the inputs. */
+.pf-v5-c-input-group .pf-v5-c-button,
+.pf-v5-c-input-group button,
+.pf-v5-c-button.pf-m-control,
+.pf-c-button.pf-m-control {
+  background: #27272a !important;
+  border: 1px solid #3f3f46 !important;
+  color: #a1a1aa !important;
+  border-radius: 9999px !important;
+  margin-left: 0.35rem;
+}
+
+.pf-v5-c-input-group .pf-v5-c-button:hover,
+.pf-v5-c-input-group button:hover,
+.pf-v5-c-button.pf-m-control:hover {
+  background: #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+/* PatternFly draws the control button's border with a separate ::after
+ * overlay — that's the leftover thin white outline. Kill the overlay so
+ * only our rounded dark border remains. */
+.pf-c-button.pf-m-control::after,
+.pf-c-button.pf-m-control::before,
+.pf-v5-c-button.pf-m-control::after,
+.pf-v5-c-button.pf-m-control::before,
+.pf-v5-c-input-group .pf-v5-c-button::after,
+.pf-v5-c-input-group .pf-v5-c-button::before {
+  display: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* "New user? Register" / info footer — drop the stock white band. */
+#kc-registration,
+#kc-registration-container,
+#kc-info,
+#kc-info-wrapper,
+.pf-v5-c-login__main-footer,
+.pf-v5-c-login__main-footer-band,
+.pf-v5-c-login__main-footer-band-item {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Primary button: size it to its label instead of stretching edge to edge,
+ * and centre it so there is no dead space around the centred text. */
+#kc-form-buttons,
+.pf-v5-c-form__group.pf-m-action {
+  text-align: center;
+}
+
+#kc-login,
+input[type="submit"],
+button[type="submit"],
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary {
+  width: auto !important;
+  display: inline-flex;
+  padding-left: 2.25rem !important;
+  padding-right: 2.25rem !important;
+}
+
+/* Page layout: centre the card horizontally and let the document scroll
+ * naturally — no forced overflow on the taller register form. */
+.login-pf-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem 1rem 2rem;
+  overflow-x: hidden;
+}
+
+/* Pull the logo + title close to the form so the (taller) register page
+ * sits near the vertical centre without forcing a scroll. */
+.login-pf-page .login-pf-page-header,
+#kc-header {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.login-pf-page .card-pf,
+.login-pf-page .pf-v5-c-login__main {
+  margin: 0.5rem auto 0;
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* Centre the page title ("Sign in", "Register", …) on every page. */
+#kc-page-title {
+  text-align: center;
+}
+
+/* Make the required-field marker visible against the dark fields. */
+.pf-v5-c-form__label-required,
+.pf-v5-c-form__group-label-required,
+span.required,
+.required {
+  color: #f59e0b !important;
+}
