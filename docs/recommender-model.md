@@ -74,7 +74,7 @@ Final candidate score:
 score(c) = Σ_{s ∈ seeds}  cosine(vec(s), vec(c)) × weight(s)
 ```
 
-Already-rated movies are excluded. Results are sorted by `score` descending, ties broken by `movieId` ascending so the same input always produces the same output.
+Already-rated **and** already-watched movies are excluded — the candidate pool drops anything the user has rated or explicitly marked as watched (a movie can be watched without being rated). Results are sorted by `score` descending, ties broken by `movieId` ascending so the same input always produces the same output.
 
 ## Variables rejected (and why)
 
