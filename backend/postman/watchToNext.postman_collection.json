@@ -148,6 +148,29 @@
       }
     },
     {
+      "name": "List my favorites",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/favorites",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "description": "Authenticated. Returns the caller's favorites as a list of FavoriteDto ({userId, movieId, createdAt})."
+      },
+      "response": []
+    },
+    {
       "name": "Favorite movie",
       "request": {
         "method": "PUT",
