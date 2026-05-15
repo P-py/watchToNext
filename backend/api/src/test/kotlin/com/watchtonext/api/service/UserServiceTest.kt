@@ -1,11 +1,13 @@
 package com.watchtonext.api.service
 
+import com.watchtonext.api.dto.UpdateUserMeRequest
 import com.watchtonext.api.persistence.entity.UserEntity
 import com.watchtonext.api.persistence.repository.UserFavoriteRepository
 import com.watchtonext.api.persistence.repository.UserMovieRatingRepository
 import com.watchtonext.api.persistence.repository.UserRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -78,5 +80,42 @@ class UserServiceTest {
             .hasMessageContaining(subject.toString())
         verify(exactly = 0) { ratingRepository.countByUserId(any()) }
         verify(exactly = 0) { favoriteRepository.countByUserId(any()) }
+    }
+
+    @Test
+    fun `updateMe persists displayName and returns DTO with refreshed counts`() {
+        val token = jwt()
+        val user = existingUser()
+        val savedSlot = slot<UserEntity>()
+        every { userProvisioningService.provision(token) } returns user
+        every { userRepository.findById(subject) } returns Optional.of(user)
+        every { userRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
+        every { ratingRepository.countByUserId(subject) } returns 12L
+        every { favoriteRepository.countByUserId(subject) } returns 4L
+
+        val dto = service.updateMe(token, UpdateUserMeRequest(displayName = "Alice Doe"))
+
+        assertThat(savedSlot.captured.displayName).isEqualTo("Alice Doe")
+        assertThat(dto.displayName).isEqualTo("Alice Doe")
+        assertThat(dto.ratingsCount).isEqualTo(12L)
+        assertThat(dto.favoritesCount).isEqualTo(4L)
+        verify(exactly = 1) { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `updateMe trims surrounding whitespace from displayName`() {
+        val token = jwt()
+        val user = existingUser()
+        val savedSlot = slot<UserEntity>()
+        every { userProvisioningService.provision(token) } returns user
+        every { userRepository.findById(subject) } returns Optional.of(user)
+        every { userRepository.save(capture(savedSlot)) } answers { savedSlot.captured }
+        every { ratingRepository.countByUserId(subject) } returns 0L
+        every { favoriteRepository.countByUserId(subject) } returns 0L
+
+        val dto = service.updateMe(token, UpdateUserMeRequest(displayName = "  alice  "))
+
+        assertThat(savedSlot.captured.displayName).isEqualTo("alice")
+        assertThat(dto.displayName).isEqualTo("alice")
     }
 }
