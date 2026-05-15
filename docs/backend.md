@@ -194,8 +194,11 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `DELETE` | `/api/ratings/{movieId}`          | **Authenticated.** Remove the caller's rating. |
 | `PUT`  | `/api/favorites/{movieId}`          | **Authenticated.** Mark a movie as favorite for the caller (idempotent). |
 | `DELETE` | `/api/favorites/{movieId}`        | **Authenticated.** Remove the favorite. |
-| `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
+| `GET`  | `/api/users/me`                     | **Authenticated.** Returns the caller's profile: `{id, displayName, email, createdAt, ratingsCount, favoritesCount, watchedCount}`. User id is taken from the JWT `sub`; defensively calls `UserProvisioningService` before the read. |
 | `PATCH` | `/api/users/me` (body `{displayName}`) | **Authenticated.** Updates the caller's editable profile. Only `displayName` is supported (validated `@NotBlank` + length 1..255; server trims whitespace). Email is read-only and comes from Keycloak. Returns the refreshed `UserMeDto`. `UserProvisioningService` no longer overwrites `displayName` on subsequent logins. |
+| `PUT`  | `/api/watched/{movieId}`            | **Authenticated.** Marks a movie as watched for the caller (idempotent). Returns `WatchedDto`. 404 when the movie is unknown. |
+| `DELETE` | `/api/watched/{movieId}`          | **Authenticated.** Removes the watched mark. |
+| `GET`  | `/api/watched/{movieId}`            | **Authenticated.** Returns `{watched: boolean}` for the caller + movie. |
 
 ## Errors
 

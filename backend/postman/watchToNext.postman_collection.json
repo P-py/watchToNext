@@ -332,6 +332,78 @@
       "response": []
     },
     {
+      "name": "Mark movie watched",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/watched/{{movieId}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "watched",
+            "{{movieId}}"
+          ]
+        },
+        "description": "Authenticated. Marks the movie as watched (idempotent). Returns WatchedDto. 404 if the movie doesn't exist."
+      },
+      "response": []
+    },
+    {
+      "name": "Unmark movie watched",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/watched/{{movieId}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "watched",
+            "{{movieId}}"
+          ]
+        },
+        "description": "Authenticated. Removes the watched mark. 204 No Content."
+      },
+      "response": []
+    },
+    {
+      "name": "Watched status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "wtn_session={{wtnSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{bffProxyUrl}}/watched/{{movieId}}",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "watched",
+            "{{movieId}}"
+          ]
+        },
+        "description": "Authenticated. Returns { watched: boolean } for the current user + movie."
+      },
+      "response": []
+    },
+    {
       "name": "Get recommendations",
       "request": {
         "method": "GET",
