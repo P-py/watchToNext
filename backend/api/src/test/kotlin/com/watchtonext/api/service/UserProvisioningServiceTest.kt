@@ -101,7 +101,9 @@ class UserProvisioningServiceTest {
     }
 
     @Test
-    fun `updates and saves the existing user when claims diverge`() {
+    fun `existing user only has email reconciled when claims diverge`() {
+        // preferred_username changed upstream too, but we no longer mirror it — the user
+        // owns displayName via PATCH /users/me, so the IdP value is ignored on update.
         val token = jwt(
             mapOf(
                 "preferred_username" to "alice2",
@@ -114,7 +116,7 @@ class UserProvisioningServiceTest {
 
         val result = service.provision(token)
 
-        assertThat(result.displayName).isEqualTo("alice2")
+        assertThat(result.displayName).isEqualTo("alice")
         assertThat(result.email).isEqualTo("new@example.com")
         verify(exactly = 1) { userRepository.save(existing) }
     }
@@ -135,5 +137,23 @@ class UserProvisioningServiceTest {
 
         assertThat(existing.email).isEqualTo("alice+work@example.com")
         verify(exactly = 1) { userRepository.save(existing) }
+    }
+
+    @Test
+    fun `ignores displayName drift for existing users (no save when only displayName differs)`() {
+        val token = jwt(
+            mapOf(
+                "preferred_username" to "alice-renamed",
+                "email" to "alice@example.com",
+            ),
+        )
+        val existing = UserEntity(id = subject, displayName = "alice", email = "alice@example.com")
+        every { userRepository.findById(subject) } returns Optional.of(existing)
+
+        val result = service.provision(token)
+
+        assertThat(result).isSameAs(existing)
+        assertThat(result.displayName).isEqualTo("alice")
+        verify(exactly = 0) { userRepository.save(any()) }
     }
 }
