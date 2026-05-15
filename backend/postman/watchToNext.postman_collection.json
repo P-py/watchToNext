@@ -5,27 +5,116 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080/api", "type": "string" },
-    { "key": "userId",  "value": "11111111-1111-1111-1111-111111111111", "type": "string" },
-    { "key": "movieId", "value": "1", "type": "string", "description": "movies.id (local PK)" },
-    { "key": "rating",  "value": "4.5", "type": "string" },
-    { "key": "limit",   "value": "20", "type": "string" },
-    { "key": "q",       "value": "matrix", "type": "string" },
-    { "key": "page",    "value": "1", "type": "string" },
-    { "key": "size",    "value": "20", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "11111111-1111-1111-1111-111111111111",
+      "type": "string"
+    },
+    {
+      "key": "movieId",
+      "value": "1",
+      "type": "string",
+      "description": "movies.id (local PK)"
+    },
+    {
+      "key": "rating",
+      "value": "4.5",
+      "type": "string"
+    },
+    {
+      "key": "limit",
+      "value": "20",
+      "type": "string"
+    },
+    {
+      "key": "q",
+      "value": "matrix",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "size",
+      "value": "20",
+      "type": "string"
+    },
+    {
+      "key": "keycloakBaseUrl",
+      "value": "http://localhost:8180",
+      "type": "string"
+    },
+    {
+      "key": "keycloakRealm",
+      "value": "watchtonext",
+      "type": "string"
+    },
+    {
+      "key": "keycloakAdminUser",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "keycloakAdminPassword",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "keycloakAdminToken",
+      "value": "",
+      "type": "string",
+      "description": "Auto-populated by the 'Get admin token' request via a test script."
+    },
+    {
+      "key": "keycloakUserId",
+      "value": "",
+      "type": "string",
+      "description": "Paste the UUID of the user you want to inspect (from 'List users')."
+    },
+    {
+      "key": "keycloakSearchUsername",
+      "value": "",
+      "type": "string",
+      "description": "Username (or email, since registrationEmailAsUsername=true) to look up."
+    }
   ],
   "item": [
     {
       "name": "Rate movie (upsert)",
       "request": {
         "method": "PUT",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{ \"rating\": {{rating}} }" },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"rating\": {{rating}} }"
+        },
         "url": {
           "raw": "{{baseUrl}}/ratings/{{movieId}}?userId={{userId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["ratings", "{{movieId}}"],
-          "query": [{ "key": "userId", "value": "{{userId}}" }]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "ratings",
+            "{{movieId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
         }
       }
     },
@@ -35,9 +124,19 @@
         "method": "DELETE",
         "url": {
           "raw": "{{baseUrl}}/ratings/{{movieId}}?userId={{userId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["ratings", "{{movieId}}"],
-          "query": [{ "key": "userId", "value": "{{userId}}" }]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "ratings",
+            "{{movieId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
         }
       }
     },
@@ -47,9 +146,19 @@
         "method": "PUT",
         "url": {
           "raw": "{{baseUrl}}/favorites/{{movieId}}?userId={{userId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["favorites", "{{movieId}}"],
-          "query": [{ "key": "userId", "value": "{{userId}}" }]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "{{movieId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
         }
       }
     },
@@ -59,9 +168,19 @@
         "method": "DELETE",
         "url": {
           "raw": "{{baseUrl}}/favorites/{{movieId}}?userId={{userId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["favorites", "{{movieId}}"],
-          "query": [{ "key": "userId", "value": "{{userId}}" }]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "{{movieId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
         }
       }
     },
@@ -71,8 +190,13 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/movies/{{movieId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["movies", "{{movieId}}"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movies",
+            "{{movieId}}"
+          ]
         }
       }
     },
@@ -82,12 +206,25 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/movies?q={{q}}&page={{page}}&size={{size}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["movies"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movies"
+          ],
           "query": [
-            { "key": "q", "value": "{{q}}" },
-            { "key": "page", "value": "{{page}}" },
-            { "key": "size", "value": "{{size}}" }
+            {
+              "key": "q",
+              "value": "{{q}}"
+            },
+            {
+              "key": "page",
+              "value": "{{page}}"
+            },
+            {
+              "key": "size",
+              "value": "{{size}}"
+            }
           ]
         }
       }
@@ -98,11 +235,22 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/movies/popular?page={{page}}&size={{size}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["movies", "popular"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movies",
+            "popular"
+          ],
           "query": [
-            { "key": "page", "value": "{{page}}" },
-            { "key": "size", "value": "{{size}}" }
+            {
+              "key": "page",
+              "value": "{{page}}"
+            },
+            {
+              "key": "size",
+              "value": "{{size}}"
+            }
           ]
         }
       }
@@ -113,11 +261,21 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/recommendations?userId={{userId}}&limit={{limit}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["recommendations"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "recommendations"
+          ],
           "query": [
-            { "key": "userId", "value": "{{userId}}" },
-            { "key": "limit",  "value": "{{limit}}" }
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            },
+            {
+              "key": "limit",
+              "value": "{{limit}}"
+            }
           ]
         }
       }
@@ -128,14 +286,346 @@
         "method": "GET",
         "url": {
           "raw": "{{baseUrl}}/recommendations/similar?movieId={{movieId}}&limit={{limit}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["recommendations", "similar"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "recommendations",
+            "similar"
+          ],
           "query": [
-            { "key": "movieId", "value": "{{movieId}}" },
-            { "key": "limit",   "value": "{{limit}}" }
+            {
+              "key": "movieId",
+              "value": "{{movieId}}"
+            },
+            {
+              "key": "limit",
+              "value": "{{limit}}"
+            }
           ]
         }
       }
+    },
+    {
+      "name": "Keycloak (auth)",
+      "description": "Inspect the Keycloak realm provisioned by the project. Run 'Get admin token' first — it stores the bearer token into the `keycloakAdminToken` collection variable used by the other requests.",
+      "item": [
+        {
+          "name": "OIDC discovery",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/realms/{{keycloakRealm}}/.well-known/openid-configuration",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{keycloakRealm}}",
+                ".well-known",
+                "openid-configuration"
+              ]
+            },
+            "description": "Public OIDC discovery — proves the realm is up and reachable."
+          },
+          "response": []
+        },
+        {
+          "name": "Get admin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "    pm.collectionVariables.set('keycloakAdminToken', json.access_token);",
+                  "    console.log('keycloakAdminToken stored (' + json.access_token.length + ' chars).');",
+                  "}",
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('access_token present', function () { pm.expect(json.access_token).to.be.a('string').and.not.be.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "admin-cli",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{keycloakAdminUser}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{keycloakAdminPassword}}",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/realms/master/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "realms",
+                "master",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            },
+            "description": "ROPC against the *master* realm using the built-in `admin-cli` client. Stores `access_token` into the `keycloakAdminToken` collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "List users (realm)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/users",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "users"
+              ]
+            },
+            "description": "All users in the watchtonext realm. Copy a UUID into `keycloakUserId` to inspect roles."
+          },
+          "response": []
+        },
+        {
+          "name": "Search user by username/email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/users?username={{keycloakSearchUsername}}",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "{{keycloakSearchUsername}}"
+                }
+              ]
+            },
+            "description": "Look up by username (== email in this realm, registrationEmailAsUsername=true)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/users/{{keycloakUserId}}",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "users",
+                "{{keycloakUserId}}"
+              ]
+            },
+            "description": "Full profile of a single user."
+          },
+          "response": []
+        },
+        {
+          "name": "List user realm roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const roles = pm.response.json().map(r => r.name);",
+                  "console.log('direct realm roles:', roles);",
+                  "pm.test('default-roles-watchtonext is the direct mapping', function () { pm.expect(roles).to.include('default-roles-watchtonext'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/users/{{keycloakUserId}}/role-mappings/realm",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "users",
+                "{{keycloakUserId}}",
+                "role-mappings",
+                "realm"
+              ]
+            },
+            "description": "Direct realm-role mappings of the user. In Keycloak 26 every new user gets the composite role `default-roles-watchtonext`, which expands into USER + offline_access + uma_authorization (see 'List user effective realm roles')."
+          },
+          "response": []
+        },
+        {
+          "name": "List user effective realm roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/users/{{keycloakUserId}}/role-mappings/realm/composite",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "users",
+                "{{keycloakUserId}}",
+                "role-mappings",
+                "realm",
+                "composite"
+              ]
+            },
+            "description": "Composite/effective realm roles. Flattens default-roles-watchtonext and should include USER, offline_access, uma_authorization."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "const roles = pm.response.json().map(r => r.name);",
+                  "console.log('effective realm roles:', roles);",
+                  "pm.test('USER role is effective', function () { pm.expect(roles).to.include('USER'); });",
+                  "pm.test('offline_access is effective', function () { pm.expect(roles).to.include('offline_access'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List realm roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/roles",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "roles"
+              ]
+            },
+            "description": "All realm roles. Should list USER, ADMIN, default-roles-watchtonext, offline_access, uma_authorization."
+          },
+          "response": []
+        },
+        {
+          "name": "List clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{keycloakAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakBaseUrl}}/admin/realms/{{keycloakRealm}}/clients",
+              "host": [
+                "{{keycloakBaseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "realms",
+                "{{keycloakRealm}}",
+                "clients"
+              ]
+            },
+            "description": "All clients of the realm. Should include watchtonext-frontend (public) and watchtonext-api (bearer-only)."
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
