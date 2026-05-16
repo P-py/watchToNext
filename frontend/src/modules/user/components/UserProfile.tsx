@@ -37,15 +37,17 @@ function StatCard({ icon, label, value, href }: StatCardProps) {
 export function UserProfile({ profile, onEdit }: UserProfileProps) {
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-zinc-800">
             <User className="h-8 w-8 text-zinc-400" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-zinc-100">{profile.displayName}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold text-zinc-100">
+              {profile.displayName}
+            </h1>
             {profile.email && (
-              <p className="text-sm text-zinc-500">{profile.email}</p>
+              <p className="truncate text-sm text-zinc-500">{profile.email}</p>
             )}
             <p className="mt-1 text-xs text-zinc-600">
               Membro desde {formatDate(profile.createdAt)}
@@ -59,6 +61,7 @@ export function UserProfile({ profile, onEdit }: UserProfileProps) {
             size="sm"
             onClick={onEdit}
             leftIcon={<Pencil className="h-4 w-4" />}
+            className="shrink-0 self-start"
           >
             Editar perfil
           </Button>
