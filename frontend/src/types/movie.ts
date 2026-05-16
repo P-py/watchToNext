@@ -17,6 +17,13 @@ export interface Movie {
 }
 
 /**
+ * Catalog explorer ordering. Mirrors the backend `MovieSort` enum and the
+ * `/movies/popular?sort=` query parameter. `RELEVANCE` is the default — a
+ * weighted rating that surfaces well-known, well-rated movies first.
+ */
+export type MovieSort = "RELEVANCE" | "POPULARITY" | "RATING" | "RELEASE";
+
+/**
  * Subset returned by listing endpoints (`/movies/popular`, `/movies?q=…`, `/movies/{id}`).
  * Mirrors the backend `MovieSummaryDto`.
  */

@@ -3,6 +3,7 @@ package com.watchtonext.api.controller
 import com.watchtonext.api.dto.MovieSummaryDto
 import com.watchtonext.api.dto.PageDto
 import com.watchtonext.api.service.MovieService
+import com.watchtonext.api.service.MovieSort
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -23,9 +24,10 @@ class MovieController(private val service: MovieService) {
         @RequestParam(defaultValue = "1") @Min(1) page: Int,
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) size: Int,
         @RequestParam(required = false) genreId: Int?,
+        @RequestParam(defaultValue = "RELEVANCE") sort: MovieSort,
     ): PageDto<MovieSummaryDto> =
         if (genreId != null) service.listPopularByGenre(genreId, page, size)
-        else service.listPopular(page, size)
+        else service.listPopular(page, size, sort)
 
     @GetMapping
     fun search(

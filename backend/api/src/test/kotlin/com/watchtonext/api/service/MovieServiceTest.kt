@@ -31,13 +31,46 @@ class MovieServiceTest {
         every { movieRepository.findTopByPopularity(pageable) } returns
             PageImpl(listOf(entity(1L, "Matrix"), entity(2L, "Inception")), pageable, 42L)
 
-        val result = service.listPopular(page = 2, size = 20)
+        val result = service.listPopular(page = 2, size = 20, sort = MovieSort.POPULARITY)
 
         assertThat(result.content).hasSize(2)
         assertThat(result.totalElements).isEqualTo(42L)
         assertThat(result.currentPage).isEqualTo(2)
         assertThat(result.pageSize).isEqualTo(20)
         verify(exactly = 1) { movieRepository.findTopByPopularity(pageable) }
+    }
+
+    @Test
+    fun `listPopular defaults to the weighted-rating query for RELEVANCE`() {
+        val pageable = PageRequest.of(0, 20)
+        every { movieRepository.findTopByWeightedRating(any(), pageable) } returns
+            PageImpl(listOf(entity(1L, "The Godfather")), pageable, 1L)
+
+        val result = service.listPopular(page = 1, size = 20, sort = MovieSort.RELEVANCE)
+
+        assertThat(result.content).hasSize(1)
+        verify(exactly = 1) { movieRepository.findTopByWeightedRating(any(), pageable) }
+    }
+
+    @Test
+    fun `listPopular caps totals at the catalog window`() {
+        val pageable = PageRequest.of(0, 20)
+        every { movieRepository.findTopByPopularity(pageable) } returns
+            PageImpl(List(20) { entity(it.toLong()) }, pageable, 9_999L)
+
+        val result = service.listPopular(page = 1, size = 20, sort = MovieSort.POPULARITY)
+
+        assertThat(result.totalElements).isEqualTo(MovieService.CATALOG_MAX_MOVIES.toLong())
+        assertThat(result.totalPages).isEqualTo(MovieService.CATALOG_MAX_MOVIES / 20)
+    }
+
+    @Test
+    fun `listPopular returns an empty page past the catalog cap without hitting the repository`() {
+        val result = service.listPopular(page = 99, size = 20, sort = MovieSort.RELEVANCE)
+
+        assertThat(result.content).isEmpty()
+        assertThat(result.totalElements).isEqualTo(MovieService.CATALOG_MAX_MOVIES.toLong())
+        verify(exactly = 0) { movieRepository.findTopByWeightedRating(any(), any()) }
     }
 
     @Test

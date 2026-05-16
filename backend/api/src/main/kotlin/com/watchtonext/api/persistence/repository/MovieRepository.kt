@@ -25,6 +25,29 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     )
     fun findTopByPopularity(pageable: Pageable): Page<MovieEntity>
 
+    /**
+     * Orders the catalog by a Bayesian weighted rating
+     * `WR = (v / (v + m)) * R + (m / (v + m)) * C`, where `v`/`R` are the
+     * movie's vote count and average, `m` is [minVotes] (the prior weight) and
+     * `C` is the catalog-wide mean rating. This favours movies that are both
+     * highly rated **and** widely voted on — the most-known classics — over
+     * niche high scores and recency-biased trending titles.
+     */
+    @Query(
+        value = """
+            SELECT m.* FROM movies m
+            ORDER BY (
+                CAST(COALESCE(m.vote_count, 0) AS numeric) / (COALESCE(m.vote_count, 0) + :minVotes)
+                    * COALESCE(m.vote_average, 0)
+                + CAST(:minVotes AS numeric) / (COALESCE(m.vote_count, 0) + :minVotes)
+                    * (SELECT COALESCE(AVG(a.vote_average), 0) FROM movies a WHERE a.vote_count > 0)
+            ) DESC
+        """,
+        countQuery = "SELECT COUNT(*) FROM movies",
+        nativeQuery = true,
+    )
+    fun findTopByWeightedRating(minVotes: Int, pageable: Pageable): Page<MovieEntity>
+
     @Query("SELECT m FROM MovieEntity m WHERE m.voteCount >= :minVoteCount")
     fun findRecommendationCandidates(minVoteCount: Int): List<MovieEntity>
 

@@ -190,7 +190,7 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 |--------|----------|-------------|
 | `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
 | `GET`  | `/api/movies/{id}`                  | **Public.** Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
-| `GET`  | `/api/movies/popular?page=&size=&genreId=` | **Public.** Paginated popular movies (1-indexed `page`, `size` ∈ [1,100]). Optional `genreId` filters to a single genre, still ordered by popularity desc. |
+| `GET`  | `/api/movies/popular?page=&size=&genreId=&sort=` | **Public.** Catalog explorer — paginated, **capped to the top `CATALOG_MAX_MOVIES` (200)** titles; deeper exploration is funnelled to title search (1-indexed `page`, `size` ∈ [1,100]). `sort` ∈ `{RELEVANCE, POPULARITY, RATING, RELEASE}`, default `RELEVANCE` — a Bayesian weighted rating that surfaces well-known, well-rated classics first. Optional `genreId` filters to a single genre (always popularity desc, ignores `sort`). |
 | `GET`  | `/api/genres`                       | **Public.** All genres as `GenreDto[]` (`{id, name}`), alphabetically — backs the suggestions page genre filter. |
 | `GET`  | `/api/recommendations?limit=`       | **Authenticated.** Personalized recommendations (KNN over the caller's ratings; userId from JWT `sub`, `limit` ∈ [1,100]). |
 | `GET`  | `/api/recommendations/similar?movieId=&limit=` | **Public.** Movies similar to a given movie (single-seed KNN, excludes the seed, `limit` ∈ [1,100]). 404 when the movie is unknown. |
@@ -208,6 +208,52 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `PUT`  | `/api/watched/{movieId}`            | **Authenticated.** Marks a movie as watched for the caller (idempotent). Returns `WatchedDto`. 404 when the movie is unknown. |
 | `DELETE` | `/api/watched/{movieId}`          | **Authenticated.** Removes the watched mark. |
 | `GET`  | `/api/watched/{movieId}`            | **Authenticated.** Returns `{watched: boolean}` for the caller + movie. |
+
+## Catalog ordering — the `RELEVANCE` weighted rating
+
+`GET /api/movies/popular` is the catalog explorer. Its `sort` parameter accepts
+four strategies (`MovieSort` enum):
+
+| `sort` | Ordering | Backed by |
+|--------|----------|-----------|
+| `RELEVANCE` *(default)* | Bayesian weighted rating, desc | `MovieRepository.findTopByWeightedRating` (native query) |
+| `POPULARITY` | `popularity` desc, nulls last | `findTopByPopularity` |
+| `RATING` | `voteAverage` desc, then `voteCount` desc | `findAll(Pageable)` + `Sort` |
+| `RELEASE` | `releaseDate` desc, nulls last | `findAll(Pageable)` + `Sort` |
+
+**Why `RELEVANCE` is not just `popularity`.** TMDB's `popularity` is a
+recency/buzz metric — it tracks what is trending *now*, not what is widely
+regarded. Ordering by it pushes volatile new releases above well-known classics.
+A naive `voteAverage` sort is worse: a movie with a single 10.0 vote outranks
+*The Godfather*.
+
+`RELEVANCE` uses the **Bayesian weighted rating** (the IMDB Top-250 formula):
+
+```
+WR = (v / (v + m)) · R  +  (m / (v + m)) · C
+```
+
+- `R` — the movie's own `voteAverage`
+- `v` — the movie's `voteCount`
+- `C` — the catalog-wide mean `voteAverage` (computed in-query as
+  `AVG(vote_average) WHERE vote_count > 0`)
+- `m` — a prior weight: `MovieService.RELEVANCE_MIN_VOTES = 1000`
+
+The term `v / (v + m)` is the *confidence* a movie's own score is trustworthy.
+For `v ≫ m` it approaches 1, so high-vote titles keep their own rating; for
+`v ≪ m` the score is pulled toward the catalog mean `C`. The net effect: a movie
+ranks high only when it is **both highly rated and widely voted on** — the
+profile of a well-known classic — while niche high-scores and low-vote obscure
+films regress to the mean.
+
+`m` is the tuning knob: raise it to penalise low-vote movies harder, lower it to
+trust individual ratings sooner.
+
+**Catalog cap.** Every `sort` is bounded to the top `CATALOG_MAX_MOVIES = 200`
+titles — `listPopular` clamps `totalElements`/`totalPages` and short-circuits any
+`page` past the cap with an empty page. Deeper exploration is funnelled to title
+search rather than an endless paginated tail. The cap does not apply to the
+`genreId`-filtered path, which keeps a plain `popularity desc` ordering.
 
 ## Errors
 

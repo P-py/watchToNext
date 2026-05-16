@@ -1,7 +1,43 @@
 import { api, USE_MOCKS } from "./api";
-import { Movie, MovieSummary } from "@/types/movie";
+import { Movie, MovieSort, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES } from "@/mocks/data";
+
+/**
+ * Upper bound on movies browsable through the catalog explorer — mirrors the
+ * backend `MovieService.CATALOG_MAX_MOVIES`. Deeper exploration goes to search.
+ */
+export const CATALOG_MAX_MOVIES = 200;
+
+/** Bayesian prior weight (`m`) for the `RELEVANCE` weighted rating. */
+const RELEVANCE_MIN_VOTES = 1000;
+
+/** Mock-mode ordering — mirrors the backend `MovieSort` strategies. */
+function sortForCatalog(movies: Movie[], sort: MovieSort): Movie[] {
+  const sorted = [...movies];
+  switch (sort) {
+    case "RATING":
+      return sorted.sort((a, b) => b.voteAverage - a.voteAverage);
+    case "RELEASE":
+      return sorted.sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+    case "POPULARITY":
+      return sorted.sort((a, b) => b.voteCount - a.voteCount);
+    case "RELEVANCE":
+    default: {
+      const rated = movies.filter((m) => m.voteCount > 0);
+      const meanRating =
+        rated.reduce((sum, m) => sum + m.voteAverage, 0) / (rated.length || 1);
+      const score = (m: Movie) => {
+        const v = m.voteCount;
+        return (
+          (v / (v + RELEVANCE_MIN_VOTES)) * m.voteAverage +
+          (RELEVANCE_MIN_VOTES / (v + RELEVANCE_MIN_VOTES)) * meanRating
+        );
+      };
+      return sorted.sort((a, b) => score(b) - score(a));
+    }
+  }
+}
 
 export function toSummary(m: Movie): MovieSummary {
   return {
@@ -81,10 +117,14 @@ export const moviesService = {
   getPopular: (
     page = 1,
     size = DEFAULT_PAGE_SIZE,
+    sort: MovieSort = "RELEVANCE",
   ): Promise<PaginatedResponse<MovieSummary>> => {
     if (USE_MOCKS) {
-      return Promise.resolve(paginate(MOCK_MOVIES.map(toSummary), page, size));
+      const ordered = sortForCatalog(MOCK_MOVIES, sort)
+        .slice(0, CATALOG_MAX_MOVIES)
+        .map(toSummary);
+      return Promise.resolve(paginate(ordered, page, size));
     }
-    return api.get(`/movies/popular?page=${page}&size=${size}`);
+    return api.get(`/movies/popular?page=${page}&size=${size}&sort=${sort}`);
   },
 };

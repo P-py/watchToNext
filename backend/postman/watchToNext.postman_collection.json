@@ -307,7 +307,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{bffProxyUrl}}/movies/popular?page={{page}}&size={{size}}",
+          "raw": "{{bffProxyUrl}}/movies/popular?page={{page}}&size={{size}}&sort=RELEVANCE",
           "host": [
             "{{bffProxyUrl}}"
           ],
@@ -323,10 +323,15 @@
             {
               "key": "size",
               "value": "{{size}}"
+            },
+            {
+              "key": "sort",
+              "value": "RELEVANCE",
+              "description": "RELEVANCE (default) | POPULARITY | RATING | RELEASE"
             }
           ]
         },
-        "description": "Public — no cookie required."
+        "description": "Public — no cookie required. Catalog explorer, capped to the top 200 titles. `sort` defaults to RELEVANCE (Bayesian weighted rating)."
       }
     },
     {

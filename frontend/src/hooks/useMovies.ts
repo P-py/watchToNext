@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MovieSummary } from "@/types/movie";
+import { MovieSort, MovieSummary } from "@/types/movie";
 import { moviesService } from "@/services/movies.service";
 import { ApiHttpError } from "@/services/api-error";
 
@@ -13,7 +13,11 @@ interface UsePopularMoviesResult {
   error: ApiHttpError | null;
 }
 
-export function usePopularMovies(page = 1, size = 20): UsePopularMoviesResult {
+export function usePopularMovies(
+  page = 1,
+  size = 20,
+  sort: MovieSort = "RELEVANCE",
+): UsePopularMoviesResult {
   const [movies, setMovies] = useState<MovieSummary[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(page);
@@ -26,7 +30,7 @@ export function usePopularMovies(page = 1, size = 20): UsePopularMoviesResult {
       setLoading(true);
       setError(null);
       try {
-        const res = await moviesService.getPopular(page, size);
+        const res = await moviesService.getPopular(page, size, sort);
         if (controller.signal.aborted) return;
         setMovies(res.content);
         setTotalPages(res.totalPages);
@@ -48,7 +52,7 @@ export function usePopularMovies(page = 1, size = 20): UsePopularMoviesResult {
     }
     fetchMovies();
     return () => controller.abort();
-  }, [page, size]);
+  }, [page, size, sort]);
 
   return { movies, totalPages, currentPage, loading, error };
 }

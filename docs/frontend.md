@@ -88,6 +88,7 @@ Examples of reusable components:
 - Modal
 - Navbar
 - Input
+- Select
 - Grid / AnimatedGrid
 - Pagination
 
@@ -386,5 +387,8 @@ The convention is two query parameters:
 |--------|----------------------------------|--------------|
 | `q`    | Search term (`/search` only)     | Empty/blank |
 | `page` | 1-indexed page number            | `page === 1` |
+| `sort` | Catalog ordering (`/movies` only) — `RELEVANCE`/`POPULARITY`/`RATING`/`RELEASE` | `sort === RELEVANCE` |
+
+Changing the catalog `sort` resets `page` to 1, since the page index no longer points at the same slice. The `/movies` catalog is bounded to the top 200 titles (`CATALOG_MAX_MOVIES`); deeper exploration is funnelled to `/search`.
 
 Omitting defaults keeps the URL clean: `/search?q=matrix` instead of `/search?q=matrix&page=1`. The page component reads the URL, hands the values to the hook (`usePopularMovies` / `useSearch`), and translates UI events (search submit, pagination click) back into a `router.push` with a freshly-built query string. The hooks themselves never read or write the URL — they react to props.
