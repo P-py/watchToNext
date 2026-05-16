@@ -188,8 +188,8 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated **fuzzy** title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Accent- and typo-tolerant trigram match; ranked by similarity to the query, then vote count. Returns `PageDto<MovieSummaryDto>`, **capped to `SEARCH_MAX_RESULTS` (1000)** — a far roomier window than the catalog explorer, since search is intentional in-depth exploration. |
-| `GET`  | `/api/movies/suggest?q=&limit=`     | **Public.** Autocomplete — up to `limit` (∈ [1,20], default 8) fuzzy title matches, **prefix matches ranked first**. Returns a lightweight `MovieSuggestionDto[]` (`{id, title, releaseDate}`). |
+| `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated **accent-insensitive substring** title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]), ordered by popularity. Returns `PageDto<MovieSummaryDto>`, **capped to `SEARCH_MAX_RESULTS` (1000)** — a far roomier window than the catalog explorer, since search is intentional in-depth exploration. |
+| `GET`  | `/api/movies/suggest?q=&limit=`     | **Public.** Autocomplete — up to `limit` (∈ [1,20], default 8) accent-insensitive substring title matches, **prefix matches ranked first**. Returns a lightweight `MovieSuggestionDto[]` (`{id, title, releaseDate}`). |
 | `GET`  | `/api/movies/{id}`                  | **Public.** Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
 | `GET`  | `/api/movies/popular?page=&size=&genreId=&sort=` | **Public.** Catalog explorer — paginated, **capped to the top `CATALOG_MAX_MOVIES` (200)** titles; deeper exploration is funnelled to title search (1-indexed `page`, `size` ∈ [1,100]). `sort` ∈ `{RELEVANCE, POPULARITY, RATING, RELEASE}`, default `RELEVANCE` — a Bayesian weighted rating that surfaces well-known, well-rated classics first. Optional `genreId` filters to a single genre (always popularity desc, ignores `sort`). |
 | `GET`  | `/api/genres`                       | **Public.** All genres as `GenreDto[]` (`{id, name}`), alphabetically — backs the suggestions page genre filter. |
@@ -267,24 +267,21 @@ path, which keeps a plain `popularity desc` ordering.
 ## Title search & autocomplete
 
 Title search (`GET /api/movies?q=`) and autocomplete (`GET /api/movies/suggest?q=`)
-both run a **fuzzy, accent-insensitive** match instead of a plain `ILIKE '%q%'`:
+both run an **accent-insensitive substring** match:
 
-- **`pg_trgm` + `unaccent`** extensions, added in `V5__search_indexes.sql`.
-  `unaccent()` folds accents (`amelie` → *Amélie*); `pg_trgm` provides the `%`
-  similarity operator for typo tolerance (`intersteler` → *Interstellar*). A
-  **GIN trigram index** on `title` backs the trigram scans.
-- A row matches if the accent-folded title **contains** the query *or* is
-  **trigram-similar** to it.
-- **Search** ranks by `similarity()` descending, then `vote_count`, then
-  `popularity` — closest matches first, well-known movies breaking ties.
+- The **`unaccent`** extension, added in `V5__search_indexes.sql`, folds accents
+  on both sides of the comparison (`amelie` → *Amélie*).
+- A row matches when the accent-folded title **contains** the accent-folded
+  query — `unaccent(title) ILIKE '%' || unaccent(q) || '%'`.
+- **Search** orders results by `popularity` descending.
 - **Autocomplete** uses the same match but ranks **prefix matches first**, then
-  similarity, and hard-limits the result set. It returns the lean
+  by popularity, and hard-limits the result set. It returns the lean
   `MovieSuggestionDto` and has its own longer-lived cache (`movies-suggest`).
 
-`V5` is three idempotent statements (`CREATE EXTENSION … IF NOT EXISTS`,
-`CREATE INDEX … IF NOT EXISTS`) — no custom functions — so it can be applied by
-hand to a dump-loaded database as easily as through Flyway. `pg_trgm` and
-`unaccent` are *trusted* extensions (PostgreSQL 13+), so no superuser is needed.
+`V5` is a single idempotent statement (`CREATE EXTENSION … IF NOT EXISTS`) — no
+custom functions, no indexes — so it can be applied by hand to a dump-loaded
+database as easily as through Flyway. `unaccent` is a *trusted* extension
+(PostgreSQL 13+), so no superuser is needed.
 
 > **Migrations run under `:dbSetup`, not `:bootRun`.** A database provisioned
 > from a dump (rather than `./gradlew :api:dbSetup`) will not have `V5` — apply

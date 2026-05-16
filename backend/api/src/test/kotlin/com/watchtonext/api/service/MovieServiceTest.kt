@@ -74,10 +74,10 @@ class MovieServiceTest {
     }
 
     @Test
-    fun `searchByTitle delegates to the fuzzy query with the right Pageable`() {
+    fun `searchByTitle delegates to the substring query with the right Pageable`() {
         val pageable = PageRequest.of(0, 10)
         every {
-            movieRepository.searchByTitleFuzzy("matrix", pageable)
+            movieRepository.searchByTitleSubstring("matrix", pageable)
         } returns PageImpl(listOf(entity()), pageable, 1L)
 
         val result = service.searchByTitle("matrix", page = 1, size = 10)
@@ -91,7 +91,7 @@ class MovieServiceTest {
     fun `searchByTitle caps results at the roomier search window`() {
         val pageable = PageRequest.of(0, 20)
         every {
-            movieRepository.searchByTitleFuzzy("the", pageable)
+            movieRepository.searchByTitleSubstring("the", pageable)
         } returns PageImpl(List(20) { entity(it.toLong()) }, pageable, 5_000L)
 
         val result = service.searchByTitle("the", page = 1, size = 20)

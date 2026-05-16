@@ -15,42 +15,35 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     fun findByTitleContainingIgnoreCase(title: String): List<MovieEntity>
 
     /**
-     * Fuzzy title search: accent-insensitive substring match `OR` trigram
-     * similarity (typo tolerance), ranked by how close the title is to the
-     * query, then by how widely known the movie is. Needs the `pg_trgm` and
-     * `unaccent` extensions from `V5__search_indexes.sql`.
+     * Accent-insensitive substring title search, ordered by popularity. Needs
+     * the `unaccent` extension from `V5__search_indexes.sql`.
      */
     @Query(
         value = """
             SELECT m.* FROM movies m
             WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
-               OR unaccent(m.title) % unaccent(:query)
-            ORDER BY similarity(unaccent(m.title), unaccent(:query)) DESC,
-                     m.vote_count DESC NULLS LAST,
-                     m.popularity DESC NULLS LAST
+            ORDER BY m.popularity DESC NULLS LAST
         """,
         countQuery = """
             SELECT COUNT(*) FROM movies m
             WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
-               OR unaccent(m.title) % unaccent(:query)
         """,
         nativeQuery = true,
     )
-    fun searchByTitleFuzzy(query: String, pageable: Pageable): Page<MovieEntity>
+    fun searchByTitleSubstring(query: String, pageable: Pageable): Page<MovieEntity>
 
     /**
-     * Lightweight autocomplete: the same fuzzy match as [searchByTitleFuzzy],
-     * but prefix matches are ranked first and the result set is hard-limited.
+     * Lightweight autocomplete: the same accent-insensitive substring match as
+     * [searchByTitleSubstring], but prefix matches are ranked first and the
+     * result set is hard-limited.
      */
     @Query(
         value = """
             SELECT m.* FROM movies m
             WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
-               OR unaccent(m.title) % unaccent(:query)
             ORDER BY (CASE WHEN unaccent(m.title) ILIKE unaccent(:query) || '%'
                            THEN 0 ELSE 1 END),
-                     similarity(unaccent(m.title), unaccent(:query)) DESC,
-                     m.vote_count DESC NULLS LAST
+                     m.popularity DESC NULLS LAST
             LIMIT :limit
         """,
         nativeQuery = true,

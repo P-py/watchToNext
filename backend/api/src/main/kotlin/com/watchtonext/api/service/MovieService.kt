@@ -75,16 +75,16 @@ class MovieService(private val movieRepository: MovieRepository) {
     }
 
     /**
-     * Paginated fuzzy title search (accent- and typo-tolerant). Bounded to
-     * [SEARCH_MAX_RESULTS] — a far roomier window than the curated catalog
-     * explorer, since search is intentional, in-depth exploration — while still
-     * capping pathologically broad queries.
+     * Paginated accent-insensitive substring title search, ordered by
+     * popularity. Bounded to [SEARCH_MAX_RESULTS] — a far roomier window than
+     * the curated catalog explorer, since search is intentional, in-depth
+     * exploration — while still capping pathologically broad queries.
      */
     @Cacheable(cacheNames = ["movies-search"], key = "#query + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
     fun searchByTitle(query: String, page: Int, size: Int): PageDto<MovieSummaryDto> =
         cappedResult(page, size, SEARCH_MAX_RESULTS) {
-            movieRepository.searchByTitleFuzzy(query, PageRequest.of(page - 1, size))
+            movieRepository.searchByTitleSubstring(query, PageRequest.of(page - 1, size))
         }
 
     /**
