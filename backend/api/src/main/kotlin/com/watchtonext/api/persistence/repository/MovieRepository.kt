@@ -17,22 +17,22 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     /**
      * Fuzzy title search: accent-insensitive substring match `OR` trigram
      * similarity (typo tolerance), ranked by how close the title is to the
-     * query, then by how widely known the movie is. Served by the GIN trigram
-     * index from `V5__search_indexes.sql`.
+     * query, then by how widely known the movie is. Needs the `pg_trgm` and
+     * `unaccent` extensions from `V5__search_indexes.sql`.
      */
     @Query(
         value = """
             SELECT m.* FROM movies m
-            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
-               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
-            ORDER BY similarity(immutable_unaccent(m.title), immutable_unaccent(:query)) DESC,
+            WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
+               OR unaccent(m.title) % unaccent(:query)
+            ORDER BY similarity(unaccent(m.title), unaccent(:query)) DESC,
                      m.vote_count DESC NULLS LAST,
                      m.popularity DESC NULLS LAST
         """,
         countQuery = """
             SELECT COUNT(*) FROM movies m
-            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
-               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
+            WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
+               OR unaccent(m.title) % unaccent(:query)
         """,
         nativeQuery = true,
     )
@@ -45,11 +45,11 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     @Query(
         value = """
             SELECT m.* FROM movies m
-            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
-               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
-            ORDER BY (CASE WHEN immutable_unaccent(m.title) ILIKE immutable_unaccent(:query) || '%'
+            WHERE unaccent(m.title) ILIKE '%' || unaccent(:query) || '%'
+               OR unaccent(m.title) % unaccent(:query)
+            ORDER BY (CASE WHEN unaccent(m.title) ILIKE unaccent(:query) || '%'
                            THEN 0 ELSE 1 END),
-                     similarity(immutable_unaccent(m.title), immutable_unaccent(:query)) DESC,
+                     similarity(unaccent(m.title), unaccent(:query)) DESC,
                      m.vote_count DESC NULLS LAST
             LIMIT :limit
         """,

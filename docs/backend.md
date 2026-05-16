@@ -269,11 +269,10 @@ path, which keeps a plain `popularity desc` ordering.
 Title search (`GET /api/movies?q=`) and autocomplete (`GET /api/movies/suggest?q=`)
 both run a **fuzzy, accent-insensitive** match instead of a plain `ILIKE '%q%'`:
 
-- **`pg_trgm` + `unaccent`** extensions, added in `V5__search_indexes.sql`. An
-  `IMMUTABLE immutable_unaccent(text)` wrapper folds accents (`amelie` →
-  *Amélie*) and can back an index; a **GIN trigram index** over
-  `immutable_unaccent(title)` accelerates both the `ILIKE` substring match and
-  the `%` similarity operator (typo tolerance — `intersteler` → *Interstellar*).
+- **`pg_trgm` + `unaccent`** extensions, added in `V5__search_indexes.sql`.
+  `unaccent()` folds accents (`amelie` → *Amélie*); `pg_trgm` provides the `%`
+  similarity operator for typo tolerance (`intersteler` → *Interstellar*). A
+  **GIN trigram index** on `title` backs the trigram scans.
 - A row matches if the accent-folded title **contains** the query *or* is
   **trigram-similar** to it.
 - **Search** ranks by `similarity()` descending, then `vote_count`, then
@@ -282,9 +281,15 @@ both run a **fuzzy, accent-insensitive** match instead of a plain `ILIKE '%q%'`:
   similarity, and hard-limits the result set. It returns the lean
   `MovieSuggestionDto` and has its own longer-lived cache (`movies-suggest`).
 
-⚠️ `V5` runs `CREATE EXTENSION` for `pg_trgm`/`unaccent` — a privileged
-statement. Both extensions ship with Postgres and are available on Railway's
-managed instance.
+`V5` is three idempotent statements (`CREATE EXTENSION … IF NOT EXISTS`,
+`CREATE INDEX … IF NOT EXISTS`) — no custom functions — so it can be applied by
+hand to a dump-loaded database as easily as through Flyway. `pg_trgm` and
+`unaccent` are *trusted* extensions (PostgreSQL 13+), so no superuser is needed.
+
+> **Migrations run under `:dbSetup`, not `:bootRun`.** A database provisioned
+> from a dump (rather than `./gradlew :api:dbSetup`) will not have `V5` — apply
+> it manually or run Flyway against that database before the search endpoints
+> will work.
 
 ## Errors
 

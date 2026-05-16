@@ -80,8 +80,12 @@ subdirectory.
      pg_restore --no-owner --no-privileges -d "<DATABASE_PUBLIC_URL>" /d/watchtonext-seed.dump
    ```
    Do this **before** the backend's first boot — the dump already carries the
-   schema and `flyway_schema_history`, so Flyway will see all migrations as
-   applied and do nothing.
+   schema and `flyway_schema_history`. On boot Flyway compares that history
+   against the migrations bundled in the deployed jar: migrations already in the
+   dump are skipped, and any **newer** ones (e.g. a `V5` added after the dump was
+   taken) are applied automatically against the live database. So redeploying a
+   build with new migrations upgrades the prod schema on its own — no dump
+   regeneration, no `dbSetup`.
 
 ## Step 3 — Redis ×2
 
