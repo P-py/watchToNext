@@ -3,7 +3,7 @@
 import { Suspense, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { AnimatedGrid } from "@/components/AnimatedGrid";
 import { MovieGridSkeleton } from "@/components/MovieGridSkeleton";
@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { Pagination } from "@/components/Pagination";
 import { Select } from "@/components/Select";
 import { MovieCard } from "@/modules/movies/components/MovieCard";
+import { SortInfoBox, hasSortInfo } from "@/modules/movies/components/SortInfoBox";
 import { usePopularMovies } from "@/hooks/useMovies";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { CATALOG_MAX_MOVIES } from "@/services/movies.service";
@@ -95,6 +96,10 @@ function MoviesGrid() {
           />
         </motion.div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {hasSortInfo(sort) && <SortInfoBox key={sort} sort={sort} />}
+      </AnimatePresence>
 
       {resolved && <ErrorState title={resolved.title} message={resolved.message} />}
 
