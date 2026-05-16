@@ -14,10 +14,48 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
 
     fun findByTitleContainingIgnoreCase(title: String): List<MovieEntity>
 
-    fun findByTitleContainingIgnoreCaseOrderByPopularityDesc(
-        title: String,
-        pageable: Pageable,
-    ): Page<MovieEntity>
+    /**
+     * Fuzzy title search: accent-insensitive substring match `OR` trigram
+     * similarity (typo tolerance), ranked by how close the title is to the
+     * query, then by how widely known the movie is. Served by the GIN trigram
+     * index from `V5__search_indexes.sql`.
+     */
+    @Query(
+        value = """
+            SELECT m.* FROM movies m
+            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
+               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
+            ORDER BY similarity(immutable_unaccent(m.title), immutable_unaccent(:query)) DESC,
+                     m.vote_count DESC NULLS LAST,
+                     m.popularity DESC NULLS LAST
+        """,
+        countQuery = """
+            SELECT COUNT(*) FROM movies m
+            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
+               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
+        """,
+        nativeQuery = true,
+    )
+    fun searchByTitleFuzzy(query: String, pageable: Pageable): Page<MovieEntity>
+
+    /**
+     * Lightweight autocomplete: the same fuzzy match as [searchByTitleFuzzy],
+     * but prefix matches are ranked first and the result set is hard-limited.
+     */
+    @Query(
+        value = """
+            SELECT m.* FROM movies m
+            WHERE immutable_unaccent(m.title) ILIKE '%' || immutable_unaccent(:query) || '%'
+               OR immutable_unaccent(m.title) % immutable_unaccent(:query)
+            ORDER BY (CASE WHEN immutable_unaccent(m.title) ILIKE immutable_unaccent(:query) || '%'
+                           THEN 0 ELSE 1 END),
+                     similarity(immutable_unaccent(m.title), immutable_unaccent(:query)) DESC,
+                     m.vote_count DESC NULLS LAST
+            LIMIT :limit
+        """,
+        nativeQuery = true,
+    )
+    fun suggestByTitle(query: String, limit: Int): List<MovieEntity>
 
     @Query(
         value = "SELECT m FROM MovieEntity m ORDER BY m.popularity DESC NULLS LAST",

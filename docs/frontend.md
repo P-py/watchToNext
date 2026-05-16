@@ -98,7 +98,7 @@ Examples of reusable components:
 modules/
   movies/             MovieCard · FavoriteHeart · WatchedEye
                       FavoriteButton · WatchedButton · RatingStars
-  search/             SearchBar
+  search/             SearchBar · SearchDropdown
   recommendations/    RecommendationGrid · SuggestionsClient
                       QuickSuggestions · SeedPicker · GenreSuggestions
   user/               UserProfile · FavoritesList · WatchedList
@@ -389,6 +389,26 @@ The convention is two query parameters:
 | `page` | 1-indexed page number            | `page === 1` |
 | `sort` | Catalog ordering (`/movies` only) — `RELEVANCE`/`POPULARITY`/`RATING`/`RELEASE` | `sort === RELEVANCE` |
 
-Changing the catalog `sort` resets `page` to 1, since the page index no longer points at the same slice. The `/movies` catalog is bounded to the top 200 titles (`CATALOG_MAX_MOVIES`); deeper exploration is funnelled to `/search`.
+Changing the catalog `sort` resets `page` to 1, since the page index no longer points at the same slice. Both listings are bounded, with deliberately different windows: the `/movies` catalog explorer is a curated top-200 / 10-page browse (`CATALOG_MAX_MOVIES`), while `/search` allows free, in-depth exploration up to 1000 results / 50 pages (`SEARCH_MAX_RESULTS`). From the catalog, going past the window is funnelled to `/search`.
+
+## Search: autocomplete & history
+
+`SearchBar` is a combobox. Below the input it opens `SearchDropdown`, which shows
+one of two things:
+
+- **Empty input** → recent searches, from `useSearchHistory`.
+- **Typing** → autocomplete suggestions, from `useSuggestions` (debounced
+  `/movies/suggest` call, 2-char minimum).
+
+Arrow keys move the highlight, `Enter` picks the highlighted row, `Esc` closes.
+Picking a suggestion **fills the query and runs the full search** (it does not
+deep-link to the movie). Every committed query — typed, submitted, or picked —
+is recorded in history.
+
+**History is session-only.** `useSearchHistory` persists to `sessionStorage`
+(`wtn:search-history`, last 8 unique queries): it survives reloads and in-tab
+navigation, is wiped when the tab closes, and is **never sent to the server or
+tied to a user account** — deliberately not `localStorage` and not user-persisted.
+Loaded after mount to avoid an SSR hydration mismatch.
 
 Omitting defaults keeps the URL clean: `/search?q=matrix` instead of `/search?q=matrix&page=1`. The page component reads the URL, hands the values to the hook (`usePopularMovies` / `useSearch`), and translates UI events (search submit, pagination click) back into a `router.push` with a freshly-built query string. The hooks themselves never read or write the URL — they react to props.

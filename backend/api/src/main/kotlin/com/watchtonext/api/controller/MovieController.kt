@@ -1,5 +1,6 @@
 package com.watchtonext.api.controller
 
+import com.watchtonext.api.dto.MovieSuggestionDto
 import com.watchtonext.api.dto.MovieSummaryDto
 import com.watchtonext.api.dto.PageDto
 import com.watchtonext.api.service.MovieService
@@ -36,6 +37,13 @@ class MovieController(private val service: MovieService) {
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) size: Int,
     ): PageDto<MovieSummaryDto> =
         service.searchByTitle(q.trim(), page, size)
+
+    @GetMapping("/suggest")
+    fun suggest(
+        @RequestParam @NotBlank q: String,
+        @RequestParam(defaultValue = "8") @Min(1) @Max(20) limit: Int,
+    ): List<MovieSuggestionDto> =
+        service.suggest(q.trim(), limit)
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): MovieSummaryDto =

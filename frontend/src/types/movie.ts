@@ -41,6 +41,16 @@ export interface MovieSummary {
 }
 
 /**
+ * Minimal movie shape for autocomplete suggestions (`/movies/suggest`).
+ * Mirrors the backend `MovieSuggestionDto`.
+ */
+export interface MovieSuggestion {
+  id: number;
+  title: string;
+  releaseDate: string | null;
+}
+
+/**
  * Shape returned by `/recommendations` and `/recommendations/similar`.
  * Mirrors the backend `RecommendationDto`.
  */

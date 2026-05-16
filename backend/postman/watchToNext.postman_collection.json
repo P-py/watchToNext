@@ -298,7 +298,36 @@
             }
           ]
         },
-        "description": "Public — no cookie required."
+        "description": "Public — no cookie required. Fuzzy, accent- and typo-tolerant title search, capped to the top 1000 results."
+      }
+    },
+    {
+      "name": "Suggest movies (autocomplete)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{bffProxyUrl}}/movies/suggest?q={{q}}&limit=8",
+          "host": [
+            "{{bffProxyUrl}}"
+          ],
+          "path": [
+            "movies",
+            "suggest"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "{{q}}"
+            },
+            {
+              "key": "limit",
+              "value": "8",
+              "description": "1–20, default 8"
+            }
+          ]
+        },
+        "description": "Public — no cookie required. Lightweight autocomplete: fuzzy title matches, prefix matches first. Returns MovieSuggestionDto[]."
       }
     },
     {

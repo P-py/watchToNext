@@ -1,5 +1,5 @@
 import { api, USE_MOCKS } from "./api";
-import { Movie, MovieSort, MovieSummary } from "@/types/movie";
+import { Movie, MovieSort, MovieSuggestion, MovieSummary } from "@/types/movie";
 import { PaginatedResponse } from "@/types/api";
 import { MOCK_MOVIES } from "@/mocks/data";
 
@@ -8,6 +8,13 @@ import { MOCK_MOVIES } from "@/mocks/data";
  * backend `MovieService.CATALOG_MAX_MOVIES`. Deeper exploration goes to search.
  */
 export const CATALOG_MAX_MOVIES = 200;
+
+/**
+ * Upper bound on title-search results — mirrors the backend
+ * `MovieService.SEARCH_MAX_RESULTS`. Far roomier than the catalog so search
+ * supports free, in-depth exploration.
+ */
+export const SEARCH_MAX_RESULTS = 1000;
 
 /** Bayesian prior weight (`m`) for the `RELEVANCE` weighted rating. */
 const RELEVANCE_MIN_VOTES = 1000;
@@ -86,11 +93,28 @@ export const moviesService = {
       const needle = trimmed.toLowerCase();
       const matches = MOCK_MOVIES.filter((m) =>
         m.title.toLowerCase().includes(needle),
-      );
+      ).slice(0, SEARCH_MAX_RESULTS);
       return Promise.resolve(paginate(matches.map(toSummary), page, size));
     }
     return api.get(
       `/movies?q=${encodeURIComponent(trimmed)}&page=${page}&size=${size}`,
+    );
+  },
+
+  suggest: (q: string, limit = 8): Promise<MovieSuggestion[]> => {
+    const trimmed = q.trim();
+    if (!trimmed) return Promise.resolve([]);
+    if (USE_MOCKS) {
+      const needle = trimmed.toLowerCase();
+      const matches = MOCK_MOVIES.filter((m) =>
+        m.title.toLowerCase().includes(needle),
+      )
+        .slice(0, limit)
+        .map((m) => ({ id: m.id, title: m.title, releaseDate: m.releaseDate }));
+      return Promise.resolve(matches);
+    }
+    return api.get(
+      `/movies/suggest?q=${encodeURIComponent(trimmed)}&limit=${limit}`,
     );
   },
 

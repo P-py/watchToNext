@@ -74,10 +74,10 @@ class MovieServiceTest {
     }
 
     @Test
-    fun `searchByTitle delegates to the repository with the right Pageable`() {
+    fun `searchByTitle delegates to the fuzzy query with the right Pageable`() {
         val pageable = PageRequest.of(0, 10)
         every {
-            movieRepository.findByTitleContainingIgnoreCaseOrderByPopularityDesc("matrix", pageable)
+            movieRepository.searchByTitleFuzzy("matrix", pageable)
         } returns PageImpl(listOf(entity()), pageable, 1L)
 
         val result = service.searchByTitle("matrix", page = 1, size = 10)
@@ -85,6 +85,31 @@ class MovieServiceTest {
         assertThat(result.content).hasSize(1)
         assertThat(result.totalElements).isEqualTo(1L)
         assertThat(result.currentPage).isEqualTo(1)
+    }
+
+    @Test
+    fun `searchByTitle caps results at the roomier search window`() {
+        val pageable = PageRequest.of(0, 20)
+        every {
+            movieRepository.searchByTitleFuzzy("the", pageable)
+        } returns PageImpl(List(20) { entity(it.toLong()) }, pageable, 5_000L)
+
+        val result = service.searchByTitle("the", page = 1, size = 20)
+
+        assertThat(result.totalElements).isEqualTo(MovieService.SEARCH_MAX_RESULTS.toLong())
+        assertThat(result.totalPages).isEqualTo(MovieService.SEARCH_MAX_RESULTS / 20)
+    }
+
+    @Test
+    fun `suggest maps the limited repository hits into MovieSuggestionDto`() {
+        every { movieRepository.suggestByTitle("god", 8) } returns
+            listOf(entity(1L, "The Godfather"), entity(2L, "The Godfather Part II"))
+
+        val result = service.suggest("god", 8)
+
+        assertThat(result).hasSize(2)
+        assertThat(result.map { it.title })
+            .containsExactly("The Godfather", "The Godfather Part II")
     }
 
     @Test

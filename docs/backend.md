@@ -188,7 +188,8 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Returns `PageDto<MovieSummaryDto>` ordered by popularity desc. |
+| `GET`  | `/api/movies?q=&page=&size=`        | **Public.** Paginated **fuzzy** title search (`q` required and `@NotBlank`, 1-indexed `page`, `size` ∈ [1,100]). Accent- and typo-tolerant trigram match; ranked by similarity to the query, then vote count. Returns `PageDto<MovieSummaryDto>`, **capped to `SEARCH_MAX_RESULTS` (1000)** — a far roomier window than the catalog explorer, since search is intentional in-depth exploration. |
+| `GET`  | `/api/movies/suggest?q=&limit=`     | **Public.** Autocomplete — up to `limit` (∈ [1,20], default 8) fuzzy title matches, **prefix matches ranked first**. Returns a lightweight `MovieSuggestionDto[]` (`{id, title, releaseDate}`). |
 | `GET`  | `/api/movies/{id}`                  | **Public.** Movie details — returns `MovieSummaryDto`. 404 when the id is unknown. |
 | `GET`  | `/api/movies/popular?page=&size=&genreId=&sort=` | **Public.** Catalog explorer — paginated, **capped to the top `CATALOG_MAX_MOVIES` (200)** titles; deeper exploration is funnelled to title search (1-indexed `page`, `size` ∈ [1,100]). `sort` ∈ `{RELEVANCE, POPULARITY, RATING, RELEASE}`, default `RELEVANCE` — a Bayesian weighted rating that surfaces well-known, well-rated classics first. Optional `genreId` filters to a single genre (always popularity desc, ignores `sort`). |
 | `GET`  | `/api/genres`                       | **Public.** All genres as `GenreDto[]` (`{id, name}`), alphabetically — backs the suggestions page genre filter. |
@@ -249,11 +250,41 @@ films regress to the mean.
 `m` is the tuning knob: raise it to penalise low-vote movies harder, lower it to
 trust individual ratings sooner.
 
-**Catalog cap.** Every `sort` is bounded to the top `CATALOG_MAX_MOVIES = 200`
-titles — `listPopular` clamps `totalElements`/`totalPages` and short-circuits any
-`page` past the cap with an empty page. Deeper exploration is funnelled to title
-search rather than an endless paginated tail. The cap does not apply to the
-`genreId`-filtered path, which keeps a plain `popularity desc` ordering.
+**Result cap.** Every `sort` is bounded to the top `CATALOG_MAX_MOVIES = 200`
+titles — the shared `cappedResult` helper clamps `totalElements`/`totalPages` and
+short-circuits any `page` past the cap with an empty page. **Title search
+(`GET /api/movies?q=`) goes through the same helper but with the roomier
+`SEARCH_MAX_RESULTS = 1000` window** — search is intentional, in-depth
+exploration, so it is bounded only to protect against pathologically broad
+queries (count query, cache). The cap does not apply to the `genreId`-filtered
+path, which keeps a plain `popularity desc` ordering.
+
+| Endpoint | Cap | Pages @ size 20 |
+|----------|-----|-----------------|
+| `/movies/popular` (catalog explorer) | `CATALOG_MAX_MOVIES = 200` | 10 |
+| `/movies?q=` (title search) | `SEARCH_MAX_RESULTS = 1000` | 50 |
+
+## Title search & autocomplete
+
+Title search (`GET /api/movies?q=`) and autocomplete (`GET /api/movies/suggest?q=`)
+both run a **fuzzy, accent-insensitive** match instead of a plain `ILIKE '%q%'`:
+
+- **`pg_trgm` + `unaccent`** extensions, added in `V5__search_indexes.sql`. An
+  `IMMUTABLE immutable_unaccent(text)` wrapper folds accents (`amelie` →
+  *Amélie*) and can back an index; a **GIN trigram index** over
+  `immutable_unaccent(title)` accelerates both the `ILIKE` substring match and
+  the `%` similarity operator (typo tolerance — `intersteler` → *Interstellar*).
+- A row matches if the accent-folded title **contains** the query *or* is
+  **trigram-similar** to it.
+- **Search** ranks by `similarity()` descending, then `vote_count`, then
+  `popularity` — closest matches first, well-known movies breaking ties.
+- **Autocomplete** uses the same match but ranks **prefix matches first**, then
+  similarity, and hard-limits the result set. It returns the lean
+  `MovieSuggestionDto` and has its own longer-lived cache (`movies-suggest`).
+
+⚠️ `V5` runs `CREATE EXTENSION` for `pg_trgm`/`unaccent` — a privileged
+statement. Both extensions ship with Postgres and are available on Railway's
+managed instance.
 
 ## Errors
 

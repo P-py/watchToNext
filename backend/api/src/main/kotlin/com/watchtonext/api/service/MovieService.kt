@@ -1,5 +1,6 @@
 package com.watchtonext.api.service
 
+import com.watchtonext.api.dto.MovieSuggestionDto
 import com.watchtonext.api.dto.MovieSummaryDto
 import com.watchtonext.api.dto.PageDto
 import com.watchtonext.api.persistence.entity.MovieEntity
@@ -24,31 +25,36 @@ class MovieService(private val movieRepository: MovieRepository) {
      */
     @Cacheable(cacheNames = ["movies-popular"], key = "#sort + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
-    fun listPopular(page: Int, size: Int, sort: MovieSort): PageDto<MovieSummaryDto> {
-        val maxPages = ceil(CATALOG_MAX_MOVIES.toDouble() / size).toInt()
-        if (page > maxPages) {
-            return PageDto(emptyList(), CATALOG_MAX_MOVIES.toLong(), maxPages, page, size)
+    fun listPopular(page: Int, size: Int, sort: MovieSort): PageDto<MovieSummaryDto> =
+        cappedResult(page, size, CATALOG_MAX_MOVIES) {
+            val pageable = PageRequest.of(page - 1, size)
+            when (sort) {
+                MovieSort.RELEVANCE -> movieRepository.findTopByWeightedRating(RELEVANCE_MIN_VOTES, pageable)
+                MovieSort.POPULARITY -> movieRepository.findTopByPopularity(pageable)
+                MovieSort.RATING -> movieRepository.findAll(PageRequest.of(page - 1, size, RATING_SORT))
+                MovieSort.RELEASE -> movieRepository.findAll(PageRequest.of(page - 1, size, RELEASE_SORT))
+            }
         }
-        val pageable = PageRequest.of(page - 1, size)
-        val fetched = when (sort) {
-            MovieSort.RELEVANCE -> movieRepository.findTopByWeightedRating(RELEVANCE_MIN_VOTES, pageable)
-            MovieSort.POPULARITY -> movieRepository.findTopByPopularity(pageable)
-            MovieSort.RATING -> movieRepository.findAll(PageRequest.of(page - 1, size, RATING_SORT))
-            MovieSort.RELEASE -> movieRepository.findAll(PageRequest.of(page - 1, size, RELEASE_SORT))
-        }
-        return cappedCatalogPage(fetched, page, size)
-    }
 
     /**
-     * Wraps a repository [Page] into a [PageDto] whose totals never exceed
-     * [CATALOG_MAX_MOVIES], trimming a page that straddles the cap.
+     * Runs [fetch] and wraps its [Page] into a [PageDto] whose totals never
+     * exceed [maxResults], trimming a page that straddles the cap. Any page past
+     * the cap short-circuits to an empty page without touching the database.
+     * Shared by the catalog explorer ([CATALOG_MAX_MOVIES]) and title search
+     * ([SEARCH_MAX_RESULTS]), which use deliberately different windows.
      */
-    private fun cappedCatalogPage(
-        page: Page<MovieEntity>,
+    private inline fun cappedResult(
         pageNumber: Int,
         size: Int,
+        maxResults: Int,
+        fetch: () -> Page<MovieEntity>,
     ): PageDto<MovieSummaryDto> {
-        val cappedTotal = minOf(page.totalElements, CATALOG_MAX_MOVIES.toLong())
+        val maxPages = ceil(maxResults.toDouble() / size).toInt()
+        if (pageNumber > maxPages) {
+            return PageDto(emptyList(), maxResults.toLong(), maxPages, pageNumber, size)
+        }
+        val page = fetch()
+        val cappedTotal = minOf(page.totalElements, maxResults.toLong())
         val offset = (pageNumber - 1).toLong() * size
         val allowed = (cappedTotal - offset).coerceIn(0L, size.toLong()).toInt()
         val content = page.content.take(allowed).map(MovieSummaryDto::from)
@@ -68,17 +74,28 @@ class MovieService(private val movieRepository: MovieRepository) {
         return PageDto.from(mapped)
     }
 
+    /**
+     * Paginated fuzzy title search (accent- and typo-tolerant). Bounded to
+     * [SEARCH_MAX_RESULTS] — a far roomier window than the curated catalog
+     * explorer, since search is intentional, in-depth exploration — while still
+     * capping pathologically broad queries.
+     */
     @Cacheable(cacheNames = ["movies-search"], key = "#query + ':' + #page + ':' + #size")
     @Transactional(readOnly = true)
-    fun searchByTitle(query: String, page: Int, size: Int): PageDto<MovieSummaryDto> {
-        val mapped = movieRepository
-            .findByTitleContainingIgnoreCaseOrderByPopularityDesc(
-                query,
-                PageRequest.of(page - 1, size),
-            )
-            .map(MovieSummaryDto::from)
-        return PageDto.from(mapped)
-    }
+    fun searchByTitle(query: String, page: Int, size: Int): PageDto<MovieSummaryDto> =
+        cappedResult(page, size, SEARCH_MAX_RESULTS) {
+            movieRepository.searchByTitleFuzzy(query, PageRequest.of(page - 1, size))
+        }
+
+    /**
+     * Autocomplete suggestions for [query] — up to [limit] fuzzy title matches,
+     * prefix matches first. Lighter than [searchByTitle]: no pagination, a
+     * minimal DTO, and a longer cache TTL.
+     */
+    @Cacheable(cacheNames = ["movies-suggest"], key = "#query + ':' + #limit")
+    @Transactional(readOnly = true)
+    fun suggest(query: String, limit: Int): List<MovieSuggestionDto> =
+        movieRepository.suggestByTitle(query, limit).map(MovieSuggestionDto::from)
 
     @Cacheable(cacheNames = ["movies-detail"], key = "#id")
     @Transactional(readOnly = true)
@@ -91,10 +108,18 @@ class MovieService(private val movieRepository: MovieRepository) {
 
     companion object {
         /**
-         * Upper bound on movies browsable through the catalog explorer. Beyond
-         * this window users are nudged towards title search.
+         * Upper bound on results paginated through the catalog explorer — a
+         * curated "top movies" browse. Beyond this window users are nudged
+         * towards title search.
          */
         const val CATALOG_MAX_MOVIES = 200
+
+        /**
+         * Upper bound on title-search results. Deliberately far higher than
+         * [CATALOG_MAX_MOVIES] so search supports free, in-depth exploration;
+         * the cap only bounds pathologically broad queries.
+         */
+        const val SEARCH_MAX_RESULTS = 1000
 
         /** Bayesian prior weight (`m`) for [MovieSort.RELEVANCE]'s weighted rating. */
         private const val RELEVANCE_MIN_VOTES = 1000
