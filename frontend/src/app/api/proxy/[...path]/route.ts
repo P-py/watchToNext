@@ -8,6 +8,11 @@ const FORWARD_BLOCKLIST = new Set([
   "content-length",
   "accept-encoding",
   "transfer-encoding",
+  // The browser sends `Origin` on every non-GET request (even same-origin).
+  // This is a server-to-server hop, not a browser cross-origin call, so
+  // forwarding it would make the backend's CORS filter reject mutations with
+  // a 403 "Invalid CORS request".
+  "origin",
 ]);
 
 function upstreamBase(): string {
