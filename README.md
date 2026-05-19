@@ -1,5 +1,7 @@
 # watchToNext
 
+**Built as part of the coursework for 'Software Engineering' @ [Faculty of Engineering of Sorocaba/FACENS](https://facens.br/) under [Prof. Andreia Damasio de Leles](http://lattes.cnpq.br/0758527562955444)**
+
 > **⚠️ Academic project — temporary and non-commercial.**
 > Built as coursework / portfolio. Not a production service, not affiliated with any movie studio, streaming provider, or TMDB. Hosted instances may go offline or be wiped without notice. Do not depend on any URL, data, or endpoint provided by this project.
 
