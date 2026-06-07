@@ -35,6 +35,15 @@ Practical rule: **use `n-*` neutrals (`bg-n-900`, `text-n-100`, `border-n-800`, 
 - A small inline script in the `<head>` applies the stored theme class **before first paint** (no flash of the wrong theme); `<html>` carries `suppressHydrationWarning` because that script mutates the class. Keep the script's storage key in sync with `THEME_STORAGE_KEY`.
 - `ThemedToaster` makes the Sonner toaster follow the active theme.
 
+## Rating input (touch vs pointer)
+
+The star rating control (`RatingStars`, on the movie detail page) adapts to the input device via `useMediaQuery("(pointer: coarse)")`:
+
+- **Fine pointer (desktop):** hover preview where the cursor's horizontal half over a star selects `0.5` vs `1.0`; click commits the preview. Compact stars.
+- **Coarse pointer (touch):** large tap targets (~48px), no hover preview — tapping star *n* commits a whole rating of *n* (1–5). Half-steps are a desktop-only affordance; existing `0.5` ratings still display correctly.
+
+`useMediaQuery(query: string): boolean` (`hooks/useMediaQuery.ts`) is a reusable, SSR-safe media-query hook built on `matchMedia` + `useSyncExternalStore` (server snapshot is `false`, reconciled after hydration — no mismatch).
+
 ## Design Principles
 
 The frontend must follow these principles:
