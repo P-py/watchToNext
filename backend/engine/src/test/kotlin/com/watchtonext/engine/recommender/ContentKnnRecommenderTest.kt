@@ -115,6 +115,39 @@ class ContentKnnRecommenderTest {
     }
 
     @Test
+    fun `repeated calls return identical results (memoized neighbors)`() {
+        val seeds = listOf(WeightedMovie(actionA.movieId, 5.0))
+        val first = recommender.recommend(seeds, limit = 4)
+        val second = recommender.recommend(seeds, limit = 4)
+
+        assertThat(second).isEqualTo(first)
+    }
+
+    @Test
+    fun `neighbor cap keeps single-seed results identical to the full ranking`() {
+        // Cap below catalog size; for a single seed the top-`limit` (limit <= cap) must still
+        // match the uncapped recommender, since top-`limit` is a subset of the cached top-K.
+        val capped = ContentKnnRecommender(catalog, neighborCacheSize = 2)
+        val full = ContentKnnRecommender(catalog, neighborCacheSize = 500)
+        val seeds = listOf(WeightedMovie(actionA.movieId, 3.0))
+
+        assertThat(capped.recommend(seeds, limit = 2)).isEqualTo(full.recommend(seeds, limit = 2))
+    }
+
+    @Test
+    fun `lru eviction of cached seeds does not change results`() {
+        val tiny = ContentKnnRecommender(catalog, maxCachedSeeds = 1)
+        val seeds = listOf(WeightedMovie(actionA.movieId, 1.0))
+
+        val before = tiny.recommend(seeds, limit = 3)
+        // A different seed evicts actionA's memoized neighbors (cache holds at most one seed).
+        tiny.recommend(listOf(WeightedMovie(romanceA.movieId, 1.0)), limit = 3)
+        val after = tiny.recommend(seeds, limit = 3)
+
+        assertThat(after).isEqualTo(before)
+    }
+
+    @Test
     fun `zero-vector candidate is filtered by cosine guard`() {
         // A candidate with no genres (empty set) and all numeric features at the min value
         // produces a zero-norm vector; cosine must return 0 (not NaN) and the candidate must

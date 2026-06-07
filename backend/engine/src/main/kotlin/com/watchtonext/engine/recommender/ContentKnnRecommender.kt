@@ -17,11 +17,34 @@ import kotlin.math.sqrt
  * Already-rated movies (passed in `excludeIds`) and the seeds themselves are filtered out.
  *
  * Deterministic for a given catalog + seed list — ties broken by movieId ascending.
+ *
+ * ## Per-seed neighbor memoization
+ * A seed's cosine to every candidate depends only on the catalog, which is fixed for the lifetime
+ * of a recommender instance. So the sorted neighbor list of each seed is computed once and reused:
+ * subsequent `recommend` calls only re-apply weights, exclusions and the final top-`limit` cut.
+ * Each list is capped to [neighborCacheSize] entries and the cache holds at most [maxCachedSeeds]
+ * seeds (LRU eviction) to bound memory.
+ *
+ * Single-seed callers (`/similar`, `/from`) stay result-identical to the un-memoized version as long
+ * as [neighborCacheSize] >= the requested limit, because the final top-`limit` is a subset of the
+ * cached top-K. Multi-seed callers are near-identical: a candidate could in theory rank into the
+ * final top-`limit` purely through many tiny contributions that each fall outside their seed's top-K.
  */
-class ContentKnnRecommender(private val catalog: List<MovieFeatures>) {
+class ContentKnnRecommender(
+    private val catalog: List<MovieFeatures>,
+    private val neighborCacheSize: Int = 500,
+    maxCachedSeeds: Int = 1024,
+) {
 
     private val genreIndex: Map<Int, Int>
     private val vectors: Map<Long, DoubleArray>
+
+    // Access-ordered LinkedHashMap = LRU; guarded by `synchronized(neighborCache)` on every touch.
+    private val neighborCache: MutableMap<Long, List<ScoredMovie>> =
+        object : LinkedHashMap<Long, List<ScoredMovie>>(16, 0.75f, true) {
+            override fun removeEldestEntry(eldest: Map.Entry<Long, List<ScoredMovie>>): Boolean =
+                size > maxCachedSeeds
+        }
 
     init {
         val allGenres = catalog.flatMap { it.genreIds }.toSortedSet()
@@ -52,14 +75,9 @@ class ContentKnnRecommender(private val catalog: List<MovieFeatures>) {
         val scores = HashMap<Long, Double>(catalog.size)
 
         seeds.forEach { seed ->
-            val sv = vectors[seed.movieId] ?: return@forEach
-            catalog.forEach { candidate ->
-                if (candidate.movieId in excluded) return@forEach
-                val cv = vectors.getValue(candidate.movieId)
-                val sim = cosine(sv, cv)
-                if (sim > 0.0) {
-                    scores.merge(candidate.movieId, sim * seed.weight) { a, b -> a + b }
-                }
+            neighborsOf(seed.movieId).forEach { neighbor ->
+                if (neighbor.movieId in excluded) return@forEach
+                scores.merge(neighbor.movieId, neighbor.score * seed.weight) { a, b -> a + b }
             }
         }
 
@@ -68,6 +86,30 @@ class ContentKnnRecommender(private val catalog: List<MovieFeatures>) {
             .map { ScoredMovie(it.key, it.value) }
             .sortedWith(compareByDescending<ScoredMovie> { it.score }.thenBy { it.movieId })
             .take(limit)
+            .toList()
+    }
+
+    /**
+     * The seed's top-[neighborCacheSize] candidates by cosine (sim > 0), sorted desc by score then
+     * movieId. The seed itself is dropped (it is always excluded by `recommend`). Memoized per seed.
+     */
+    private fun neighborsOf(seedId: Long): List<ScoredMovie> {
+        synchronized(neighborCache) { neighborCache[seedId]?.let { return it } }
+
+        val computed = computeNeighbors(seedId)
+
+        synchronized(neighborCache) { neighborCache[seedId] = computed }
+        return computed
+    }
+
+    private fun computeNeighbors(seedId: Long): List<ScoredMovie> {
+        val sv = vectors[seedId] ?: return emptyList()
+        return catalog.asSequence()
+            .filter { it.movieId != seedId }
+            .map { ScoredMovie(it.movieId, cosine(sv, vectors.getValue(it.movieId))) }
+            .filter { it.score > 0.0 }
+            .sortedWith(compareByDescending<ScoredMovie> { it.score }.thenBy { it.movieId })
+            .take(neighborCacheSize)
             .toList()
     }
 
