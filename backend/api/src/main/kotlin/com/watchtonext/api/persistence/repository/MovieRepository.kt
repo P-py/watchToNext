@@ -79,7 +79,16 @@ interface MovieRepository : JpaRepository<MovieEntity, Long> {
     )
     fun findTopByWeightedRating(minVotes: Int, pageable: Pageable): Page<MovieEntity>
 
-    @Query("SELECT m FROM MovieEntity m WHERE m.voteCount >= :minVoteCount")
+    /**
+     * Recommendation candidates with their [MovieEntity.genres] eagerly fetched, so the catalog
+     * can be read outside a transaction (e.g. the startup warm-up) without a
+     * `LazyInitializationException`. `LEFT JOIN FETCH` keeps genre-less movies; `DISTINCT` collapses
+     * the row multiplication the genre fetch-join produces.
+     */
+    @Query(
+        "SELECT DISTINCT m FROM MovieEntity m LEFT JOIN FETCH m.genres " +
+            "WHERE m.voteCount >= :minVoteCount",
+    )
     fun findRecommendationCandidates(minVoteCount: Int): List<MovieEntity>
 
     @Query(
