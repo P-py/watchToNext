@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type MouseEvent } from "react";
-import { Star } from "lucide-react";
+import { RotateCcw, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/components/SessionProvider";
 import { ratingsService } from "@/services/ratings.service";
@@ -125,8 +125,9 @@ export function RatingStars({ movieId }: RatingStarsProps) {
           type="button"
           disabled={loading}
           onClick={remove}
-          className="text-xs text-n-500 underline transition-colors hover:text-n-300 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-n-400 transition-colors hover:bg-n-800/60 hover:text-n-200 disabled:opacity-50"
         >
+          <RotateCcw className="h-3.5 w-3.5" />
           Remover avaliação
         </button>
       )}
