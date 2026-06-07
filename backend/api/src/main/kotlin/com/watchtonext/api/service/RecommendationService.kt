@@ -84,7 +84,16 @@ class RecommendationService(
     /**
      * Recommendations seeded by an ad-hoc set of movies the user picked, each
      * weighted equally. The seeds themselves are excluded from the result.
+     *
+     * Cached by the *set* of seeds (order-insensitive) + limit via [sortedSeedsKeyGenerator],
+     * so `[1,2]` and `[2,1]` share an entry. No eviction: results depend only on movie
+     * features, not user state — the cache TTL handles staleness.
      */
+    @Cacheable(
+        cacheNames = ["recommendations-from"],
+        keyGenerator = "sortedSeedsKeyGenerator",
+        unless = "#result.isEmpty()",
+    )
     @Transactional(readOnly = true)
     fun recommendFromSeeds(movieIds: List<Long>, limit: Int): List<RecommendationDto> {
         val seedIds = movieRepository.findAllById(movieIds).map { it.id }.toSet()
@@ -105,6 +114,14 @@ class RecommendationService(
         }
     }
 
+    /**
+     * Eagerly builds the catalog + recommender so the first real request after boot doesn't
+     * pay the cold-start cost. Safe to call repeatedly — the build runs at most once per instance.
+     */
+    fun warmUp() {
+        recommender()
+    }
+
     private fun recommender(): ContentKnnRecommender {
         recommenderRef.get()?.let { return it }
         synchronized(this) {
@@ -112,7 +129,11 @@ class RecommendationService(
             log.info("Building recommender catalog (minVoteCount={})...", properties.minVoteCount)
             val started = System.currentTimeMillis()
             val catalog = featuresProvider.loadCatalog()
-            val built = ContentKnnRecommender(catalog)
+            val built = ContentKnnRecommender(
+                catalog,
+                neighborCacheSize = properties.neighborCacheSize,
+                maxCachedSeeds = properties.maxCachedSeeds,
+            )
             recommenderRef.set(built)
             log.info(
                 "Recommender ready — {} candidate movies in {} ms",
