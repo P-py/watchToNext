@@ -17,6 +17,24 @@
 - Headings use `letter-spacing: -0.02em` and `font-weight: 600`
 - Never override the font stack inline — all font settings flow from `globals.css` and the CSS variables `--font-dm-sans` / `--font-dm-mono`
 
+## Theming (light / dark)
+
+The app ships a **light** and a **dark** theme, toggled by an icon button (`ThemeToggle`) in the navbar — visible on desktop and, on mobile, in the always-on cluster next to the menu button. Dark is the default for first-time visitors.
+
+**Color model — inverting neutral ramp.** Instead of `dark:` variants on every utility, colors flow through a CSS-variable ramp `n-50 … n-950` defined in `globals.css` and mapped to Tailwind via `@theme inline`:
+
+- In **dark** mode `n-X` equals Tailwind's `zinc-X` exactly, so the dark theme is pixel-identical to the original zinc-based design.
+- In **light** mode the ramp is inverted (`n-100` is a dark ink, `n-900` a light surface), so a single set of classes yields a coherent light theme.
+
+Practical rule: **use `n-*` neutrals (`bg-n-900`, `text-n-100`, `border-n-800`, …), never `zinc-*`.** A neutral utility automatically themes itself. The `amber-*` accent and `black/white` scrims are intentionally theme-agnostic.
+
+**State & persistence.**
+
+- `ThemeProvider` (wraps the tree in `layout.tsx`) exposes `useTheme(): { theme, toggleTheme, setTheme }`. The active theme is read from the `dark` class on `<html>` via `useSyncExternalStore`, so the DOM is the single source of truth and changes propagate across tabs.
+- The choice persists in `localStorage` under `wtn-theme` (key exported as `THEME_STORAGE_KEY`).
+- A small inline script in the `<head>` applies the stored theme class **before first paint** (no flash of the wrong theme); `<html>` carries `suppressHydrationWarning` because that script mutates the class. Keep the script's storage key in sync with `THEME_STORAGE_KEY`.
+- `ThemedToaster` makes the Sonner toaster follow the active theme.
+
 ## Design Principles
 
 The frontend must follow these principles:
@@ -91,6 +109,7 @@ Examples of reusable components:
 - Select
 - Grid / AnimatedGrid
 - Pagination
+- ThemeToggle (light/dark switch)
 
 ## Feature Modules
 
