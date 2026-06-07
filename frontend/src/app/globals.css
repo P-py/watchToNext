@@ -91,3 +91,20 @@ h1, h2, h3, h4, h5, h6 {
 code, pre, kbd {
   font-family: var(--font-dm-mono), monospace;
 }
+
+/*
+ * Tailwind v4's Preflight resets `<button>` to `cursor: default`. Restore a
+ * pointer for enabled interactive controls so clickable elements signal the
+ * click, and use `not-allowed` for disabled ones.
+ */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+label[for],
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
