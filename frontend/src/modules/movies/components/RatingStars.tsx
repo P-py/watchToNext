@@ -105,7 +105,7 @@ export function RatingStars({ movieId }: RatingStarsProps) {
               className="p-0.5 disabled:opacity-50"
             >
               <span className="relative inline-block h-6 w-6">
-                <Star className="absolute left-0 top-0 h-6 w-6 text-zinc-600" />
+                <Star className="absolute left-0 top-0 h-6 w-6 text-n-600" />
                 {fill > 0 && (
                   <span
                     className="absolute left-0 top-0 h-6 overflow-hidden"
@@ -125,7 +125,7 @@ export function RatingStars({ movieId }: RatingStarsProps) {
           type="button"
           disabled={loading}
           onClick={remove}
-          className="text-xs text-zinc-500 underline transition-colors hover:text-zinc-300 disabled:opacity-50"
+          className="text-xs text-n-500 underline transition-colors hover:text-n-300 disabled:opacity-50"
         >
           Remover avaliação
         </button>

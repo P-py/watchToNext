@@ -81,7 +81,7 @@ function MoviesGrid() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl"
+          className="text-2xl font-bold text-n-100 md:text-3xl lg:text-4xl"
         >
           Filmes
         </motion.h1>
@@ -131,7 +131,7 @@ function MoviesGrid() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mt-6 text-center text-sm text-zinc-500"
+          className="mt-6 text-center text-sm text-n-500"
         >
           Mostrando os {CATALOG_MAX_MOVIES} títulos em destaque do catálogo. Procurando algo
           específico?{" "}

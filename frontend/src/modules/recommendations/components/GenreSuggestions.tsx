@@ -56,7 +56,7 @@ export function GenreSuggestions() {
       <select
         value={genreId ?? ""}
         onChange={onChange}
-        className="h-12 w-full max-w-sm rounded-xl border border-zinc-700 bg-zinc-800 px-4 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+        className="h-12 w-full max-w-sm rounded-xl border border-n-700 bg-n-800 px-4 text-sm text-n-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
       >
         <option value="">Escolha um gênero…</option>
         {genres.map((genre) => (

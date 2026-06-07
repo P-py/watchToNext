@@ -16,12 +16,12 @@ export function HowKnnWorks() {
     >
       <motion.h2
         variants={fadeUp}
-        className="text-2xl font-bold text-zinc-100 sm:text-3xl"
+        className="text-2xl font-bold text-n-100 sm:text-3xl"
       >
         Como o KNN funciona
       </motion.h2>
-      <motion.p variants={fadeUp} className="leading-relaxed text-zinc-400">
-        KNN significa <span className="text-zinc-200">K-Nearest Neighbors</span>{" "}
+      <motion.p variants={fadeUp} className="leading-relaxed text-n-400">
+        KNN significa <span className="text-n-200">K-Nearest Neighbors</span>{" "}
         — ou &ldquo;os K vizinhos mais próximos&rdquo;. Cada filme é descrito por
         um conjunto de características (gênero, nota, número de votos e
         popularidade) e tratado como um ponto num espaço multidimensional.
@@ -29,7 +29,7 @@ export function HowKnnWorks() {
 
       <KnnPipeline />
 
-      <motion.p variants={fadeUp} className="leading-relaxed text-zinc-400">
+      <motion.p variants={fadeUp} className="leading-relaxed text-n-400">
         Quando você marca um filme como favorito, o algoritmo mede a distância
         entre esse ponto e todos os outros — usando similaridade por cosseno — e
         seleciona os K mais próximos. Esses vizinhos são exatamente os filmes
@@ -39,7 +39,7 @@ export function HowKnnWorks() {
 
       <KnnDiagram />
 
-      <motion.p variants={fadeUp} className="leading-relaxed text-zinc-400">
+      <motion.p variants={fadeUp} className="leading-relaxed text-n-400">
         Quanto mais favoritos e avaliações você registra, mais nítido fica o seu
         perfil e mais certeiras ficam as sugestões.
       </motion.p>

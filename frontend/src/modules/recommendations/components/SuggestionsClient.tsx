@@ -31,7 +31,7 @@ export function SuggestionsClient() {
               "inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium transition-colors",
               mode === tab.id
                 ? "border-amber-500 bg-amber-500/10 text-amber-300"
-                : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-100",
+                : "border-n-800 bg-n-900 text-n-400 hover:text-n-100",
             )}
           >
             <tab.icon className="h-4 w-4" />

@@ -17,11 +17,11 @@ export function HomeCta() {
       >
         <motion.h2
           variants={fadeUp}
-          className="max-w-2xl text-2xl font-bold text-zinc-100 sm:text-3xl"
+          className="max-w-2xl text-2xl font-bold text-n-100 sm:text-3xl"
         >
           Pronto para descobrir seu próximo filme?
         </motion.h2>
-        <motion.p variants={fadeUp} className="max-w-xl text-zinc-400">
+        <motion.p variants={fadeUp} className="max-w-xl text-n-400">
           Comece pelos filmes que você já ama e deixe o KNN cuidar do resto.
         </motion.p>
         <motion.div
@@ -37,7 +37,7 @@ export function HomeCta() {
           </Link>
           <Link
             href="/about"
-            className="inline-flex h-12 items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-6 text-sm font-medium text-zinc-100 transition-all hover:border-zinc-600 hover:bg-zinc-700"
+            className="inline-flex h-12 items-center gap-2 rounded-lg border border-n-700 bg-n-800 px-6 text-sm font-medium text-n-100 transition-all hover:border-n-600 hover:bg-n-700"
           >
             <Info className="h-4 w-4" />
             Conhecer o projeto

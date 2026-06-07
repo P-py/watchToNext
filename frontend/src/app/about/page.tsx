@@ -33,11 +33,11 @@ export default function AboutPage() {
           </motion.div>
           <motion.h1
             variants={fadeUp}
-            className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl"
+            className="text-3xl font-bold tracking-tight text-n-100 sm:text-4xl"
           >
             Sobre o watchToNext
           </motion.h1>
-          <motion.p variants={fadeUp} className="max-w-xl text-zinc-400">
+          <motion.p variants={fadeUp} className="max-w-xl text-n-400">
             Uma plataforma de recomendação de filmes que sugere o que assistir a
             seguir a partir do que você já ama.
           </motion.p>

@@ -33,7 +33,7 @@ export function HowItWorks() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.4 }}
-        className="mb-12 text-center text-2xl font-bold text-zinc-100 sm:text-3xl"
+        className="mb-12 text-center text-2xl font-bold text-n-100 sm:text-3xl"
       >
         Como funciona
       </motion.h2>
@@ -49,16 +49,16 @@ export function HowItWorks() {
           <motion.div
             key={step.title}
             variants={cardItem}
-            className="relative rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+            className="relative rounded-xl border border-n-800 bg-n-900 p-6"
           >
             <span className="font-mono text-sm text-amber-400/70">
               0{index + 1}
             </span>
             <step.icon className="my-3 h-8 w-8 text-amber-400" />
-            <h3 className="mb-2 text-lg font-semibold text-zinc-100">
+            <h3 className="mb-2 text-lg font-semibold text-n-100">
               {step.title}
             </h3>
-            <p className="text-sm leading-relaxed text-zinc-400">
+            <p className="text-sm leading-relaxed text-n-400">
               {step.description}
             </p>
           </motion.div>

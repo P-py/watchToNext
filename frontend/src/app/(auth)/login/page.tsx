@@ -23,12 +23,12 @@ export default function LoginPage() {
         >
           <motion.div variants={fadeUp} className="flex items-center gap-3">
             <KeyRound className="h-9 w-9 text-amber-400" />
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-n-100 sm:text-4xl">
               Entrar
             </h1>
           </motion.div>
 
-          <motion.p variants={fadeUp} className="max-w-lg text-base text-zinc-400">
+          <motion.p variants={fadeUp} className="max-w-lg text-base text-n-400">
             Você será redirecionado para o nosso provedor de identidade para autenticar
             com segurança. O watchToNext nunca recebe sua senha.
           </motion.p>
@@ -42,7 +42,7 @@ export default function LoginPage() {
             <ArrowRight className="h-4 w-4" />
           </motion.a>
 
-          <motion.p variants={fadeUp} className="text-xs text-zinc-500">
+          <motion.p variants={fadeUp} className="text-xs text-n-500">
             Ainda não tem conta? <a href="/signup" className="underline hover:text-amber-400">Criar conta</a>.
           </motion.p>
         </motion.div>

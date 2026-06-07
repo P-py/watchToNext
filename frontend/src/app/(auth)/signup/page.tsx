@@ -23,12 +23,12 @@ export default function SignupPage() {
         >
           <motion.div variants={fadeUp} className="flex items-center gap-3">
             <ShieldCheck className="h-9 w-9 text-amber-400" />
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-n-100 sm:text-4xl">
               Criar conta
             </h1>
           </motion.div>
 
-          <motion.p variants={fadeUp} className="max-w-lg text-base text-zinc-400">
+          <motion.p variants={fadeUp} className="max-w-lg text-base text-n-400">
             Você será redirecionado para o nosso provedor de identidade para concluir o
             cadastro com segurança. Suas credenciais nunca passam pelo watchToNext.
           </motion.p>
@@ -42,7 +42,7 @@ export default function SignupPage() {
             <ArrowRight className="h-4 w-4" />
           </motion.a>
 
-          <motion.p variants={fadeUp} className="text-xs text-zinc-500">
+          <motion.p variants={fadeUp} className="text-xs text-n-500">
             Já tem uma conta? Use <a href="/login" className="underline hover:text-amber-400">Entrar</a> após o cadastro.
           </motion.p>
         </motion.div>

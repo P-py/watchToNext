@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Mono } from "next/font/google";
-import { Toaster } from "sonner";
 import "./globals.css";
 import { AcademicDisclaimer } from "@/components/AcademicDisclaimer";
 import { FavoritesProvider } from "@/components/FavoritesProvider";
 import { WatchedProvider } from "@/components/WatchedProvider";
 import { SessionProvider } from "@/components/SessionProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemedToaster } from "@/components/ThemedToaster";
 import TmdbAttribution from "@/components/TmdbAttribution";
 import { readSession } from "@/lib/auth/session";
+
+// Runs before first paint to apply the persisted theme class, avoiding a flash
+// of the wrong theme. Defaults to dark when no preference is stored. Keep the
+// storage key in sync with `THEME_STORAGE_KEY` in `ThemeProvider`.
+const themeScript = `(function(){try{var t=localStorage.getItem('wtn-theme');document.documentElement.classList.toggle('dark',t?t==='dark':true);}catch(e){document.documentElement.classList.add('dark');}})();`;
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -36,20 +42,25 @@ export default async function RootLayout({
   const session = await readSession();
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
-        className={`${dmSans.variable} ${dmMono.variable} flex min-h-screen flex-col bg-zinc-950 text-zinc-100 antialiased`}
+        className={`${dmSans.variable} ${dmMono.variable} flex min-h-screen flex-col bg-n-950 text-n-100 antialiased`}
       >
-        <SessionProvider initialSession={session}>
-          <FavoritesProvider>
-            <WatchedProvider>
-              <AcademicDisclaimer />
-              <div className="flex-1">{children}</div>
-              <TmdbAttribution />
-              <Toaster theme="dark" position="bottom-right" richColors closeButton />
-            </WatchedProvider>
-          </FavoritesProvider>
-        </SessionProvider>
+        <ThemeProvider>
+          <SessionProvider initialSession={session}>
+            <FavoritesProvider>
+              <WatchedProvider>
+                <AcademicDisclaimer />
+                <div className="flex-1">{children}</div>
+                <TmdbAttribution />
+                <ThemedToaster />
+              </WatchedProvider>
+            </FavoritesProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

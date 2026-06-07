@@ -34,8 +34,8 @@ export function QuickSuggestions() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center">
-        <p className="mb-4 text-sm text-zinc-400">
+      <div className="rounded-xl border border-n-800 bg-n-900 p-6 text-center">
+        <p className="mb-4 text-sm text-n-400">
           Deixe o KNN analisar tudo o que você já avaliou e favoritou e montar uma
           lista sob medida.
         </p>

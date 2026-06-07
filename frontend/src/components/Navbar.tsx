@@ -5,6 +5,7 @@ import { Film } from "lucide-react";
 import { useSession } from "@/components/SessionProvider";
 import type { Session } from "@/lib/auth/types";
 import { MobileMenu } from "./MobileMenu";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/movies", label: "Filmes" },
@@ -18,11 +19,11 @@ function AuthActionsDesktop({ session }: { session: Session | null }) {
   if (session) {
     return (
       <div className="flex items-center gap-4">
-        <span className="text-sm text-zinc-300">{session.displayName}</span>
+        <span className="text-sm text-n-300">{session.displayName}</span>
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
-            className="inline-flex h-9 items-center rounded-lg border border-zinc-700 bg-zinc-800 px-4 text-sm font-medium text-zinc-100 transition-colors hover:bg-zinc-700"
+            className="inline-flex h-9 items-center rounded-lg border border-n-700 bg-n-800 px-4 text-sm font-medium text-n-100 transition-colors hover:bg-n-700"
           >
             Sair
           </button>
@@ -34,7 +35,7 @@ function AuthActionsDesktop({ session }: { session: Session | null }) {
     <div className="flex items-center gap-3">
       <Link
         href="/login"
-        className="text-sm text-zinc-400 transition-colors hover:text-zinc-100"
+        className="text-sm text-n-400 transition-colors hover:text-n-100"
       >
         Entrar
       </Link>
@@ -52,26 +53,27 @@ export function Navbar() {
   const session = useSession();
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-40 border-b border-n-800 bg-n-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-amber-400">
           <Film className="h-5 w-5" />
           watchToNext
         </Link>
 
-        <div className="hidden items-center gap-6 text-sm text-zinc-400 md:flex">
+        <div className="hidden items-center gap-6 text-sm text-n-400 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-zinc-100"
+              className="transition-colors hover:text-n-100"
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        <div className="hidden md:flex">
+        <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <AuthActionsDesktop session={session} />
         </div>
 

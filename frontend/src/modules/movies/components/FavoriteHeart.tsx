@@ -39,7 +39,7 @@ export function FavoriteHeart({ movieId }: FavoriteHeartProps) {
       disabled={pending}
       aria-label={favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
       aria-pressed={favorite}
-      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-zinc-200 backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60"
+      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-n-200 backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60"
     >
       <Heart
         className={cn("h-4 w-4", favorite && "fill-amber-400 text-amber-400")}

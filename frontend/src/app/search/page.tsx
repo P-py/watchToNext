@@ -95,7 +95,7 @@ function SearchPanel() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <p className="mb-4 text-sm text-zinc-500">
+              <p className="mb-4 text-sm text-n-500">
                 Resultados para &quot;{query}&quot;
               </p>
               <AnimatedGrid cols={4}>
@@ -144,7 +144,7 @@ export default function SearchPage() {
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          className="mb-6 text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl"
+          className="mb-6 text-2xl font-bold text-n-100 md:text-3xl lg:text-4xl"
         >
           Buscar
         </motion.h1>

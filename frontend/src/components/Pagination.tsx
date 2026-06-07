@@ -21,7 +21,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      <span className="text-sm text-zinc-400">
+      <span className="text-sm text-n-400">
         {currentPage} / {totalPages}
       </span>
 

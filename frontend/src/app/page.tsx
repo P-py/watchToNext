@@ -34,14 +34,14 @@ export default function HomePage() {
               >
                 <Film className="h-10 w-10 text-amber-400" />
               </motion.div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-5xl lg:text-6xl">
+              <h1 className="text-3xl font-bold tracking-tight text-n-100 sm:text-5xl lg:text-6xl">
                 watchToNext
               </h1>
             </motion.div>
 
             <motion.p
               variants={fadeUp}
-              className="max-w-xl text-lg text-zinc-400"
+              className="max-w-xl text-lg text-n-400"
             >
               Descubra filmes que você vai amar. Recomendações baseadas em
               análise de similaridade KNN — não em listas genéricas de
@@ -61,7 +61,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/movies"
-                className="inline-flex h-12 items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-6 text-sm font-medium text-zinc-100 transition-all hover:border-zinc-600 hover:bg-zinc-700"
+                className="inline-flex h-12 items-center gap-2 rounded-lg border border-n-700 bg-n-800 px-6 text-sm font-medium text-n-100 transition-all hover:border-n-600 hover:bg-n-700"
               >
                 <Sparkles className="h-4 w-4" />
                 Ver todos

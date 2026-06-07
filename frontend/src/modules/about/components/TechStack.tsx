@@ -29,7 +29,7 @@ export function TechStack() {
     >
       <motion.h2
         variants={fadeUp}
-        className="text-2xl font-bold text-zinc-100 sm:text-3xl"
+        className="text-2xl font-bold text-n-100 sm:text-3xl"
       >
         Tecnologias
       </motion.h2>
@@ -39,7 +39,7 @@ export function TechStack() {
           <motion.div
             key={layer.layer}
             variants={cardItem}
-            className="rounded-xl border border-zinc-800 bg-zinc-900 p-5"
+            className="rounded-xl border border-n-800 bg-n-900 p-5"
           >
             <h3 className="mb-3 font-mono text-xs uppercase tracking-wide text-amber-400/80">
               {layer.layer}
@@ -48,7 +48,7 @@ export function TechStack() {
               {layer.items.map((item) => (
                 <li
                   key={item}
-                  className="rounded-md border border-zinc-800 bg-zinc-800/60 px-2.5 py-1 text-sm text-zinc-300"
+                  className="rounded-md border border-n-800 bg-n-800/60 px-2.5 py-1 text-sm text-n-300"
                 >
                   {item}
                 </li>
