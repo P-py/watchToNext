@@ -48,6 +48,12 @@ export function RatingStars({ movieId }: RatingStarsProps) {
     };
   }, [session, movieId]);
 
+  // Touch mode never updates `preview`, so a stale hover preview would otherwise
+  // linger if the pointer type flips to coarse. Clear it on entering touch.
+  useEffect(() => {
+    if (isTouch) setPreview(null);
+  }, [isTouch]);
+
   // Anonymous visitors don't see the action — the movie page itself stays public.
   if (!session) return null;
 
