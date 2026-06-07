@@ -40,7 +40,7 @@ export function SearchDropdown({
       // Keep the input focused so a row click fires before blur closes the panel.
       onMouseDown={(e) => e.preventDefault()}
       role="listbox"
-      className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-n-700 bg-n-800 shadow-xl"
+      className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-n-600 bg-n-800 shadow-2xl ring-1 ring-black/20"
     >
       {mode === "history" ? (
         <>

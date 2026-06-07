@@ -97,7 +97,7 @@ export function SearchBar({
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative z-30 isolate", className)}>
       <form onSubmit={handleSubmit} className="relative flex items-center">
         <Search className="absolute left-4 h-4 w-4 text-n-500" />
         <input
