@@ -21,14 +21,14 @@ function StatCard({ icon, label, value, href }: StatCardProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 p-5 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
+      className="flex items-center gap-4 rounded-lg border border-n-800 bg-n-900/60 p-5 transition-colors hover:border-n-700 hover:bg-n-800"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-amber-400">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-n-800 text-amber-400">
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-semibold text-zinc-100">{value}</p>
-        <p className="text-xs uppercase tracking-wider text-zinc-500">{label}</p>
+        <p className="text-2xl font-semibold text-n-100">{value}</p>
+        <p className="text-xs uppercase tracking-wider text-n-500">{label}</p>
       </div>
     </Link>
   );
@@ -39,17 +39,17 @@ export function UserProfile({ profile, onEdit }: UserProfileProps) {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-zinc-800">
-            <User className="h-8 w-8 text-zinc-400" />
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-n-800">
+            <User className="h-8 w-8 text-n-400" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-zinc-100">
+            <h1 className="truncate text-xl font-bold text-n-100">
               {profile.displayName}
             </h1>
             {profile.email && (
-              <p className="truncate text-sm text-zinc-500">{profile.email}</p>
+              <p className="truncate text-sm text-n-500">{profile.email}</p>
             )}
-            <p className="mt-1 text-xs text-zinc-600">
+            <p className="mt-1 text-xs text-n-600">
               Membro desde {formatDate(profile.createdAt)}
             </p>
           </div>

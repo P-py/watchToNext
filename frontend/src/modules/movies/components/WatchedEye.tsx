@@ -42,7 +42,7 @@ export function WatchedEye({ movieId }: WatchedEyeProps) {
       disabled={pending}
       aria-label={watched ? "Remover dos assistidos" : "Marcar como assistido"}
       aria-pressed={watched}
-      className="absolute right-11 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-zinc-200 backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60"
+      className="absolute right-11 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-n-200 backdrop-blur-sm transition-colors hover:bg-black/70 disabled:opacity-60"
     >
       <Eye className={cn("h-4 w-4", watched && "fill-amber-400/30 text-amber-400")} />
     </button>

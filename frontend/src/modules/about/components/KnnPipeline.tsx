@@ -38,17 +38,17 @@ export function KnnPipeline() {
           variants={cardItem}
           className="flex flex-1 flex-col items-center gap-3 sm:flex-row"
         >
-          <div className="w-full rounded-lg border border-zinc-800 bg-zinc-900 p-3 text-center">
+          <div className="w-full rounded-lg border border-n-800 bg-n-900 p-3 text-center">
             <p className="font-mono text-xs uppercase tracking-wide text-amber-400/80">
               {stage.title}
             </p>
-            <p className="mt-1 text-xs leading-snug text-zinc-400">
+            <p className="mt-1 text-xs leading-snug text-n-400">
               {stage.detail}
             </p>
           </div>
           {index < STAGES.length - 1 && (
             <ArrowRight
-              className="h-4 w-4 shrink-0 rotate-90 text-zinc-600 sm:rotate-0"
+              className="h-4 w-4 shrink-0 rotate-90 text-n-600 sm:rotate-0"
               aria-hidden="true"
             />
           )}

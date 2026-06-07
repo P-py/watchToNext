@@ -13,7 +13,7 @@ export function Spinner({ size = "md", className, label = "Carregando" }: Spinne
       role="status"
       aria-label={label}
       className={cn(
-        "animate-spin text-zinc-400",
+        "animate-spin text-n-400",
         { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" }[size],
         className
       )}

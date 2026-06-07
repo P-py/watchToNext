@@ -49,8 +49,8 @@ export function SortInfoBox({ sort }: { sort: MovieSort }) {
     >
       <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
       <div className="text-sm">
-        <p className="font-medium text-zinc-100">{info.title}</p>
-        <p className="mt-1 text-zinc-400">{info.body}</p>
+        <p className="font-medium text-n-100">{info.title}</p>
+        <p className="mt-1 text-n-400">{info.body}</p>
       </div>
     </motion.div>
   );

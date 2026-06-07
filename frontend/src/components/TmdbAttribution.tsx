@@ -10,7 +10,7 @@ const TMDB_LOGO_RENDER_WIDTH = Math.round(
 export default function TmdbAttribution() {
   const showAcademic = process.env.NEXT_PUBLIC_SHOW_ACADEMIC_DISCLAIMER !== "false";
   return (
-    <footer className="border-t border-zinc-800 bg-zinc-950 py-5">
+    <footer className="border-t border-n-800 bg-n-950 py-5">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6">
         <div className="flex items-center gap-3">
           <a
@@ -27,18 +27,18 @@ export default function TmdbAttribution() {
               priority={false}
             />
           </a>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-n-500">
             Este produto usa dados do TMDB, mas não é endossado nem certificado pelo TMDB.
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-n-600">
             Dados de filmes fornecidos por{" "}
             <a
               href="https://www.themoviedb.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-400 underline-offset-2 hover:underline"
+              className="text-n-400 underline-offset-2 hover:underline"
             >
               The Movie Database (TMDB)
             </a>

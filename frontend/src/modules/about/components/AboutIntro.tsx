@@ -14,13 +14,13 @@ export function AboutIntro() {
     >
       <motion.h2
         variants={fadeUp}
-        className="text-2xl font-bold text-zinc-100 sm:text-3xl"
+        className="text-2xl font-bold text-n-100 sm:text-3xl"
       >
         A ideia
       </motion.h2>
       <motion.p
         variants={fadeUp}
-        className="leading-relaxed text-zinc-400"
+        className="leading-relaxed text-n-400"
       >
         O watchToNext nasceu como um projeto acadêmico com uma pergunta simples:
         como recomendar filmes sem depender apenas das listas de mais populares?
@@ -29,7 +29,7 @@ export function AboutIntro() {
       </motion.p>
       <motion.p
         variants={fadeUp}
-        className="leading-relaxed text-zinc-400"
+        className="leading-relaxed text-n-400"
       >
         A resposta foi tratar recomendação como um problema de proximidade: a
         partir dos filmes que você já gostou, encontrar os títulos mais

@@ -18,7 +18,7 @@ export function AboutDisclaimer() {
         <h2 className="text-lg font-semibold">Um aviso importante!</h2>
       </div>
       <p className="leading-relaxed text-amber-100/70">
-        O "watchToNext" é um projeto acadêmico, temporário e sem fins lucrativos.
+        O &ldquo;watchToNext&rdquo; é um projeto acadêmico, temporário e sem fins lucrativos.
         Não é um serviço de produção e não tem qualquer vínculo com estúdios de
         cinema, plataformas de streaming ou com o TMDB. Os dados de filmes vêm da
         API e do Dataset do TMDB, mas este produto não é endossado nem certificado pelo TMDB.

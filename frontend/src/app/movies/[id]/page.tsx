@@ -74,7 +74,7 @@ export default function MoviePage({ params }: MoviePageProps) {
             variants={slideInLeft}
             initial="hidden"
             animate="visible"
-            className="relative mx-auto aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-zinc-800 shadow-2xl shadow-black/50 sm:w-56 md:mx-0"
+            className="relative mx-auto aspect-[2/3] w-48 shrink-0 overflow-hidden rounded-xl bg-n-800 shadow-2xl shadow-black/50 sm:w-56 md:mx-0"
           >
             <Image
               src={buildPosterUrl(movie.posterPath, "w342")}
@@ -91,11 +91,11 @@ export default function MoviePage({ params }: MoviePageProps) {
             animate="visible"
             className="space-y-4"
           >
-            <motion.h1 variants={slideInRight} className="text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl">
+            <motion.h1 variants={slideInRight} className="text-2xl font-bold text-n-100 md:text-3xl lg:text-4xl">
               {movie.title}
             </motion.h1>
 
-            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 text-sm text-n-400">
               <span className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 <span className="font-medium text-amber-400">{formatRating(movie.voteAverage)}</span>
@@ -112,7 +112,7 @@ export default function MoviePage({ params }: MoviePageProps) {
                   key={g.id}
                   variants={fadeIn}
                   custom={i}
-                  className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300"
+                  className="rounded-full bg-n-800 px-3 py-1 text-xs text-n-300"
                 >
                   {g.name}
                 </motion.span>
@@ -120,7 +120,7 @@ export default function MoviePage({ params }: MoviePageProps) {
             </motion.div>
 
             {movie.overview && (
-              <motion.p variants={fadeUp} className="max-w-2xl leading-7 text-zinc-400">
+              <motion.p variants={fadeUp} className="max-w-2xl leading-7 text-n-400">
                 {movie.overview}
               </motion.p>
             )}

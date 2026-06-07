@@ -33,14 +33,14 @@ const FEATURES = [
 
 export function FeatureHighlights() {
   return (
-    <section className="border-y border-zinc-800 bg-zinc-900/30">
+    <section className="border-y border-n-800 bg-n-900/30">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <motion.h2
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.4 }}
-          className="mb-12 text-center text-2xl font-bold text-zinc-100 sm:text-3xl"
+          className="mb-12 text-center text-2xl font-bold text-n-100 sm:text-3xl"
         >
           Por que watchToNext
         </motion.h2>
@@ -56,13 +56,13 @@ export function FeatureHighlights() {
             <motion.div
               key={feature.title}
               variants={cardItem}
-              className="rounded-xl border border-zinc-800 bg-zinc-900 p-5"
+              className="rounded-xl border border-n-800 bg-n-900 p-5"
             >
               <feature.icon className="mb-3 h-7 w-7 text-amber-400" />
-              <h3 className="mb-2 text-base font-semibold text-zinc-100">
+              <h3 className="mb-2 text-base font-semibold text-n-100">
                 {feature.title}
               </h3>
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-n-400">
                 {feature.description}
               </p>
             </motion.div>

@@ -99,7 +99,7 @@ export function SearchBar({
   return (
     <div className={cn("relative", className)}>
       <form onSubmit={handleSubmit} className="relative flex items-center">
-        <Search className="absolute left-4 h-4 w-4 text-zinc-500" />
+        <Search className="absolute left-4 h-4 w-4 text-n-500" />
         <input
           ref={inputRef}
           value={value}
@@ -115,7 +115,7 @@ export function SearchBar({
           aria-expanded={open}
           aria-controls="search-suggestions-list"
           aria-autocomplete="list"
-          className="h-12 w-full rounded-xl border border-zinc-700 bg-zinc-800 pl-11 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+          className="h-12 w-full rounded-xl border border-n-700 bg-n-800 pl-11 pr-4 text-sm text-n-100 placeholder:text-n-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
         />
         {loading && (
           <Spinner size="sm" className="absolute right-4 text-amber-400" label="Buscando" />

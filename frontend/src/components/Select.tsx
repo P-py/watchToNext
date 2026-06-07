@@ -16,7 +16,7 @@ export function Select({ label, options, className, id, ...props }: SelectProps)
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-zinc-300">
+        <label htmlFor={id} className="text-sm font-medium text-n-300">
           {label}
         </label>
       )}
@@ -24,7 +24,7 @@ export function Select({ label, options, className, id, ...props }: SelectProps)
         <select
           id={id}
           className={cn(
-            "h-10 w-full appearance-none rounded-lg border border-zinc-700 bg-zinc-800 pl-3 pr-9 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500",
+            "h-10 w-full appearance-none rounded-lg border border-n-700 bg-n-800 pl-3 pr-9 text-sm text-n-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500",
             className,
           )}
           {...props}
@@ -35,7 +35,7 @@ export function Select({ label, options, className, id, ...props }: SelectProps)
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-n-400" />
       </div>
     </div>
   );

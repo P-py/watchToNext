@@ -114,8 +114,8 @@ export function EditProfileModal({ open, onClose, profile, onUpdated }: EditProf
           </p>
         )}
 
-        <div className="flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-800/60 p-3 text-xs text-zinc-400">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+        <div className="flex items-start gap-2 rounded-lg border border-n-800 bg-n-800/60 p-3 text-xs text-n-400">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-n-500" />
           <p>
             As alterações podem demorar um pouco para refletir em outras áreas (como a barra
             superior). Faça login novamente para atualizar de imediato.

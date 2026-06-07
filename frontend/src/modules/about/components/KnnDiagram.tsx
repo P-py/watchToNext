@@ -33,7 +33,7 @@ export function KnnDiagram() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
-      className="rounded-xl border border-zinc-800 bg-zinc-900 p-5"
+      className="rounded-xl border border-n-800 bg-n-900 p-5"
     >
       <svg
         viewBox="0 0 400 290"
@@ -44,14 +44,14 @@ export function KnnDiagram() {
         {/* axes */}
         <line x1="40" y1="260" x2="380" y2="260" stroke="#3f3f46" strokeWidth="1" />
         <line x1="40" y1="260" x2="40" y2="20" stroke="#3f3f46" strokeWidth="1" />
-        <text x="380" y="278" textAnchor="end" className="fill-zinc-500" fontSize="11">
+        <text x="380" y="278" textAnchor="end" className="fill-n-500" fontSize="11">
           gênero · tom
         </text>
         <text
           x="32"
           y="20"
           textAnchor="end"
-          className="fill-zinc-500"
+          className="fill-n-500"
           fontSize="11"
           transform="rotate(-90 32 20)"
         >
@@ -104,14 +104,14 @@ export function KnnDiagram() {
           x={SEED.x}
           y={SEED.y - 16}
           textAnchor="middle"
-          className="fill-zinc-200"
+          className="fill-n-200"
           fontSize="11"
         >
           filme semente
         </text>
       </svg>
 
-      <figcaption className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-400">
+      <figcaption className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-n-400">
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> filme que você gostou
         </span>
@@ -119,7 +119,7 @@ export function KnnDiagram() {
           <span className="h-2.5 w-2.5 rounded-full bg-amber-300" /> K vizinhos mais próximos
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-600" /> demais filmes do catálogo
+          <span className="h-2.5 w-2.5 rounded-full bg-n-600" /> demais filmes do catálogo
         </span>
       </figcaption>
     </motion.figure>

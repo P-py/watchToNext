@@ -30,8 +30,8 @@ export function Button({
         {
           primary: "bg-amber-500 text-black hover:bg-amber-400",
           secondary:
-            "border border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700",
-          ghost: "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
+            "border border-n-700 bg-n-800 text-n-100 hover:bg-n-700",
+          ghost: "text-n-400 hover:bg-n-800 hover:text-n-100",
           danger: "bg-red-600 text-white hover:bg-red-500",
         }[variant],
         { sm: "h-8 px-3 text-sm", md: "h-10 px-4 text-sm", lg: "h-12 px-6 text-base" }[

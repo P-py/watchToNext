@@ -61,7 +61,7 @@ export function SeedPicker() {
               key={movie.id}
               type="button"
               onClick={() => addSeed(movie)}
-              className="inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 transition-colors hover:border-amber-500/60 hover:text-amber-300"
+              className="inline-flex items-center gap-1 rounded-full border border-n-700 bg-n-800 px-3 py-1.5 text-xs text-n-200 transition-colors hover:border-amber-500/60 hover:text-amber-300"
             >
               <Plus className="h-3 w-3" />
               {movie.title}
@@ -72,7 +72,7 @@ export function SeedPicker() {
 
       {seeds.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm text-zinc-400">Filmes escolhidos</p>
+          <p className="text-sm text-n-400">Filmes escolhidos</p>
           <div className="flex flex-wrap gap-2">
             {seeds.map((seed) => (
               <span

@@ -9,10 +9,10 @@ export default async function SuggestionsPage() {
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-zinc-100 md:text-3xl lg:text-4xl">
+        <h1 className="text-2xl font-bold text-n-100 md:text-3xl lg:text-4xl">
           Sugestões
         </h1>
-        <p className="mb-8 mt-2 text-zinc-400">
+        <p className="mb-8 mt-2 text-n-400">
           Recomendações por similaridade KNN — do seu jeito.
         </p>
         <SuggestionsClient />

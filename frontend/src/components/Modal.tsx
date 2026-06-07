@@ -80,7 +80,7 @@ export function Modal({ open, onClose, title, footer, children, className }: Mod
             aria-labelledby={title ? "modal-title" : undefined}
             tabIndex={-1}
             className={cn(
-              "relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl outline-none",
+              "relative w-full max-w-lg rounded-2xl border border-n-800 bg-n-900 p-6 shadow-xl outline-none",
               className
             )}
             onClick={(e) => e.stopPropagation()}
@@ -91,7 +91,7 @@ export function Modal({ open, onClose, title, footer, children, className }: Mod
           >
             <div className="mb-4 flex items-center justify-between">
               {title && (
-                <h2 id="modal-title" className="text-lg font-semibold text-zinc-100">
+                <h2 id="modal-title" className="text-lg font-semibold text-n-100">
                   {title}
                 </h2>
               )}
@@ -99,7 +99,7 @@ export function Modal({ open, onClose, title, footer, children, className }: Mod
                 type="button"
                 onClick={onClose}
                 aria-label="Fechar"
-                className="ml-auto text-zinc-500 transition-colors hover:text-zinc-300"
+                className="ml-auto text-n-500 transition-colors hover:text-n-300"
               >
                 <X className="h-5 w-5" />
               </button>
