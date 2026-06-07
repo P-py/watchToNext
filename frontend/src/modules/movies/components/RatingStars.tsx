@@ -127,7 +127,7 @@ export function RatingStars({ movieId }: RatingStarsProps) {
           onClick={remove}
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-n-400 transition-colors hover:bg-n-800/60 hover:text-n-200 disabled:opacity-50"
         >
-          <RotateCcw className="h-3.5 w-3.5" />
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
           Remover avaliação
         </button>
       )}
