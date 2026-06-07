@@ -4,6 +4,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { RotateCcw, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/components/SessionProvider";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ratingsService } from "@/services/ratings.service";
 
 interface RatingStarsProps {
@@ -21,6 +22,9 @@ function fillFor(value: number, position: number): 0 | 0.5 | 1 {
 
 export function RatingStars({ movieId }: RatingStarsProps) {
   const session = useSession();
+  // Touch devices can't hover, and synthetic mouse events make the half-star
+  // cursor logic unreliable — fall back to large, whole-star taps there.
+  const isTouch = useMediaQuery("(pointer: coarse)");
   const [rating, setRating] = useState<number | null>(null);
   const [preview, setPreview] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,8 +92,13 @@ export function RatingStars({ movieId }: RatingStarsProps) {
     setPreview(onLeftHalf ? position - 0.5 : position);
   }
 
+  // Touch gets larger targets; desktop keeps the compact hover stars.
+  const iconSize = isTouch ? "h-9 w-9" : "h-6 w-6";
+  const iconHeight = isTouch ? "h-9" : "h-6";
+  const buttonPadding = isTouch ? "p-2" : "p-0.5";
+
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
       <div className="flex items-center" onMouseLeave={() => setPreview(null)}>
         {Array.from({ length: STAR_COUNT }, (_, i) => i + 1).map((position) => {
           const fill = fillFor(displayValue, position);
@@ -98,20 +107,20 @@ export function RatingStars({ movieId }: RatingStarsProps) {
               key={position}
               type="button"
               disabled={loading}
-              onMouseMove={(e) => previewFromCursor(e, position)}
-              // Mouse click commits the hovered preview; keyboard (no preview) commits the whole star.
-              onClick={() => submit(preview ?? position)}
+              // Touch commits the whole star; mouse commits the hovered half/full preview.
+              onMouseMove={isTouch ? undefined : (e) => previewFromCursor(e, position)}
+              onClick={() => submit(isTouch ? position : preview ?? position)}
               aria-label={`${position} ${position === 1 ? "estrela" : "estrelas"}`}
-              className="p-0.5 disabled:opacity-50"
+              className={`${buttonPadding} disabled:opacity-50`}
             >
-              <span className="relative inline-block h-6 w-6">
-                <Star className="absolute left-0 top-0 h-6 w-6 text-n-600" />
+              <span className={`relative inline-block ${iconSize}`}>
+                <Star className={`absolute left-0 top-0 ${iconSize} text-n-600`} />
                 {fill > 0 && (
                   <span
-                    className="absolute left-0 top-0 h-6 overflow-hidden"
+                    className={`absolute left-0 top-0 ${iconHeight} overflow-hidden`}
                     style={{ width: `${fill * 100}%` }}
                   >
-                    <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                    <Star className={`${iconSize} fill-amber-400 text-amber-400`} />
                   </span>
                 )}
               </span>
