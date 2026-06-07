@@ -97,14 +97,15 @@ code, pre, kbd {
  * pointer for enabled interactive controls so clickable elements signal the
  * click, and use `not-allowed` for disabled ones.
  */
-button:not(:disabled),
-[role="button"]:not(:disabled),
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
 label[for],
 summary {
   cursor: pointer;
 }
 
 button:disabled,
+button[aria-disabled="true"],
 [role="button"][aria-disabled="true"] {
   cursor: not-allowed;
 }
