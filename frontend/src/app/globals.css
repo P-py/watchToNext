@@ -1,11 +1,68 @@
 @import "tailwindcss";
 
+/*
+ * Theme is driven by an inverting neutral ramp (`n-50`…`n-950`).
+ *
+ * In DARK mode `n-X` equals Tailwind's `zinc-X` exactly, so the dark theme is
+ * pixel-identical to the original zinc-based design. In LIGHT mode the ramp is
+ * inverted (`n-100` becomes a dark ink, `n-900` a light surface), so a single
+ * mechanical `zinc-*` → `n-*` rename gives every component a coherent light
+ * theme with no per-utility `dark:` variants.
+ *
+ * `:root` holds the light values; `.dark` overrides with the original zinc
+ * scale. The active class is set before first paint by an inline script in
+ * `layout.tsx`, so there is no flash of the wrong theme.
+ */
+
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
+  /* Light theme — inverted ramp (n-X = zinc-(1000 − X)). */
+  --n-50: #09090b;
+  --n-100: #18181b;
+  --n-200: #27272a;
+  --n-300: #3f3f46;
+  --n-400: #52525b;
+  --n-500: #71717a;
+  --n-600: #a1a1aa;
+  --n-700: #d4d4d8;
+  --n-800: #e4e4e7;
+  --n-900: #f4f4f5;
+  --n-950: #fafafa;
+
+  --background: var(--n-950);
+  --foreground: var(--n-100);
+}
+
+.dark {
+  /* Dark theme — exact Tailwind zinc scale (n-X = zinc-X). */
+  --n-50: #fafafa;
+  --n-100: #f4f4f5;
+  --n-200: #e4e4e7;
+  --n-300: #d4d4d8;
+  --n-400: #a1a1aa;
+  --n-500: #71717a;
+  --n-600: #52525b;
+  --n-700: #3f3f46;
+  --n-800: #27272a;
+  --n-900: #18181b;
+  --n-950: #09090b;
+
+  --background: var(--n-950);
+  --foreground: var(--n-100);
 }
 
 @theme inline {
+  --color-n-50: var(--n-50);
+  --color-n-100: var(--n-100);
+  --color-n-200: var(--n-200);
+  --color-n-300: var(--n-300);
+  --color-n-400: var(--n-400);
+  --color-n-500: var(--n-500);
+  --color-n-600: var(--n-600);
+  --color-n-700: var(--n-700);
+  --color-n-800: var(--n-800);
+  --color-n-900: var(--n-900);
+  --color-n-950: var(--n-950);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-dm-sans);
