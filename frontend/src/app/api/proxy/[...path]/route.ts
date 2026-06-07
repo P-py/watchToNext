@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readSessionRecord } from "@/lib/auth/session";
+import { refreshCurrentSession } from "@/lib/auth/refresh";
 
 const FORWARD_BLOCKLIST = new Set([
   "host",
@@ -37,20 +38,17 @@ function copyForwardableHeaders(source: Headers): Headers {
 
 let pendingRefresh: Promise<boolean> | null = null;
 
-async function tryRefresh(request: NextRequest): Promise<boolean> {
+// Refresh in-process rather than HTTP self-calling `/api/auth/refresh` via the
+// request origin: behind a TLS-terminating proxy that origin is `https://` while
+// the container bind is plain HTTP, which fails the self-fetch with
+// `ERR_SSL_WRONG_VERSION_NUMBER`. The in-flight promise dedups concurrent 401s.
+async function tryRefresh(): Promise<boolean> {
   if (!pendingRefresh) {
-    pendingRefresh = (async () => {
-      const refreshUrl = new URL("/api/auth/refresh", request.nextUrl.origin);
-      const cookieHeader = request.headers.get("cookie") ?? "";
-      const response = await fetch(refreshUrl, {
-        method: "POST",
-        headers: { cookie: cookieHeader },
-        cache: "no-store",
+    pendingRefresh = refreshCurrentSession()
+      .then((outcome) => outcome === "ok")
+      .finally(() => {
+        pendingRefresh = null;
       });
-      return response.ok;
-    })().finally(() => {
-      pendingRefresh = null;
-    });
   }
   return pendingRefresh;
 }
@@ -92,7 +90,7 @@ async function handle(
   const first = await forward(request, path);
   if (first.status !== 401) return first;
 
-  const refreshed = await tryRefresh(request);
+  const refreshed = await tryRefresh();
   if (!refreshed) return first;
   return forward(request, path);
 }
