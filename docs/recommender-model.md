@@ -93,6 +93,16 @@ Already-rated **and** already-watched movies are excluded — the candidate pool
 |-----------------------------------|---------|--------|
 | `recommender.favorite-boost`      | `1.2`   | Multiplier applied to a seed's weight when the movie is also favorited. |
 | `recommender.min-vote-count`      | `50`    | Lower bound on `vote_count` for a movie to be eligible as a candidate. Set to `0` to open up the full catalog. |
+| `recommender.neighbor-cache-size` | `500`   | Max neighbors memoized per seed (top-K by cosine). Keep `>=` the largest request `limit` so single-seed results stay identical. |
+| `recommender.max-cached-seeds`    | `1024`  | Max distinct seeds kept in the engine's neighbor cache; beyond this the least-recently-used seed is evicted. |
+
+## Performance — caching & warm-up
+
+Three layers keep response time low, all reusing already-present infrastructure:
+
+1. **Redis response cache** (`:api`). Final DTO lists are cached per request: `recommendations` (per user, 2m, evicted on rating/favorite changes), `recommendations-similar` (per movie, 10m), and `recommendations-from` (per seed *set*, 10m). The `/from` key is order-insensitive (sorted + deduped via `SortedSeedsKeyGenerator`), so `[1,2]` and `[2,1]` share an entry. Cache errors degrade gracefully to a recompute (`CacheConfig`'s error handler). The content-based caches need no eviction — they depend only on movie features, so TTL covers staleness.
+2. **Per-seed neighbor memoization** (`:engine`, in-process). A seed's cosine to every candidate depends only on the catalog, which is fixed per recommender instance — so each seed's sorted neighbor list is computed once and reused, capped to `neighbor-cache-size` with LRU eviction past `max-cached-seeds`. This is the layer that survives Redis TTL expiry and rating-driven evictions, since the underlying per-movie neighbors never change. Single-seed paths (`/similar`, `/from`) stay result-identical; multi-seed `recommendations` is near-identical (a candidate could in theory rank in only via contributions below every seed's top-K).
+3. **Startup warm-up** (`:api`). `RecommenderWarmUp` builds the catalog + recommender on `ApplicationReadyEvent`, so the first real request doesn't pay the cold-start catalog build. Failures are logged and fall back to the existing lazy build.
 
 ## Implementation pointers
 
@@ -100,3 +110,6 @@ Already-rated **and** already-watched movies are excluded — the candidate pool
 - Adapter `MovieEntity → MovieFeatures`: `backend/api/src/main/kotlin/com/watchtonext/api/adapter/MovieFeaturesAdapter.kt`
 - Orchestration & seed building: `backend/api/src/main/kotlin/com/watchtonext/api/service/RecommendationService.kt`
 - Unit tests covering ranking behaviour: `backend/engine/src/test/kotlin/com/watchtonext/engine/recommender/ContentKnnRecommenderTest.kt`
+- Redis response cache config & TTLs: `backend/api/src/main/kotlin/com/watchtonext/api/config/CacheConfig.kt`
+- Order-insensitive `/from` cache key: `backend/api/src/main/kotlin/com/watchtonext/api/config/SortedSeedsKeyGenerator.kt`
+- Startup warm-up: `backend/api/src/main/kotlin/com/watchtonext/api/config/RecommenderWarmUp.kt`

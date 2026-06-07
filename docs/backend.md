@@ -210,6 +210,10 @@ The backend is planned to expose a REST API with the following endpoints (subjec
 | `DELETE` | `/api/watched/{movieId}`          | **Authenticated.** Removes the watched mark. |
 | `GET`  | `/api/watched/{movieId}`            | **Authenticated.** Returns `{watched: boolean}` for the caller + movie. |
 
+### Recommendation caching & warm-up
+
+Recommendation responses are cached in Redis (`CacheConfig`): `recommendations` (per user, 2m, evicted on rating/favorite changes), `recommendations-similar` (per movie, 10m), and `recommendations-from` (per seed *set*, 10m). The `/from` key is order-insensitive — `?movieIds=1,2` and `?movieIds=2,1` hit the same entry (`SortedSeedsKeyGenerator`). Cache outages degrade gracefully to a recompute. On top of that, the `:engine` recommender memoizes each seed's neighbor list in-process, and `RecommenderWarmUp` builds the catalog at startup so the first request skips the cold-start cost. See [recommender-model.md](./recommender-model.md#performance--caching--warm-up) for the full picture.
+
 ## Catalog ordering — the `RELEVANCE` weighted rating
 
 `GET /api/movies/popular` is the catalog explorer. Its `sort` parameter accepts
