@@ -23,7 +23,9 @@ class RecommenderWarmUp(private val recommendationService: RecommendationService
         try {
             recommendationService.warmUp()
         } catch (e: Exception) {
-            log.warn("recommender warm-up failed; will build lazily on first request: {}", e.message)
+            // Restore the interrupt flag we'd otherwise swallow by catching broadly.
+            if (e is InterruptedException) Thread.currentThread().interrupt()
+            log.warn("recommender warm-up failed; will build lazily on first request", e)
         }
     }
 }

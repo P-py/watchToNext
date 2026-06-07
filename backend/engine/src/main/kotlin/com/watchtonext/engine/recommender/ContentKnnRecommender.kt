@@ -33,7 +33,7 @@ import kotlin.math.sqrt
 class ContentKnnRecommender(
     private val catalog: List<MovieFeatures>,
     private val neighborCacheSize: Int = 500,
-    maxCachedSeeds: Int = 1024,
+    private val maxCachedSeeds: Int = 1024,
 ) {
 
     private val genreIndex: Map<Int, Int>
@@ -47,6 +47,13 @@ class ContentKnnRecommender(
         }
 
     init {
+        require(neighborCacheSize >= 1) {
+            "neighborCacheSize must be >= 1, was $neighborCacheSize"
+        }
+        require(maxCachedSeeds >= 1) {
+            "maxCachedSeeds must be >= 1, was $maxCachedSeeds"
+        }
+
         val allGenres = catalog.flatMap { it.genreIds }.toSortedSet()
         genreIndex = allGenres.withIndex().associate { (i, g) -> g to i }
 
