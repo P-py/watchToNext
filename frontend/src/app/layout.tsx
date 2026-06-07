@@ -9,11 +9,11 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemedToaster } from "@/components/ThemedToaster";
 import TmdbAttribution from "@/components/TmdbAttribution";
 import { readSession } from "@/lib/auth/session";
+import { THEME_STORAGE_KEY } from "@/utils/theme";
 
 // Runs before first paint to apply the persisted theme class, avoiding a flash
-// of the wrong theme. Defaults to dark when no preference is stored. Keep the
-// storage key in sync with `THEME_STORAGE_KEY` in `ThemeProvider`.
-const themeScript = `(function(){try{var t=localStorage.getItem('wtn-theme');document.documentElement.classList.toggle('dark',t?t==='dark':true);}catch(e){document.documentElement.classList.add('dark');}})();`;
+// of the wrong theme. Defaults to dark when no preference is stored.
+const themeScript = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');document.documentElement.classList.toggle('dark',t?t==='dark':true);}catch(e){document.documentElement.classList.add('dark');}})();`;
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",

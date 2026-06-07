@@ -7,11 +7,11 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { THEME_STORAGE_KEY } from "@/utils/theme";
 
 export type Theme = "light" | "dark";
 
-/** Shared with the pre-paint script in `layout.tsx` — keep both in sync. */
-export const THEME_STORAGE_KEY = "wtn-theme";
+export { THEME_STORAGE_KEY };
 
 interface ThemeContextValue {
   theme: Theme;
@@ -31,13 +31,27 @@ const ThemeContext = createContext<ThemeContextValue>({
 // provider re-renders on change without a setState-in-effect.
 const listeners = new Set<() => void>();
 
+// Reflect theme changes made in *other* tabs. The DOM class is our source of
+// truth and getSnapshot reads it, so we must update <html> here before notifying
+// React — a bare notify would re-render against the unchanged old value.
+function handleStorage(event: StorageEvent) {
+  if (event.key !== THEME_STORAGE_KEY) return;
+  // newValue is null when the key is removed/cleared; fall back to the default.
+  const next: Theme = event.newValue === "light" ? "light" : "dark";
+  document.documentElement.classList.toggle("dark", next === "dark");
+  listeners.forEach((listener) => listener());
+}
+
 function subscribe(callback: () => void) {
+  if (listeners.size === 0) {
+    window.addEventListener("storage", handleStorage);
+  }
   listeners.add(callback);
-  // Reflect theme changes made in other tabs.
-  window.addEventListener("storage", callback);
   return () => {
     listeners.delete(callback);
-    window.removeEventListener("storage", callback);
+    if (listeners.size === 0) {
+      window.removeEventListener("storage", handleStorage);
+    }
   };
 }
 
